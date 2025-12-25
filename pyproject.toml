@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-renamer = "main:main"
+renamer = "renamer.main:main"
 
 [tool.uv]
 package = true

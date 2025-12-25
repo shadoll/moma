@@ -97,6 +97,3 @@ uv tool uninstall renamerq
 ## Dependencies
 - textual: TUI framework
 - mutagen: Media metadata detection
-
-## License
-[Add license here]
