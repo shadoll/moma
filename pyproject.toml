@@ -9,6 +9,7 @@ dependencies = [
     "textual>=6.11.0",
     "python-magic>=0.4.27",
     "pymediainfo>=6.0.0",
+    "pytest>=7.0.0",
 ]
 
 [project.scripts]
@@ -16,3 +17,10 @@ renamer = "renamer.main:main"
 
 [tool.uv]
 package = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+testpaths = ["renamer/test"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
