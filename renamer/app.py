@@ -4,12 +4,14 @@ from textual.containers import Horizontal, Container, ScrollableContainer, Verti
 from pathlib import Path
 import threading
 import time
+import concurrent.futures
 
-from .constants import VIDEO_EXTENSIONS
-from .utils import get_media_tracks
+from .constants import MEDIA_TYPES
 from .screens import OpenScreen
 from .extractor import MediaExtractor
 from .formatters.media_formatter import MediaFormatter
+from .formatters.proposed_name_formatter import ProposedNameFormatter
+from .formatters.color_formatter import ColorFormatter
 
 
 class RenamerApp(App):
@@ -42,7 +44,9 @@ class RenamerApp(App):
                 with Vertical():
                     yield LoadingIndicator(id="loading")
                     with ScrollableContainer(id="details_container"):
-                        yield Static("Select a file to view details", id="details", markup=True)
+                        yield Static(
+                            "Select a file to view details", id="details", markup=True
+                        )
                     yield Static("", id="proposed", markup=True)
         yield Footer()
 
@@ -58,7 +62,6 @@ class RenamerApp(App):
             return
         tree = self.query_one("#file_tree", Tree)
         tree.clear()
-        tree.root.add(".", data=self.scan_dir)
         self.build_tree(self.scan_dir, tree.root)
         tree.root.expand()
         self.set_focus(tree)
@@ -68,9 +71,13 @@ class RenamerApp(App):
             for item in sorted(path.iterdir()):
                 try:
                     if item.is_dir():
+                        if item.name.startswith(".") or item.name == "lost+found":
+                            continue
                         subnode = node.add(item.name, data=item)
                         self.build_tree(item, subnode)
-                    elif item.is_file() and item.suffix.lower() in VIDEO_EXTENSIONS:
+                    elif item.is_file() and item.suffix.lower() in {
+                        f".{ext}" for ext in MEDIA_TYPES
+                    }:
                         node.add(item.name, data=item)
                 except PermissionError:
                     pass
@@ -100,52 +107,46 @@ class RenamerApp(App):
                 proposed.update("")
             elif node.data.is_file():
                 self._start_loading_animation()
-                threading.Thread(target=self._extract_and_show_details, args=(node.data,)).start()
+                threading.Thread(
+                    target=self._extract_and_show_details, args=(node.data,)
+                ).start()
 
     def _extract_and_show_details(self, file_path: Path):
         time.sleep(1)  # Minimum delay to show loading
-        # Initialize extractors and formatters
-        extractor = MediaExtractor()
-        formatter = MediaFormatter()
-        
-        # Extract all data
-        rename_data = extractor.extract_all(file_path)
-        
-        # Get media tracks info
-        tracks_text = get_media_tracks(file_path)
-        if not tracks_text:
-            tracks_text = "[grey]No track info available[/grey]"
-        
-        # Format file info
-        full_info = formatter.format_file_info(file_path, rename_data)
-        full_info += f"\n\n{tracks_text}"
-        
-        # Format proposed name
-        ext_name = file_path.suffix.lower().lstrip('.')
-        proposed_name = formatter.format_proposed_name(rename_data, ext_name)
-        
-        # Format rename lines
-        rename_lines = formatter.format_rename_lines(rename_data, proposed_name)
-        full_info += f"\n\n" + "\n".join(rename_lines[:-1])
-        
-        # Update UI
-        self.call_later(self._update_details, full_info, proposed_name)
+        try:
+            # Initialize extractors and formatters
+            extractor = MediaExtractor(file_path)
+            formatter = MediaFormatter()
+            name_formatter = ProposedNameFormatter(extractor)
 
-    def _update_details(self, full_info: str, proposed_name: str):
+            # Update UI
+            self.call_later(
+                self._update_details,
+                formatter.format_file_info_panel(extractor),
+                name_formatter.format_display_string(),
+            )
+        except Exception as e:
+            self.call_later(
+                self._update_details,
+                ColorFormatter.red(f"Error extracting details: {str(e)}"),
+                "",
+            )
+
+    def _update_details(self, full_info: str, display_string: str):
         self._stop_loading_animation()
         details = self.query_one("#details", Static)
         details.update(full_info)
-        
-        proposed = self.query_one("#proposed", Static)
-        proposed.update(f"[bold yellow]Proposed filename: {proposed_name}[/bold yellow]")
 
-    def action_quit(self):
+        proposed = self.query_one("#proposed", Static)
+        proposed.update(display_string)
+
+    async def action_quit(self):
         self.exit()
 
-    def action_open(self):
+    async def action_open(self):
         self.push_screen(OpenScreen())
 
-    def action_scan(self):
+    async def action_scan(self):
         if self.scan_dir:
             self.scan_files()
 
@@ -153,7 +154,12 @@ class RenamerApp(App):
         if event.key == "right":
             tree = self.query_one("#file_tree", Tree)
             node = tree.cursor_node
-            if node and node.data and isinstance(node.data, Path) and node.data.is_dir():
+            if (
+                node
+                and node.data
+                and isinstance(node.data, Path)
+                and node.data.is_dir()
+            ):
                 if not node.is_expanded:
                     node.expand()
                     tree.cursor_line = node.line + 1

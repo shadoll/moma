@@ -3,122 +3,200 @@ from .size_formatter import SizeFormatter
 from .date_formatter import DateFormatter
 from .extension_extractor import ExtensionExtractor
 from .extension_formatter import ExtensionFormatter
-from ..utils import detect_file_type
+from .color_formatter import ColorFormatter
 
 
 class MediaFormatter:
     """Class to format media data for display"""
 
-    def format_file_info_panel(self, file_path: Path, rename_data: dict) -> str:
+    def format_file_info_panel(self, extractor) -> str:
         """Format file information for the file info panel"""
-        output = []
-
-        # Panel title
-        output.append("[bold blue]FILE INFO[/bold blue]")
-        output.append("")  # Empty line for spacing
-
-        # Get file stats
-        size_full = SizeFormatter.format_size_full(file_path.stat().st_size)
-        date_formatted = DateFormatter.format_modification_date(file_path.stat().st_mtime)
+        data = [
+            {
+                "label": "Path",
+                "value": extractor.get("file_path"),
+                "format_func": ColorFormatter.bold_blue,
+            },
+            {
+                "label": "Size",
+                "value": SizeFormatter.format_size_full(extractor.get("file_size")),
+                "format_func": ColorFormatter.bold_green,
+            },
+            {
+                "label": "File",
+                "value": extractor.get("file_name"),
+                "format_func": ColorFormatter.bold_cyan,
+            },
+            {
+                "label": "Modified",
+                "value": DateFormatter.format_modification_date(
+                    extractor.get("modification_time")
+                ),
+                "format_func": ColorFormatter.bold_magenta,
+            },
+        ]
 
         # Get extension info
-        ext_name = ExtensionExtractor.get_extension_name(file_path)
+        ext_name = ExtensionExtractor.get_extension_name(
+            Path(extractor.get("file_path"))
+        )
         ext_desc = ExtensionExtractor.get_extension_description(ext_name)
-        meta_type, meta_desc = detect_file_type(file_path)
+        meta_type = extractor.get("meta_type")
+        meta_desc = extractor.get("meta_description")
         match = ExtensionFormatter.check_extension_match(ext_name, meta_type)
-        ext_info = ExtensionFormatter.format_extension_info(ext_name, ext_desc, meta_type, meta_desc, match)
+        ext_info = ExtensionFormatter.format_extension_info(
+            ext_name, ext_desc, meta_type, meta_desc, match
+        )
 
-        file_name = file_path.name
+        output = [ColorFormatter.bold_blue("FILE INFO"), ""]
+        output.extend(
+            item["format_func"](f"{item['label']}: {item['value']}") for item in data
+        )
+        output.append(ext_info)
 
-        output.append(f"[bold blue]Path:[/bold blue] {str(file_path)}")
-        output.append(f"[bold green]Size:[/bold green] {size_full}")
-        output.append(f"[bold cyan]File:[/bold cyan] {file_name}")
-        output.append(f"[bold magenta]Modified:[/bold magenta] {date_formatted}")
-        output.append(f"{ext_info}")
+        # Add tracks info
+        tracks_text = extractor.get('tracks')
+        if not tracks_text:
+            tracks_text = ColorFormatter.grey("No track info available")
+        output.append("")
+        output.append(tracks_text)
+
+        # Add rename lines
+        rename_lines = self.format_rename_lines(extractor)
+        output.append("")
+        output.extend(rename_lines)
 
         return "\n".join(output)
 
-    def format_filename_extraction_panel(self, rename_data: dict) -> str:
+    def format_filename_extraction_panel(self, extractor) -> str:
         """Format filename extraction data for the filename panel"""
-        output = []
-        output.append("[bold yellow]FILENAME EXTRACTION[/bold yellow]")
-        output.append("")  # Empty line for spacing
-        output.append(f"[yellow]Title:[/yellow] {rename_data.get('title', 'Not found')}")
-        output.append(f"[yellow]Year:[/yellow] {rename_data.get('year', 'Not found')}")
-        output.append(f"[yellow]Source:[/yellow] {rename_data.get('source', 'Not found')}")
-        output.append(f"[yellow]Frame Class:[/yellow] {rename_data.get('frame_class', 'Not found')}")
+        data = [
+            {
+                "label": "Title",
+                "value": extractor.get("title") or "Not found",
+                "format_func": ColorFormatter.yellow,
+            },
+            {
+                "label": "Year",
+                "value": extractor.get("year") or "Not found",
+                "format_func": ColorFormatter.yellow,
+            },
+            {
+                "label": "Source",
+                "value": extractor.get("source") or "Not found",
+                "format_func": ColorFormatter.yellow,
+            },
+            {
+                "label": "Frame Class",
+                "value": extractor.get("frame_class") or "Not found",
+                "format_func": ColorFormatter.yellow,
+            },
+        ]
+
+        output = [ColorFormatter.bold_yellow("FILENAME EXTRACTION"), ""]
+        output.extend(
+            item["format_func"](f"{item['label']}: {item['value']}") for item in data
+        )
+
         return "\n".join(output)
 
-    def format_metadata_extraction_panel(self, rename_data: dict) -> str:
+    def format_metadata_extraction_panel(self, extractor) -> str:
         """Format metadata extraction data for the metadata panel"""
-        output = []
-        output.append("[bold cyan]METADATA EXTRACTION[/bold cyan]")
-        output.append("")  # Empty line for spacing
-        metadata = rename_data.get('metadata', {})
-        if metadata.get('duration'):
-            output.append(f"[cyan]Duration:[/cyan] {metadata['duration']:.1f} seconds")
-        if metadata.get('title'):
-            output.append(f"[cyan]Title:[/cyan] {metadata['title']}")
-        if metadata.get('artist'):
-            output.append(f"[cyan]Artist:[/cyan] {metadata['artist']}")
-        if not any(key in metadata for key in ['duration', 'title', 'artist']):
-            output.append("[dim]No metadata found[/dim]")
-        return "\n".join(output) if output else "[dim]No metadata found[/dim]"
+        metadata = extractor.get("metadata") or {}
+        data = []
+        if metadata.get("duration"):
+            data.append(
+                {
+                    "label": "Duration",
+                    "value": f"{metadata['duration']:.1f} seconds",
+                    "format_func": ColorFormatter.cyan,
+                }
+            )
+        if metadata.get("title"):
+            data.append(
+                {
+                    "label": "Title",
+                    "value": metadata["title"],
+                    "format_func": ColorFormatter.cyan,
+                }
+            )
+        if metadata.get("artist"):
+            data.append(
+                {
+                    "label": "Artist",
+                    "value": metadata["artist"],
+                    "format_func": ColorFormatter.cyan,
+                }
+            )
 
-    def format_mediainfo_extraction_panel(self, rename_data: dict) -> str:
-        """Format media info extraction data for the mediainfo panel"""
-        output = []
-        output.append("[bold green]MEDIA INFO EXTRACTION[/bold green]")
-        output.append("")  # Empty line for spacing
-        output.append(f"[green]Resolution:[/green] {rename_data.get('resolution', 'Not found')}")
-        output.append(f"[green]Aspect Ratio:[/green] {rename_data.get('aspect_ratio', 'Not found')}")
-        output.append(f"[green]HDR:[/green] {rename_data.get('hdr', 'Not found')}")
-        output.append(f"[green]Audio Languages:[/green] {rename_data.get('audio_langs', 'Not found')}")
+        output = [ColorFormatter.bold_cyan("METADATA EXTRACTION"), ""]
+        if data:
+            output.extend(
+                item["format_func"](f"{item['label']}: {item['value']}")
+                for item in data
+            )
+        else:
+            output.append(ColorFormatter.dim("No metadata found"))
+
         return "\n".join(output)
 
-    def format_proposed_name(self, rename_data: dict, ext_name: str) -> str:
-        """Format the proposed filename"""
-        proposed_parts = []
-        if rename_data['title']:
-            proposed_parts.append(rename_data['title'])
-        if rename_data['year']:
-            proposed_parts.append(f"({rename_data['year']})")
-        if rename_data['source']:
-            proposed_parts.append(rename_data['source'])
+    def format_mediainfo_extraction_panel(self, extractor) -> str:
+        """Format media info extraction data for the mediainfo panel"""
+        data = [
+            {
+                "label": "Resolution",
+                "value": extractor.get("resolution") or "Not found",
+                "format_func": ColorFormatter.green,
+            },
+            {
+                "label": "Aspect Ratio",
+                "value": extractor.get("aspect_ratio") or "Not found",
+                "format_func": ColorFormatter.green,
+            },
+            {
+                "label": "HDR",
+                "value": extractor.get("hdr") or "Not found",
+                "format_func": ColorFormatter.green,
+            },
+            {
+                "label": "Audio Languages",
+                "value": extractor.get("audio_langs") or "Not found",
+                "format_func": ColorFormatter.green,
+            },
+        ]
 
-        tags = []
-        if rename_data['frame_class'] and rename_data['frame_class'] != 'Unclassified':
-            tags.append(rename_data['frame_class'])
-        if rename_data['hdr']:
-            tags.append(rename_data['hdr'])
-        if rename_data['audio_langs']:
-            tags.append(rename_data['audio_langs'])
-        if tags:
-            proposed_parts.append(f"[{','.join(tags)}]")
+        output = [ColorFormatter.bold_green("MEDIA INFO EXTRACTION"), ""]
+        output.extend(
+            item["format_func"](f"{item['label']}: {item['value']}") for item in data
+        )
 
-        return ' '.join(proposed_parts) + f".{ext_name}"
+        return "\n".join(output)
 
-    def format_rename_lines(self, rename_data: dict, proposed_name: str) -> list[str]:
+    def format_rename_lines(self, extractor) -> list[str]:
         """Format the rename information lines"""
-        lines = []
-        lines.append(f"Movie title: {rename_data['title'] or 'Unknown'}")
-        lines.append(f"Year: {rename_data['year'] or 'Unknown'}")
-        lines.append(f"Video source: {rename_data['source'] or 'Unknown'}")
-        lines.append(f"Frame class: {rename_data['frame_class'] or 'Unknown'}")
-        lines.append(f"Resolution: {rename_data['resolution'] or 'Unknown'}")
-        lines.append(f"Aspect ratio: {rename_data['aspect_ratio'] or 'Unknown'}")
-        lines.append(f"HDR: {rename_data['hdr'] or 'No'}")
-        lines.append(f"Audio langs: {rename_data['audio_langs'] or 'None'}")
-        lines.append(f"Proposed filename: {proposed_name}")
-        return lines
+        data = {
+            "Movie title": extractor.get("title") or "Unknown",
+            "Year": extractor.get("year") or "Unknown",
+            "Video source": extractor.get("source") or "Unknown",
+            "Frame class": extractor.get("frame_class") or "Unknown",
+            "Resolution": extractor.get("resolution") or "Unknown",
+            "Aspect ratio": extractor.get("aspect_ratio") or "Unknown",
+            "HDR": extractor.get("hdr") or "No",
+            "Audio langs": extractor.get("audio_langs") or "None",
+        }
+
+        return [f"{key}: {value}" for key, value in data.items()]
 
     def _format_extra_metadata(self, metadata: dict) -> str:
         """Format extra metadata like duration, title, artist"""
-        extra_info = []
-        if metadata.get('duration'):
-            extra_info.append(f"[cyan]Duration:[/cyan] {metadata['duration']:.1f} seconds")
-        if metadata.get('title'):
-            extra_info.append(f"[cyan]Title:[/cyan] {metadata['title']}")
-        if metadata.get('artist'):
-            extra_info.append(f"[cyan]Artist:[/cyan] {metadata['artist']}")
-        return "\n".join(extra_info) if extra_info else ""
+        data = {}
+        if metadata.get("duration"):
+            data["Duration"] = f"{metadata['duration']:.1f} seconds"
+        if metadata.get("title"):
+            data["Title"] = metadata["title"]
+        if metadata.get("artist"):
+            data["Artist"] = metadata["artist"]
+
+        return "\n".join(
+            ColorFormatter.cyan(f"{key}: {value}") for key, value in data.items()
+        )

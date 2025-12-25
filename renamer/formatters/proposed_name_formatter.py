@@ -1,0 +1,25 @@
+from .color_formatter import ColorFormatter
+from .date_formatter import DateFormatter
+
+
+class ProposedNameFormatter:
+    """Class for formatting proposed filenames"""
+
+    def __init__(self, extractor):
+        self.extractor = extractor
+
+        self.__title = extractor.get("title") or "Unknown Title"
+        self.__year = DateFormatter.format_year(extractor.get("year"))
+        self.__source = extractor.get("source") or None
+        self.__frame_class = extractor.get("frame_class") or None
+        self.__hdr = f",{extractor.get('hdr')}" if extractor.get("hdr") else ""
+        self.__audio_langs = extractor.get("audio_langs") or None
+        self.__extension = extractor.get("extension") or "ext"
+
+    def __str__(self) -> str:
+        """Convert the proposed name to string"""
+        return f"{self.__title} {self.__year} {self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
+
+    def format_display_string(self) -> str:
+        """Format the proposed name for display with color"""
+        return ColorFormatter.bold_yellow(str(self))

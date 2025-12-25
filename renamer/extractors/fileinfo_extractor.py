@@ -4,22 +4,29 @@ from pathlib import Path
 class FileInfoExtractor:
     """Class to extract file information"""
 
-    @staticmethod
-    def extract_size(file_path: Path) -> int:
+    def __init__(self, file_path: Path):
+        self.file_path = file_path
+        self._size = file_path.stat().st_size
+        self._modification_time = file_path.stat().st_mtime
+        self._file_name = file_path.name
+        self._file_path = str(file_path)
+
+    def extract_size(self) -> int:
         """Extract file size in bytes"""
-        return file_path.stat().st_size
+        return self._size
 
-    @staticmethod
-    def extract_modification_time(file_path: Path) -> float:
+    def extract_modification_time(self) -> float:
         """Extract file modification time"""
-        return file_path.stat().st_mtime
+        return self._modification_time
 
-    @staticmethod
-    def extract_file_name(file_path: Path) -> str:
+    def extract_file_name(self) -> str:
         """Extract file name"""
-        return file_path.name
+        return self._file_name
 
-    @staticmethod
-    def extract_file_path(file_path: Path) -> str:
+    def extract_file_path(self) -> str:
         """Extract full file path as string"""
-        return str(file_path)
+        return self._file_path
+
+    def extract_extension(self) -> str:
+        """Extract file extension without the dot"""
+        return self.file_path.suffix.lower().lstrip('.')
