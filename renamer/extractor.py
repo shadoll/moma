@@ -27,14 +27,22 @@ class MediaExtractor:
         """Extract video source from filename"""
         return FilenameExtractor.extract_source(file_path)
 
-    def extract_resolution(self, file_path: Path) -> str | None:
-        """Extract resolution from media info or filename"""
+    def extract_frame_class(self, file_path: Path) -> str | None:
+        """Extract frame class from media info or filename"""
         # Try media info first
-        resolution = self.mediainfo_extractor.extract_resolution(file_path)
-        if resolution:
-            return resolution
+        frame_class = self.mediainfo_extractor.extract_frame_class(file_path)
+        if frame_class:
+            return frame_class
         # Fallback to filename
-        return FilenameExtractor.extract_resolution(file_path)
+        return FilenameExtractor.extract_frame_class(file_path)
+
+    def extract_resolution(self, file_path: Path) -> str | None:
+        """Extract actual video resolution (WIDTHxHEIGHT) from media info"""
+        return self.mediainfo_extractor.extract_resolution(file_path)
+
+    def extract_aspect_ratio(self, file_path: Path) -> str | None:
+        """Extract video aspect ratio from media info"""
+        return self.mediainfo_extractor.extract_aspect_ratio(file_path)
 
     def extract_hdr(self, file_path: Path) -> str | None:
         """Extract HDR info from media info"""
@@ -54,7 +62,9 @@ class MediaExtractor:
             'title': self.extract_title(file_path),
             'year': self.extract_year(file_path),
             'source': self.extract_source(file_path),
+            'frame_class': self.extract_frame_class(file_path),
             'resolution': self.extract_resolution(file_path),
+            'aspect_ratio': self.extract_aspect_ratio(file_path),
             'hdr': self.extract_hdr(file_path),
             'audio_langs': self.extract_audio_langs(file_path),
             'metadata': self.extract_metadata(file_path)

@@ -1,10 +1,18 @@
 import re
 from pathlib import Path
-from ..constants import SOURCE_DICT
+from ..constants import SOURCE_DICT, FRAME_CLASSES
 
 
 class FilenameExtractor:
     """Class to extract information from filename"""
+
+    @staticmethod
+    def _get_frame_class_from_height(height: int) -> str:
+        """Get frame class from video height using FRAME_CLASSES constant"""
+        for frame_class, info in FRAME_CLASSES.items():
+            if height == info['nominal_height']:
+                return frame_class
+        return 'Unclassified'
 
     @staticmethod
     def extract_title(file_path: Path) -> str | None:
@@ -40,20 +48,11 @@ class FilenameExtractor:
         return None
 
     @staticmethod
-    def extract_resolution(file_path: Path) -> str | None:
-        """Extract resolution from filename (e.g., 2160p, 1080p, 720p)"""
+    def extract_frame_class(file_path: Path) -> str | None:
+        """Extract frame class from filename (480p, 720p, 1080p, 2160p, etc.)"""
         file_name = file_path.name
         match = re.search(r'(\d{3,4})[pi]', file_name, re.IGNORECASE)
         if match:
             height = int(match.group(1))
-            if height >= 2160:
-                return '2160p'
-            elif height >= 1080:
-                return '1080p'
-            elif height >= 720:
-                return '720p'
-            elif height >= 480:
-                return '480p'
-            else:
-                return f'{height}p'
-        return None
+            return FilenameExtractor._get_frame_class_from_height(height)
+        return 'Unclassified'

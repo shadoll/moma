@@ -1,6 +1,7 @@
 from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
+from ..constants import FRAME_CLASSES
 
 
 class MediaInfoExtractor:
@@ -13,24 +14,49 @@ class MediaInfoExtractor:
             'zh': 'chi', 'und': 'und'
         }
 
-    def extract_resolution(self, file_path: Path) -> str | None:
-        """Extract resolution from media info"""
+    def _get_frame_class_from_height(self, height: int) -> str:
+        """Get frame class from video height using FRAME_CLASSES constant"""
+        for frame_class, info in FRAME_CLASSES.items():
+            if height == info['nominal_height']:
+                return frame_class
+        return 'Unclassified'
+
+    def extract_frame_class(self, file_path: Path) -> str | None:
+        """Extract frame class from media info (480p, 720p, 1080p, etc.)"""
         try:
             media_info = MediaInfo.parse(file_path)
             video_tracks = [t for t in media_info.tracks if t.track_type == 'Video']
             if video_tracks:
                 height = getattr(video_tracks[0], 'height', None)
                 if height:
-                    if height >= 2160:
-                        return '2160p'
-                    elif height >= 1080:
-                        return '1080p'
-                    elif height >= 720:
-                        return '720p'
-                    elif height >= 480:
-                        return '480p'
-                    else:
-                        return f'{height}p'
+                    return self._get_frame_class_from_height(height)
+        except:
+            pass
+        return 'Unclassified'
+
+    def extract_resolution(self, file_path: Path) -> str | None:
+        """Extract actual video resolution (WIDTHxHEIGHT) from media info"""
+        try:
+            media_info = MediaInfo.parse(file_path)
+            video_tracks = [t for t in media_info.tracks if t.track_type == 'Video']
+            if video_tracks:
+                width = getattr(video_tracks[0], 'width', None)
+                height = getattr(video_tracks[0], 'height', None)
+                if width and height:
+                    return f"{width}x{height}"
+        except:
+            pass
+        return None
+
+    def extract_aspect_ratio(self, file_path: Path) -> str | None:
+        """Extract video aspect ratio from media info"""
+        try:
+            media_info = MediaInfo.parse(file_path)
+            video_tracks = [t for t in media_info.tracks if t.track_type == 'Video']
+            if video_tracks:
+                aspect_ratio = getattr(video_tracks[0], 'display_aspect_ratio', None)
+                if aspect_ratio:
+                    return str(aspect_ratio)
         except:
             pass
         return None
