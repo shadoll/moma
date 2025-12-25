@@ -45,6 +45,60 @@ def format_size(bytes_size):
         bytes_size /= 1024
     return f"{bytes_size:.1f} TB"
 
+def get_media_tracks(file_path):
+    """Extract compact media track information"""
+    tracks_info = []
+    try:
+        media_info = MediaInfo.parse(file_path)
+        video_tracks = [t for t in media_info.tracks if t.track_type == 'Video']
+        audio_tracks = [t for t in media_info.tracks if t.track_type == 'Audio']
+        sub_tracks = [t for t in media_info.tracks if t.track_type == 'Text']
+        
+        # Video tracks
+        for i, v in enumerate(video_tracks[:2]):  # Up to 2 videos
+            codec = getattr(v, 'format', None) or getattr(v, 'codec', None) or 'unknown'
+            width = getattr(v, 'width', None) or '?'
+            height = getattr(v, 'height', None) or '?'
+            bitrate = getattr(v, 'bit_rate', None)
+            fps = getattr(v, 'frame_rate', None)
+            profile = getattr(v, 'format_profile', None)
+            
+            video_str = f"{codec} {width}x{height}"
+            if bitrate:
+                video_str += f" {bitrate}bps"
+            if fps:
+                video_str += f" {fps}fps"
+            if profile:
+                video_str += f" ({profile})"
+            
+            tracks_info.append(f"[green]Video {i+1}:[/green] {video_str}")
+        
+        # Audio tracks
+        for i, a in enumerate(audio_tracks[:3]):  # Up to 3 audios
+            codec = getattr(a, 'format', None) or getattr(a, 'codec', None) or 'unknown'
+            channels = getattr(a, 'channel_s', None) or '?'
+            lang = getattr(a, 'language', None) or 'und'
+            bitrate = getattr(a, 'bit_rate', None)
+            
+            audio_str = f"{codec} {channels}ch {lang}"
+            if bitrate:
+                audio_str += f" {bitrate}bps"
+            
+            tracks_info.append(f"[yellow]Audio {i+1}:[/yellow] {audio_str}")
+        
+        # Subtitle tracks
+        for i, s in enumerate(sub_tracks[:3]):  # Up to 3 subs
+            lang = getattr(s, 'language', None) or 'und'
+            format = getattr(s, 'format', None) or getattr(s, 'codec', None) or 'unknown'
+            
+            sub_str = f"{lang} ({format})"
+            tracks_info.append(f"[magenta]Sub {i+1}:[/magenta] {sub_str}")
+            
+    except Exception as e:
+        tracks_info.append(f"[red]Track info error: {str(e)}[/red]")
+    
+    return "\n".join(tracks_info) if tracks_info else ""
+
 class OpenScreen(Screen):
     def compose(self):
         yield Input(placeholder="Enter directory path", value=".", id="dir_input")
@@ -201,32 +255,14 @@ class RenamerApp(App):
                 if artist:
                     extra_info.append(f"[cyan]Artist:[/cyan] {artist}")
             
-            # Use MediaInfo for detailed track info
-            try:
-                media_info = MediaInfo.parse(file_path)
-                for track in media_info.tracks:
-                    if track.track_type == 'Video':
-                        codec = track.codec or 'unknown'
-                        width = track.width or '?'
-                        height = track.height or '?'
-                        extra_info.append(f"[green]Video:[/green] {codec} {width}x{height}")
-                        break  # Only first video track
-                    elif track.track_type == 'Audio':
-                        codec = track.codec or 'unknown'
-                        channels = track.channel_s or '?'
-                        lang = track.language or 'und'
-                        extra_info.append(f"[yellow]Audio:[/yellow] {codec} {channels}ch {lang}")
-                    elif track.track_type == 'Text':  # Subtitles
-                        lang = track.language or 'und'
-                        extra_info.append(f"[magenta]Subtitles:[/magenta] {lang}")
-            except Exception as e:
-                extra_info.append(f"[red]Track info error: {str(e)}[/red]")
-            
             extra_text = "\n".join(extra_info) if extra_info else ""
         except Exception as e:
             meta_type = f'Error: {str(e)}'
             meta_desc = f'Error detecting type'
             extra_text = ""
+        
+        # Get media tracks info
+        tracks_text = get_media_tracks(file_path)
         
         # Check if extensions match
         match = False
@@ -252,9 +288,11 @@ class RenamerApp(App):
         else:
             ext_info = f"[bold yellow]Extension:[/bold yellow] {ext_name} - [grey]{ext_desc}[/grey]\n[bold red]Meta extension:[/bold red] {meta_type} - [grey]{meta_desc}[/grey]\n[bold red]Warning: Extensions do not match![/bold red]"
         
-        full_info = f"[bold blue]Path:[/bold blue] {str(file_path).replace('[', '[[')}\n[bold green]Size:[/bold green] {size_full}\n[bold cyan]File:[/bold cyan] {file_name.replace('[', '[[')}\n{ext_info}\n[bold magenta]Modified:[/bold magenta] {date_formatted}"
+        full_info = f"[bold blue]Path:[/bold blue] {str(file_path).replace('[', '[[')}\n\n[bold green]Size:[/bold green] {size_full}\n[bold cyan]File:[/bold cyan] {file_name.replace('[', '[[')}\n{ext_info}\n[bold magenta]Modified:[/bold magenta] {date_formatted}"
         if extra_text:
-            full_info += f"\n{extra_text}"
+            full_info += f"\n\n{extra_text}"
+        if tracks_text:
+            full_info += f"\n\n{tracks_text}"
         
         details.update(full_info)
 
