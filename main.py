@@ -153,7 +153,7 @@ class RenamerApp(App):
                 yield Tree("Files", id="file_tree")
             with Container(id="right"):
                 with ScrollableContainer():
-                    yield Static("Select a file to view details", id="details")
+                    yield Static("Select a file to view details", id="details", markup=True)
         yield Footer()
 
     def on_mount(self):
@@ -263,6 +263,8 @@ class RenamerApp(App):
         
         # Get media tracks info
         tracks_text = get_media_tracks(file_path)
+        if not tracks_text:
+            tracks_text = "[grey]No track info available[/grey]"
         
         # Check if extensions match
         match = False
@@ -288,11 +290,10 @@ class RenamerApp(App):
         else:
             ext_info = f"[bold yellow]Extension:[/bold yellow] {ext_name} - [grey]{ext_desc}[/grey]\n[bold red]Meta extension:[/bold red] {meta_type} - [grey]{meta_desc}[/grey]\n[bold red]Warning: Extensions do not match![/bold red]"
         
-        full_info = f"[bold blue]Path:[/bold blue] {str(file_path).replace('[', '[[')}\n\n[bold green]Size:[/bold green] {size_full}\n[bold cyan]File:[/bold cyan] {file_name.replace('[', '[[')}\n{ext_info}\n[bold magenta]Modified:[/bold magenta] {date_formatted}"
+        full_info = f"[bold blue]Path:[/bold blue] {str(file_path)}\n\n[bold green]Size:[/bold green] {size_full}\n[bold cyan]File:[/bold cyan] {file_name}\n{ext_info}\n[bold magenta]Modified:[/bold magenta] {date_formatted}"
         if extra_text:
             full_info += f"\n\n{extra_text}"
-        if tracks_text:
-            full_info += f"\n\n{tracks_text}"
+        full_info += f"\n\n{tracks_text}"
         
         details.update(full_info)
 
