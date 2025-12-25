@@ -1,0 +1,18 @@
+[project]
+name = "renamer"
+version = "0.1.1"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mutagen>=1.47.0",
+    "textual>=6.11.0",
+    "python-magic>=0.4.27",
+    "pymediainfo>=6.0.0",
+]
+
+[project.scripts]
+renamer = "main:main"
+
+[tool.uv]
+package = true
