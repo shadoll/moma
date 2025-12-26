@@ -7,6 +7,7 @@ from .text_formatter import TextFormatter
 from .track_formatter import TrackFormatter
 from .resolution_formatter import ResolutionFormatter
 from .duration_formatter import DurationFormatter
+from .special_info_formatter import SpecialInfoFormatter
 
 
 class MediaFormatter:
@@ -69,6 +70,7 @@ class MediaFormatter:
         """Return formatted file info panel string"""
         sections = [
             self.file_info(),
+            self.selected_data(),
             self.tracks_info(),
             self.filename_extracted_data(),
             self.metadata_extracted_data(),
@@ -132,7 +134,7 @@ class MediaFormatter:
                 "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
             }
         ]
-        
+
         # Get video tracks
         video_tracks = self.extractor.get("video_tracks", "MediaInfo") or []
         for item in video_tracks:
@@ -145,7 +147,7 @@ class MediaFormatter:
                     "display_formatters": [TextFormatter.green],
                 }
             )
-        
+
         # Get audio tracks
         audio_tracks = self.extractor.get("audio_tracks", "MediaInfo") or []
         for i, item in enumerate(audio_tracks, start=1):
@@ -158,7 +160,7 @@ class MediaFormatter:
                     "display_formatters": [TextFormatter.yellow],
                 }
             )
-        
+
         # Get subtitle tracks
         subtitle_tracks = self.extractor.get("subtitle_tracks", "MediaInfo") or []
         for i, item in enumerate(subtitle_tracks, start=1):
@@ -312,18 +314,40 @@ class MediaFormatter:
                 "label_formatters": [TextFormatter.bold],
                 "value": self.extractor.get("special_info", "Filename")
                 or "Not extracted",
-                "value_formatters": [lambda x: ", ".join(x) if isinstance(x, list) else x, TextFormatter.blue],
+                "value_formatters": [
+                    SpecialInfoFormatter.format_special_info,
+                    TextFormatter.blue,
+                ],
                 "display_formatters": [TextFormatter.grey],
             },
             {
                 "label": "Movie DB",
                 "label_formatters": [TextFormatter.bold],
-                "value": self.extractor.get("movie_db", "Filename")
-                or "Not extracted",
+                "value": self.extractor.get("movie_db", "Filename") or "Not extracted",
                 "display_formatters": [TextFormatter.grey],
-            }
+            },
         ]
 
+        return [self._format_data_item(item) for item in data]
+
+    def selected_data(self) -> list[str]:
+        """Return formatted selected data string"""
+        data = [
+            {
+                "label": "Selected Data",
+                "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
+            },
+            {
+                "label": "Special info",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("special_info") or "<None>",
+                "value_formatters": [
+                    SpecialInfoFormatter.format_special_info,
+                    TextFormatter.blue,
+                ],
+                "display_formatters": [TextFormatter.yellow],
+            },
+        ]
         return [self._format_data_item(item) for item in data]
 
     def _format_extra_metadata(self, metadata: dict) -> str:

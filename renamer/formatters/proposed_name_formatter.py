@@ -1,5 +1,6 @@
 from .text_formatter import TextFormatter
 from .date_formatter import DateFormatter
+from .special_info_formatter import SpecialInfoFormatter
 
 
 class ProposedNameFormatter:
@@ -15,7 +16,8 @@ class ProposedNameFormatter:
         self.__frame_class = extractor.get("frame_class") or None
         self.__hdr = f",{extractor.get('hdr')}" if extractor.get("hdr") else ""
         self.__audio_langs = extractor.get("audio_langs") or None
-        self.__special_info = f" [{', '.join(extractor.get('special_info'))}]" if extractor.get("special_info") else ""
+        # self.__special_info = f" [{SpecialInfoFormatter.format_special_info(extractor.get('special_info'))}]" if extractor.get("special_info") else ""
+        self.__special_info = f" \[{SpecialInfoFormatter.format_special_info(extractor.get('special_info'))}]" if extractor.get("special_info") else ""
         self.__extension = extractor.get("extension") or "ext"
 
     def __str__(self) -> str:
@@ -25,6 +27,8 @@ class ProposedNameFormatter:
     def rename_line(self) -> str:
         return f"{self.__order}{self.__title} {self.__year}{self.__special_info}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
 
-    def rename_line_formatted(self) -> str:
+    def rename_line_formatted(self, file_path) -> str:
         """Format the proposed name for display with color"""
+        if file_path.name == str(self):
+            return f">> {TextFormatter.green(str(self))} <<"
         return f">> {TextFormatter.bold_yellow(str(self))} <<"
