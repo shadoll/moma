@@ -43,9 +43,6 @@ class MediaExtractor:
             'audio_langs': [
                 ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_langs())
             ],
-            'metadata': [
-                ('Metadata', lambda: self.metadata_extractor.extract_all_metadata())
-            ],
             'meta_type': [
                 ('Metadata', lambda: self.metadata_extractor.extract_meta_type())
             ],
@@ -88,21 +85,44 @@ class MediaExtractor:
 
     def get(self, key: str, source: str | None = None):
         """Get extracted data by key, optionally from specific source"""
-        if key not in self._sources:
-            raise ValueError(f"Unknown key: {key}")
-        
-        condition = self._conditions.get(key, lambda x: x is not None)
-        
-        if source:
-            for src, func in self._sources[key]:
-                if src.lower() == source.lower():
+        if key in self._sources:
+            condition = self._conditions.get(key, lambda x: x is not None)
+            
+            if source:
+                for src, func in self._sources[key]:
+                    if src.lower() == source.lower():
+                        val = func()
+                        return val if condition(val) else None
+                return None  # Source not found for this key, return None
+            else:
+                # Use fallback: return first valid value
+                for src, func in self._sources[key]:
                     val = func()
-                    return val if condition(val) else None
-            return None  # Source not found for this key, return None
+                    if condition(val):
+                        return val
+                return None
         else:
-            # Use fallback: return first valid value
-            for src, func in self._sources[key]:
-                val = func()
-                if condition(val):
-                    return val
-            return None
+            # Key not in _sources, try to call extract_<key> on extractors
+            extract_method = f'extract_{key}'
+            extractors = [
+                ('MediaInfo', self.mediainfo_extractor),
+                ('Metadata', self.metadata_extractor),
+                ('Filename', self.filename_extractor),
+                ('FileInfo', self.fileinfo_extractor)
+            ]
+            
+            if source:
+                for src_name, extractor in extractors:
+                    if src_name.lower() == source.lower():
+                        if hasattr(extractor, extract_method):
+                            val = getattr(extractor, extract_method)()
+                            return val
+                return None
+            else:
+                # Try all extractors in order
+                for src_name, extractor in extractors:
+                    if hasattr(extractor, extract_method):
+                        val = getattr(extractor, extract_method)()
+                        if val is not None:
+                            return val
+                return None

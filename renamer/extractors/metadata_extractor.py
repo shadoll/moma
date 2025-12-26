@@ -31,14 +31,6 @@ class MetadataExtractor:
             return getattr(self.info, 'artist', None) or getattr(self.info, 'get', lambda x, default=None: default)('artist', [None])[0]  # type: ignore
         return None
 
-    def extract_all_metadata(self) -> dict:
-        """Extract all metadata"""
-        return {
-            'title': self.extract_title(),
-            'duration': self.extract_duration(),
-            'artist': self.extract_artist()
-        }
-
     def extract_meta_type(self) -> str:
         """Extract meta type from metadata"""
         if self.info:

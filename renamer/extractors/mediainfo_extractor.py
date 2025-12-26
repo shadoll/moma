@@ -28,6 +28,14 @@ class MediaInfoExtractor:
                 return frame_class
         return 'Unclassified'
 
+    def extract_duration(self) -> float | None:
+        """Extract duration from media info in seconds"""
+        if self.media_info:
+            for track in self.media_info.tracks:
+                if track.track_type == 'General':
+                    return getattr(track, 'duration', 0) / 1000 if getattr(track, 'duration', None) else None
+        return None
+
     def extract_frame_class(self) -> str | None:
         """Extract frame class from media info (480p, 720p, 1080p, etc.)"""
         if not self.video_tracks:
