@@ -73,6 +73,13 @@ class FilenameExtractor:
         # Remove bracketed prefixes like [01.1], [1], etc.
         title = re.sub(r'^\s*\[[^\]]+\]\s*', '', title)
         
+        # Remove order number prefixes like 01., 1., 1.1 followed by space/underscore
+        title = re.sub(r'^\s*(\d+(?:\.\d+)?)\.(?=\s|_|$)', '', title)
+        title = re.sub(r'^\s*(\d+(?:\.\d+)?)(?=\s|_)', '', title)
+        
+        # Clean up any remaining leading separators
+        title = title.lstrip('_ \t')
+        
         # Clean up title: remove leading/trailing brackets and dots
         title = title.strip('[](). ')
         
@@ -112,6 +119,28 @@ class FilenameExtractor:
             for alias in aliases:
                 if alias.upper() in temp_name.upper():
                     return src
+        return None
+
+    def extract_order(self) -> str | None:
+        """Extract collection order number from filename (at the beginning)"""
+        # Look for order patterns at the start of filename
+        # Patterns: [01], [01.1], 01., 1., 1.1 followed by space or underscore
+        
+        # Check for bracketed patterns: [01], [01.1], etc.
+        bracket_match = re.match(r'^\[(\d+(?:\.\d+)?)\]', self.file_name)
+        if bracket_match:
+            return bracket_match.group(1)
+        
+        # Check for dot patterns: 01., 1., 1.1 followed by space, underscore, or end of string
+        dot_match = re.match(r'^(\d+(?:\.\d+)?)\.(?=\s|_|$)', self.file_name)
+        if dot_match:
+            return dot_match.group(1)
+        
+        # Check for number followed by space or underscore (like "1.1 " at start)
+        space_match = re.match(r'^(\d+(?:\.\d+)?)(?=\s|_)', self.file_name)
+        if space_match:
+            return space_match.group(1)
+        
         return None
 
     def extract_frame_class(self) -> str | None:

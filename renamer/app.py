@@ -30,6 +30,7 @@ class RenamerApp(App):
         ("q", "quit", "Quit"),
         ("o", "open", "Open directory"),
         ("s", "scan", "Scan"),
+        ("r", "refresh", "Refresh"),
     ]
 
     def __init__(self, scan_dir):
@@ -147,6 +148,15 @@ class RenamerApp(App):
     async def action_scan(self):
         if self.scan_dir:
             self.scan_files()
+
+    async def action_refresh(self):
+        tree = self.query_one("#file_tree", Tree)
+        node = tree.cursor_node
+        if node and node.data and isinstance(node.data, Path) and node.data.is_file():
+            self._start_loading_animation()
+            threading.Thread(
+                target=self._extract_and_show_details, args=(node.data,)
+            ).start()
 
     def on_key(self, event):
         if event.key == "right":

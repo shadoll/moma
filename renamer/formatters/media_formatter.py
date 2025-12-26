@@ -264,6 +264,12 @@ class MediaFormatter:
                 "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
             },
             {
+                "label": "Order",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("order", "Filename") or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
                 "label": "Movie title",
                 "label_formatters": [TextFormatter.bold],
                 "value": self.extractor.get("title", "Filename"),

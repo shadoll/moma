@@ -10,6 +10,9 @@ class DefaultExtractor:
     def extract_source(self):
         return None
 
+    def extract_order(self):
+        return None
+
     def extract_resolution(self):
         return None
 

@@ -46,6 +46,12 @@ class MediaExtractor:
                     ("Default", "extract_source"),
                 ],
             },
+            "order": {
+                "sources": [
+                    ("Filename", "extract_order"),
+                    ("Default", "extract_order"),
+                ],
+            },
             "frame_class": {
                 "sources": [
                     ("MediaInfo", "extract_frame_class"),

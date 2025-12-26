@@ -8,6 +8,7 @@ class ProposedNameFormatter:
     def __init__(self, extractor):
         """Initialize with media extractor data"""
 
+        self.__order = f"[{extractor.get('order')}] " if extractor.get("order") else ""
         self.__title = extractor.get("title") or "Unknown Title"
         self.__year = DateFormatter.format_year(extractor.get("year"))
         self.__source = f" {extractor.get('source')}" if extractor.get("source") else ""
@@ -21,7 +22,7 @@ class ProposedNameFormatter:
         return self.rename_line()
 
     def rename_line(self) -> str:
-        return f"{self.__title} {self.__year}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
+        return f"{self.__order}{self.__title} {self.__year}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
 
     def rename_line_formatted(self) -> str:
         """Format the proposed name for display with color"""
