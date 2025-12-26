@@ -41,6 +41,9 @@ class MediaExtractor:
                 ('MediaInfo', lambda: self.mediainfo_extractor.extract_hdr()),
                 ('Filename', lambda: self.filename_extractor.extract_hdr())
             ],
+            'movie_db': [
+                ('Filename', lambda: self.filename_extractor.extract_movie_db())
+            ],
             'audio_langs': [
                 ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_langs())
             ],
@@ -82,6 +85,7 @@ class MediaExtractor:
             'resolution': lambda x: x is not None,
             'aspect_ratio': lambda x: x is not None,
             'hdr': lambda x: x is not None,
+            'movie_db': lambda x: x is not None,
             'audio_langs': lambda x: x is not None,
             'tracks': lambda x: x is not None and any(x.get(k, []) for k in ['video_tracks', 'audio_tracks', 'subtitle_tracks']),
             'video_tracks': lambda x: x is not None and len(x) > 0,

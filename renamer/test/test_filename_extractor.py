@@ -80,3 +80,20 @@ def test_extract_hdr(filename):
     print(f"Extracted HDR: \033[1;32m{hdr}\033[0m")
     # HDR should be 'HDR' or None
     assert hdr is None or hdr == 'HDR'
+
+
+@pytest.mark.parametrize("filename", load_test_filenames())
+def test_extract_movie_db(filename):
+    """Test movie database identifier extraction from filename"""
+    file_path = Path(filename)
+    extractor = FilenameExtractor(file_path)
+    movie_db = extractor.extract_movie_db()
+    # Print filename and extracted movie DB clearly
+    print(f"\nFilename: \033[1;36m{filename}\033[0m")
+    print(f"Extracted movie DB: \033[1;32m{movie_db}\033[0m")
+    # Movie DB should be tuple (str, str) or None
+    if movie_db:
+        assert isinstance(movie_db, tuple) and len(movie_db) == 2
+        assert isinstance(movie_db[0], str) and isinstance(movie_db[1], str)
+    else:
+        assert movie_db is None

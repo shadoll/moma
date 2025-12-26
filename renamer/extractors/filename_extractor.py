@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from ..constants import SOURCE_DICT, FRAME_CLASSES
+from ..constants import SOURCE_DICT, FRAME_CLASSES, MOVIE_DB_DICT
 
 
 class FilenameExtractor:
@@ -137,5 +137,26 @@ class FilenameExtractor:
         # Check for HDR, but not NoHDR
         if re.search(r'\bHDR\b', self.file_name, re.IGNORECASE) and not re.search(r'\bNoHDR\b', self.file_name, re.IGNORECASE):
             return 'HDR'
+        
+        return None
+
+    def extract_movie_db(self) -> tuple[str, str] | None:
+        """Extract movie database identifier from filename"""
+        # Look for patterns at the end of filename in brackets or braces
+        # Patterns: [tmdbid-123] {imdb-tt123} [imdbid-tt123] etc.
+        
+        # Match patterns like [tmdbid-123456] or {imdb-tt1234567}
+        pattern = r'[\[\{]([a-zA-Z]+(?:id)?)[-\s]*([a-zA-Z0-9]+)[\]\}]'
+        matches = re.findall(pattern, self.file_name)
+        
+        if matches:
+            # Take the last match (closest to end of filename)
+            db_type, db_id = matches[-1]
+            
+            # Normalize database type
+            db_type_lower = db_type.lower()
+            for db_key, db_info in MOVIE_DB_DICT.items():
+                if any(db_type_lower.startswith(pattern.rstrip('-')) for pattern in db_info['patterns']):
+                    return (db_key, db_id)
         
         return None

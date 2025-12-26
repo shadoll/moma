@@ -301,6 +301,13 @@ class MediaFormatter:
                 or "Not extracted",
                 "display_formatters": [TextFormatter.grey],
             },
+            {
+                "label": "Movie DB",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("movie_db", "Filename")
+                or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            }
         ]
 
         return [self._format_data_item(item) for item in data]
