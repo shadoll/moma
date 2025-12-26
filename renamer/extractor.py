@@ -78,6 +78,12 @@ class MediaExtractor:
                     ("Default", "extract_movie_db"),
                 ],
             },
+            "special_info": {
+                "sources": [
+                    ("Filename", "extract_special_info"),
+                    ("Default", "extract_special_info"),
+                ],
+            },
             "audio_langs": {
                 "sources": [
                     ("MediaInfo", "extract_audio_langs"),
@@ -149,20 +155,28 @@ class MediaExtractor:
                 if extractor_name.lower() == source.lower():
                     method = f"extract_{key}"
                     if hasattr(extractor, method):
-                        return getattr(extractor, method)()
+                        val = getattr(extractor, method)()
+                        # Apply condition if specified
+                        if key in self._data and "condition" in self._data[key]:
+                            condition = self._data[key]["condition"]
+                            return val if condition(val) else None
+                        return val
             return None
         
         # Fallback mode - try sources in order
         if key in self._data:
-            sources = self._data[key]["sources"]
+            data = self._data[key]
+            sources = data["sources"]
+            condition = data.get("condition", lambda x: x is not None)
         else:
             # Try extractors in order for unconfigured keys
             sources = [(name, f"extract_{key}") for name in ["MediaInfo", "Metadata", "Filename", "FileInfo"]]
+            condition = lambda x: x is not None
         
-        # Try each source in order until a non-None value is found
+        # Try each source in order until a valid value is found
         for src, method in sources:
             if src in self._extractors and hasattr(self._extractors[src], method):
                 val = getattr(self._extractors[src], method)()
-                if val is not None:
+                if condition(val):
                     return val
         return None

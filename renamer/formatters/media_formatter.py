@@ -267,7 +267,7 @@ class MediaFormatter:
                 "label": "Order",
                 "label_formatters": [TextFormatter.bold],
                 "value": self.extractor.get("order", "Filename") or "Not extracted",
-                "display_formatters": [TextFormatter.grey],
+                "display_formatters": [TextFormatter.yellow],
             },
             {
                 "label": "Movie title",
@@ -305,6 +305,14 @@ class MediaFormatter:
                 "label_formatters": [TextFormatter.bold],
                 "value": self.extractor.get("audio_langs", "Filename")
                 or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "Special info",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("special_info", "Filename")
+                or "Not extracted",
+                "value_formatters": [lambda x: ", ".join(x) if isinstance(x, list) else x, TextFormatter.blue],
                 "display_formatters": [TextFormatter.grey],
             },
             {

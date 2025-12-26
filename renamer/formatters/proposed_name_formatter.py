@@ -15,6 +15,7 @@ class ProposedNameFormatter:
         self.__frame_class = extractor.get("frame_class") or None
         self.__hdr = f",{extractor.get('hdr')}" if extractor.get("hdr") else ""
         self.__audio_langs = extractor.get("audio_langs") or None
+        self.__special_info = f" [{', '.join(extractor.get('special_info'))}]" if extractor.get("special_info") else ""
         self.__extension = extractor.get("extension") or "ext"
 
     def __str__(self) -> str:
@@ -22,7 +23,7 @@ class ProposedNameFormatter:
         return self.rename_line()
 
     def rename_line(self) -> str:
-        return f"{self.__order}{self.__title} {self.__year}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
+        return f"{self.__order}{self.__title} {self.__year}{self.__special_info}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
 
     def rename_line_formatted(self) -> str:
         """Format the proposed name for display with color"""

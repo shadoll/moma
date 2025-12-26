@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 from collections import Counter
-from ..constants import SOURCE_DICT, FRAME_CLASSES, MOVIE_DB_DICT
+from ..constants import SOURCE_DICT, FRAME_CLASSES, MOVIE_DB_DICT, SPECIAL_EDITIONS
 import langcodes
 
 
@@ -191,6 +191,30 @@ class FilenameExtractor:
                     return (db_key, db_id)
         
         return None
+
+    def extract_special_info(self) -> list[str]:
+        """Extract special edition information from filename"""
+        # Look for special edition indicators in brackets or as standalone text
+        special_info = []
+        
+        for edition in SPECIAL_EDITIONS:
+            # Check in brackets: [Theatrical Cut], [Director's Cut], etc.
+            bracket_pattern = r'\[([^\]]+)\]'
+            brackets = re.findall(bracket_pattern, self.file_name)
+            for bracket in brackets:
+                # Check if bracket contains comma-separated items
+                items = [item.strip() for item in bracket.split(',')]
+                for item in items:
+                    if edition.lower() == item.lower().strip():
+                        if edition not in special_info:
+                            special_info.append(edition)
+            
+            # Check as standalone text (case-insensitive)
+            if re.search(r'\b' + re.escape(edition) + r'\b', self.file_name, re.IGNORECASE):
+                if edition not in special_info:
+                    special_info.append(edition)
+        
+        return special_info
 
     def extract_audio_langs(self) -> str:
         """Extract audio languages from filename"""

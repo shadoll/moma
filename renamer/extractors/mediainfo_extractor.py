@@ -21,7 +21,7 @@ class MediaInfoExtractor:
             self.audio_tracks = []
             self.sub_tracks = []
 
-    def _get_frame_class_from_height(self, height: int) -> str:
+    def _get_frame_class_from_height(self, height: int) -> str | None:
         """Get frame class from video height using FRAME_CLASSES constant"""
         for frame_class, info in FRAME_CLASSES.items():
             if height == info['nominal_height']:

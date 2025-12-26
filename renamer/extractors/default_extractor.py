@@ -22,6 +22,9 @@ class DefaultExtractor:
     def extract_movie_db(self):
         return None
 
+    def extract_special_info(self):
+        return []
+
     def extract_audio_langs(self):
         return None
 
