@@ -12,12 +12,12 @@ class FilenameExtractor:
         self.file_path = file_path
         self.file_name = file_path.name
 
-    def _get_frame_class_from_height(self, height: int) -> str:
+    def _get_frame_class_from_height(self, height: int) -> str | None:
         """Get frame class from video height using FRAME_CLASSES constant"""
         for frame_class, info in FRAME_CLASSES.items():
             if height == info['nominal_height']:
                 return frame_class
-        return 'Unclassified'
+        return None
 
     def extract_title(self) -> str | None:
         """Extract movie title from filename"""
@@ -126,9 +126,9 @@ class FilenameExtractor:
         unclassified_indicators = ['SD', 'LQ', 'HD', 'QHD']
         for indicator in unclassified_indicators:
             if re.search(r'\b' + re.escape(indicator) + r'\b', self.file_name, re.IGNORECASE):
-                return 'Unclassified'
+                return None
         
-        return 'Unclassified'
+        return None
 
     def extract_hdr(self) -> str | None:
         """Extract HDR information from filename"""

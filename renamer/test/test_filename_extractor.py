@@ -62,11 +62,12 @@ def test_extract_frame_class(filename):
     # Print filename and extracted frame class clearly
     print(f"\nFilename: \033[1;36m{filename}\033[0m")
     print(f"Extracted frame_class: \033[1;32m{frame_class}\033[0m")
-    # Frame class should be a string
-    assert isinstance(frame_class, str)
-    # Should be one of the valid frame classes or 'Unclassified'
-    valid_classes = set(FRAME_CLASSES.keys()) | {'Unclassified'}
-    assert frame_class in valid_classes
+    # Frame class should be a string or None
+    assert frame_class is None or isinstance(frame_class, str)
+    # Should be one of the valid frame classes or None
+    if frame_class is not None:
+        valid_classes = set(FRAME_CLASSES.keys())
+        assert frame_class in valid_classes
 
 
 @pytest.mark.parametrize("filename", load_test_filenames())

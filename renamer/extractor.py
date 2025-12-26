@@ -3,137 +3,160 @@ from .extractors.filename_extractor import FilenameExtractor
 from .extractors.metadata_extractor import MetadataExtractor
 from .extractors.mediainfo_extractor import MediaInfoExtractor
 from .extractors.fileinfo_extractor import FileInfoExtractor
+from .extractors.default_extractor import DefaultExtractor
 
 
 class MediaExtractor:
     """Class to extract various metadata from media files using specialized extractors"""
 
     def __init__(self, file_path: Path):
-        self.file_path = file_path
         self.filename_extractor = FilenameExtractor(file_path)
         self.metadata_extractor = MetadataExtractor(file_path)
         self.mediainfo_extractor = MediaInfoExtractor(file_path)
         self.fileinfo_extractor = FileInfoExtractor(file_path)
-        
-        # Define sources for each data type
-        self._sources = {
-            'title': [
-                ('Metadata', lambda: self.metadata_extractor.extract_title()),
-                ('Filename', lambda: self.filename_extractor.extract_title())
-            ],
-            'year': [
-                ('Filename', lambda: self.filename_extractor.extract_year())
-            ],
-            'source': [
-                ('Filename', lambda: self.filename_extractor.extract_source())
-            ],
-            'frame_class': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_frame_class()),
-                ('Filename', lambda: self.filename_extractor.extract_frame_class())
-            ],
-            'resolution': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_resolution())
-            ],
-            'aspect_ratio': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_aspect_ratio())
-            ],
-            'hdr': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_hdr()),
-                ('Filename', lambda: self.filename_extractor.extract_hdr())
-            ],
-            'movie_db': [
-                ('Filename', lambda: self.filename_extractor.extract_movie_db())
-            ],
-            'audio_langs': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_langs()),
-                ('Filename', lambda: self.filename_extractor.extract_audio_langs())
-            ],
-            'meta_type': [
-                ('Metadata', lambda: self.metadata_extractor.extract_meta_type())
-            ],
-            'file_size': [
-                ('FileInfo', lambda: self.fileinfo_extractor.extract_size())
-            ],
-            'modification_time': [
-                ('FileInfo', lambda: self.fileinfo_extractor.extract_modification_time())
-            ],
-            'file_name': [
-                ('FileInfo', lambda: self.fileinfo_extractor.extract_file_name())
-            ],
-            'file_path': [
-                ('FileInfo', lambda: self.fileinfo_extractor.extract_file_path())
-            ],
-            'extension': [
-                ('FileInfo', lambda: self.fileinfo_extractor.extract_extension())
-            ],
-            'video_tracks': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_video_tracks())
-            ],
-            'audio_tracks': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_tracks())
-            ],
-            'subtitle_tracks': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_subtitle_tracks())
-            ],
+        self.default_extractor = DefaultExtractor()
+
+        # Extractor mapping
+        self._extractors = {
+            "Metadata": self.metadata_extractor,
+            "Filename": self.filename_extractor,
+            "MediaInfo": self.mediainfo_extractor,
+            "FileInfo": self.fileinfo_extractor,
+            "Default": self.default_extractor,
         }
-        
-        # Conditions for when a value is considered valid
-        self._conditions = {
-            'title': lambda x: x is not None,
-            'year': lambda x: x is not None,
-            'source': lambda x: x is not None,
-            'frame_class': lambda x: x and x != 'Unclassified',
-            'resolution': lambda x: x is not None,
-            'aspect_ratio': lambda x: x is not None,
-            'hdr': lambda x: x is not None,
-            'movie_db': lambda x: x is not None,
-            'audio_langs': lambda x: x is not None,
-            'tracks': lambda x: x is not None and any(x.get(k, []) for k in ['video_tracks', 'audio_tracks', 'subtitle_tracks']),
-            'video_tracks': lambda x: x is not None and len(x) > 0,
-            'audio_tracks': lambda x: x is not None and len(x) > 0,
-            'subtitle_tracks': lambda x: x is not None and len(x) > 0,
+
+        # Define sources and conditions for each data type
+        self._data = {
+            "title": {
+                "sources": [
+                    ("Metadata", "extract_title"),
+                    ("Filename", "extract_title"),
+                    ("Default", "extract_title"),
+                ],
+            },
+            "year": {
+                "sources": [
+                    ("Filename", "extract_year"),
+                    ("Default", "extract_year"),
+                ],
+            },
+            "source": {
+                "sources": [
+                    ("Filename", "extract_source"),
+                    ("Default", "extract_source"),
+                ],
+            },
+            "frame_class": {
+                "sources": [
+                    ("MediaInfo", "extract_frame_class"),
+                    ("Filename", "extract_frame_class"),
+                    ("Default", "extract_frame_class"),
+                ],
+            },
+            "resolution": {
+                "sources": [
+                    ("MediaInfo", "extract_resolution"),
+                    ("Default", "extract_resolution"),
+                ],
+            },
+            "hdr": {
+                "sources": [
+                    ("MediaInfo", "extract_hdr"),
+                    ("Filename", "extract_hdr"),
+                    ("Default", "extract_hdr"),
+                ],
+            },
+            "movie_db": {
+                "sources": [
+                    ("Filename", "extract_movie_db"),
+                    ("Default", "extract_movie_db"),
+                ],
+            },
+            "audio_langs": {
+                "sources": [
+                    ("MediaInfo", "extract_audio_langs"),
+                    ("Filename", "extract_audio_langs"),
+                    ("Default", "extract_audio_langs"),
+                ],
+            },
+            "meta_type": {
+                "sources": [
+                    ("Metadata", "extract_meta_type"),
+                    ("Default", "extract_meta_type"),
+                ],
+            },
+            "file_size": {
+                "sources": [
+                    ("FileInfo", "extract_size"),
+                    ("Default", "extract_size"),
+                ],
+            },
+            "modification_time": {
+                "sources": [
+                    ("FileInfo", "extract_modification_time"),
+                    ("Default", "extract_modification_time"),
+                ],
+            },
+            "file_name": {
+                "sources": [
+                    ("FileInfo", "extract_file_name"),
+                    ("Default", "extract_file_name"),
+                ],
+            },
+            "file_path": {
+                "sources": [
+                    ("FileInfo", "extract_file_path"),
+                    ("Default", "extract_file_path"),
+                ],
+            },
+            "extension": {
+                "sources": [
+                    ("FileInfo", "extract_extension"),
+                    ("Default", "extract_extension"),
+                ],
+            },
+            "video_tracks": {
+                "sources": [
+                    ("MediaInfo", "extract_video_tracks"),
+                    ("Default", "extract_video_tracks"),
+                ],
+            },
+            "audio_tracks": {
+                "sources": [
+                    ("MediaInfo", "extract_audio_tracks"),
+                    ("Default", "extract_audio_tracks"),
+                ],
+            },
+            "subtitle_tracks": {
+                "sources": [
+                    ("MediaInfo", "extract_subtitle_tracks"),
+                    ("Default", "extract_subtitle_tracks"),
+                ],
+            },
         }
 
     def get(self, key: str, source: str | None = None):
         """Get extracted data by key, optionally from specific source"""
-        if key in self._sources:
-            condition = self._conditions.get(key, lambda x: x is not None)
-            
-            if source:
-                for src, func in self._sources[key]:
-                    if src.lower() == source.lower():
-                        val = func()
-                        return val if condition(val) else None
-                return None  # Source not found for this key, return None
-            else:
-                # Use fallback: return first valid value
-                for src, func in self._sources[key]:
-                    val = func()
-                    if condition(val):
-                        return val
-                return None
+        if source:
+            # Specific source requested - find the extractor and call the method directly
+            for extractor_name, extractor in self._extractors.items():
+                if extractor_name.lower() == source.lower():
+                    method = f"extract_{key}"
+                    if hasattr(extractor, method):
+                        return getattr(extractor, method)()
+            return None
+        
+        # Fallback mode - try sources in order
+        if key in self._data:
+            sources = self._data[key]["sources"]
         else:
-            # Key not in _sources, try to call extract_<key> on extractors
-            extract_method = f'extract_{key}'
-            extractors = [
-                ('MediaInfo', self.mediainfo_extractor),
-                ('Metadata', self.metadata_extractor),
-                ('Filename', self.filename_extractor),
-                ('FileInfo', self.fileinfo_extractor)
-            ]
-            
-            if source:
-                for src_name, extractor in extractors:
-                    if src_name.lower() == source.lower():
-                        if hasattr(extractor, extract_method):
-                            val = getattr(extractor, extract_method)()
-                            return val
-                return None
-            else:
-                # Try all extractors in order
-                for src_name, extractor in extractors:
-                    if hasattr(extractor, extract_method):
-                        val = getattr(extractor, extract_method)()
-                        if val is not None:
-                            return val
-                return None
+            # Try extractors in order for unconfigured keys
+            sources = [(name, f"extract_{key}") for name in ["MediaInfo", "Metadata", "Filename", "FileInfo"]]
+        
+        # Try each source in order until a non-None value is found
+        for src, method in sources:
+            if src in self._extractors and hasattr(self._extractors[src], method):
+                val = getattr(self._extractors[src], method)()
+                if val is not None:
+                    return val
+        return None

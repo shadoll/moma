@@ -26,7 +26,7 @@ class MediaInfoExtractor:
         for frame_class, info in FRAME_CLASSES.items():
             if height == info['nominal_height']:
                 return frame_class
-        return 'Unclassified'
+        return None
 
     def extract_duration(self) -> float | None:
         """Extract duration from media info in seconds"""
@@ -39,11 +39,11 @@ class MediaInfoExtractor:
     def extract_frame_class(self) -> str | None:
         """Extract frame class from media info (480p, 720p, 1080p, etc.)"""
         if not self.video_tracks:
-            return 'Unclassified'
+            return None
         height = getattr(self.video_tracks[0], 'height', None)
         if height:
             return self._get_frame_class_from_height(height)
-        return 'Unclassified'
+        return None
 
     def extract_resolution(self) -> tuple[int, int] | None:
         """Extract actual video resolution as (width, height) tuple from media info"""
