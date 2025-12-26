@@ -97,3 +97,32 @@ def test_extract_movie_db(filename):
         assert isinstance(movie_db[0], str) and isinstance(movie_db[1], str)
     else:
         assert movie_db is None
+
+
+@pytest.mark.parametrize("filename", load_test_filenames())
+def test_extract_audio_langs(filename):
+    """Test audio languages extraction from filename"""
+    file_path = Path(filename)
+    extractor = FilenameExtractor(file_path)
+    audio_langs = extractor.extract_audio_langs()
+    # Print filename and extracted audio languages clearly
+    print(f"\nFilename: \033[1;36m{filename}\033[0m")
+    print(f"Extracted audio langs: \033[1;32m{audio_langs}\033[0m")
+    # Audio langs should be a string (possibly empty)
+    assert isinstance(audio_langs, str)
+
+
+@pytest.mark.parametrize("filename", load_test_filenames())
+def test_extract_audio_tracks(filename):
+    """Test audio tracks extraction from filename"""
+    file_path = Path(filename)
+    extractor = FilenameExtractor(file_path)
+    audio_tracks = extractor.extract_audio_tracks()
+    # Print filename and extracted audio tracks clearly
+    print(f"\nFilename: \033[1;36m{filename}\033[0m")
+    print(f"Extracted audio tracks: \033[1;32m{audio_tracks}\033[0m")
+    # Audio tracks should be a list of dicts
+    assert isinstance(audio_tracks, list)
+    for track in audio_tracks:
+        assert isinstance(track, dict)
+        assert 'language' in track

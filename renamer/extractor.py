@@ -45,7 +45,8 @@ class MediaExtractor:
                 ('Filename', lambda: self.filename_extractor.extract_movie_db())
             ],
             'audio_langs': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_langs())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_langs()),
+                ('Filename', lambda: self.filename_extractor.extract_audio_langs())
             ],
             'meta_type': [
                 ('Metadata', lambda: self.metadata_extractor.extract_meta_type())
