@@ -67,3 +67,16 @@ def test_extract_frame_class(filename):
     # Should be one of the valid frame classes or 'Unclassified'
     valid_classes = set(FRAME_CLASSES.keys()) | {'Unclassified'}
     assert frame_class in valid_classes
+
+
+@pytest.mark.parametrize("filename", load_test_filenames())
+def test_extract_hdr(filename):
+    """Test HDR extraction from filename"""
+    file_path = Path(filename)
+    extractor = FilenameExtractor(file_path)
+    hdr = extractor.extract_hdr()
+    # Print filename and extracted HDR clearly
+    print(f"\nFilename: \033[1;36m{filename}\033[0m")
+    print(f"Extracted HDR: \033[1;32m{hdr}\033[0m")
+    # HDR should be 'HDR' or None
+    assert hdr is None or hdr == 'HDR'

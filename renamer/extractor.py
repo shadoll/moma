@@ -38,16 +38,14 @@ class MediaExtractor:
                 ('MediaInfo', lambda: self.mediainfo_extractor.extract_aspect_ratio())
             ],
             'hdr': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_hdr())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_hdr()),
+                ('Filename', lambda: self.filename_extractor.extract_hdr())
             ],
             'audio_langs': [
                 ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_langs())
             ],
             'meta_type': [
                 ('Metadata', lambda: self.metadata_extractor.extract_meta_type())
-            ],
-            'meta_description': [
-                ('Metadata', lambda: self.metadata_extractor.extract_meta_description())
             ],
             'file_size': [
                 ('FileInfo', lambda: self.fileinfo_extractor.extract_size())

@@ -77,3 +77,15 @@ class FilenameExtractor:
                 return 'Unclassified'
         
         return 'Unclassified'
+
+    def extract_hdr(self) -> str | None:
+        """Extract HDR information from filename"""
+        # Check for SDR first - indicates no HDR
+        if re.search(r'\bSDR\b', self.file_name, re.IGNORECASE):
+            return None
+        
+        # Check for HDR, but not NoHDR
+        if re.search(r'\bHDR\b', self.file_name, re.IGNORECASE) and not re.search(r'\bNoHDR\b', self.file_name, re.IGNORECASE):
+            return 'HDR'
+        
+        return None
