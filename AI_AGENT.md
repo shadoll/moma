@@ -27,12 +27,13 @@ Key features:
 
 ## Code Structure
 
-- `main.py`: Main application entry point
-- `pyproject.toml`: Project configuration and dependencies
+- `main.py`: Main application entry point with argument parsing
+- `pyproject.toml`: Project configuration and dependencies (version 0.2.0)
 - `README.md`: User documentation
+- `ToDo.md`: Development task tracking
 - `AI_AGENT.md`: This file
 - `renamer/`: Main package
-  - `app.py`: Main Textual application class
+  - `app.py`: Main Textual application class with tree management and file operations
   - `extractor.py`: MediaExtractor class coordinating multiple extractors
   - `extractors/`: Individual extractor classes
     - `mediainfo_extractor.py`: PyMediaInfo-based extraction
@@ -41,15 +42,19 @@ Key features:
     - `fileinfo_extractor.py`: Basic file information
   - `formatters/`: Data formatting classes
     - `media_formatter.py`: Main formatter coordinating display
+    - `proposed_name_formatter.py`: Generates rename suggestions
     - `track_formatter.py`: Track information formatting
     - `size_formatter.py`: File size formatting
     - `date_formatter.py`: Timestamp formatting
     - `duration_formatter.py`: Duration formatting
     - `resolution_formatter.py`: Resolution formatting
     - `text_formatter.py`: Text styling utilities
-  - `constants.py`: Application constants
-  - `screens.py`: Additional UI screens
-  - `test/`: Unit tests
+    - `extension_formatter.py`: File extension formatting
+    - `helper_formatter.py`: Helper formatting utilities
+    - `special_info_formatter.py`: Special edition information
+  - `constants.py`: Application constants (supported media types)
+  - `screens.py`: Additional UI screens (OpenScreen, HelpScreen, RenameConfirmScreen)
+  - `test/`: Unit tests for extractors
 
 ## Instructions for AI Agents
 
@@ -65,20 +70,26 @@ Key features:
 ### Development Workflow
 
 1. Read the current code and understand the architecture
-2. Check the TODO list for pending tasks
+2. Check the ToDo.md for pending tasks
 3. Implement features incrementally
 4. Test changes by running the app with `uv run python main.py [directory]`
 5. Update tests as needed
 6. Ensure backward compatibility
+7. Update documentation (README.md, ToDo.md) when adding features
 
 ### Key Components
 
 - `RenamerApp`: Main application class inheriting from Textual's App
-- `MediaTree`: Custom Tree widget with file-specific styling
+  - Manages the tree view and file operations
+  - Handles keyboard navigation and commands
+  - Coordinates metadata extraction and display
+  - Implements efficient tree updates for renamed files
+- `MediaTree`: Custom Tree widget with file-specific styling (inherited from Textual Tree)
 - `MediaExtractor`: Coordinates multiple specialized extractors
 - `MediaFormatter`: Formats extracted data for TUI display
 - Various extractor classes for different data sources
 - Various formatter classes for different data types
+- Screen classes for different UI states
 
 ### Extractor Architecture
 
@@ -92,20 +103,31 @@ Extractors are responsible for gathering raw data from different sources:
 Formatters are responsible for converting raw data into display strings:
 - Each formatter provides static methods like `format_*()`
 - The `MediaFormatter` coordinates formatters and applies them based on data types
+- `ProposedNameFormatter` generates intelligent rename suggestions
 - Formatters handle text styling, color coding, and human-readable representations
+
+### Screen Architecture
+
+The app uses multiple screens for different operations:
+- `OpenScreen`: Directory selection with input validation
+- `HelpScreen`: Comprehensive help with key bindings
+- `RenameConfirmScreen`: File rename confirmation with error handling
 
 ### Future Enhancements
 
-- File renaming functionality
-- Batch operations
-- Advanced metadata editing
-- Plugin system for different media types
+- Metadata editing capabilities
+- Batch rename operations
+- Configuration file support
+- Plugin system for custom extractors/formatters
+- Advanced search and filtering
+- Undo/redo functionality
 
 ### Testing
 
 - Run the app with `uv run python main.py [directory]`
 - Test navigation, selection, and display
 - Verify metadata extraction accuracy
+- Test file renaming functionality
 - Check for any errors or edge cases
 - Run unit tests with `uv run pytest`
 
@@ -116,5 +138,7 @@ Formatters are responsible for converting raw data into display strings:
 - Ensure the app runs without errors
 - Follow the existing code patterns
 - Update tests for new functionality
+- Update ToDo.md when completing tasks
+- Update version numbers appropriately
 
 This document should be updated as the project evolves.
