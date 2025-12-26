@@ -36,7 +36,7 @@ MEDIA_TYPES = {
 }
 
 SOURCE_DICT = {
-    "WEB-DL": ["WEB-DL", "WEBRip", "WEB-Rip", "WEB"],
+    "WEB-DL": ["WEB-DL", "WEBRip", "WEB-Rip", "WEB", "WEB-DLRip"],
     "BDRip": ["BDRip", "BD-Rip", "BDRIP"],
     "BDRemux": ["BDRemux", "BD-Remux", "BDREMUX"],
     "DVDRip": ["DVDRip", "DVD-Rip", "DVDRIP"],

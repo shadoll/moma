@@ -6,9 +6,11 @@ A terminal-based (TUI) application for scanning directories, viewing media file 
 
 - Recursive directory scanning for video files
 - Tree view navigation with keyboard and mouse support
-- File details display (size, extensions, metadata)
+- Detailed metadata extraction from multiple sources (MediaInfo, filename parsing, embedded metadata)
+- Color-coded information display
 - Command-based interface with hotkeys
-- Container type detection using Mutagen
+- Extensible extractor and formatter system
+- Support for video, audio, and subtitle track information
 
 ## Installation
 
@@ -54,7 +56,23 @@ renamer /path/to/media/directory
 - Mouse clicks supported
 - Select a video file to view its details in the right panel
 
-## Development
+## Architecture
+
+The application uses a modular architecture with separate extractors and formatters:
+
+### Extractors
+- **MediaInfoExtractor**: Extracts detailed track information using PyMediaInfo
+- **FilenameExtractor**: Parses metadata from filenames
+- **MetadataExtractor**: Extracts embedded metadata using Mutagen
+- **FileInfoExtractor**: Provides basic file information
+
+### Formatters
+- **MediaFormatter**: Formats extracted data for display
+- **TrackFormatter**: Formats video/audio/subtitle track information
+- **SizeFormatter**: Formats file sizes
+- **DateFormatter**: Formats timestamps
+- **DurationFormatter**: Formats time durations
+- **ResolutionFormatter**: Formats video resolutions
 
 ### Setup Development Environment
 ```bash
@@ -79,7 +97,7 @@ uv run python main.py /path/to/directory
 
 ### Uninstall
 ```bash
-uv tool uninstall renamerq
+uv tool uninstall renamer
 ```
 
 ## Supported Video Formats
@@ -96,4 +114,6 @@ uv tool uninstall renamerq
 
 ## Dependencies
 - textual: TUI framework
-- mutagen: Media metadata detection
+- pymediainfo: Detailed media track information
+- mutagen: Embedded metadata extraction
+- python-magic: MIME type detection

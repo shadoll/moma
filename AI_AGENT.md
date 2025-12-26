@@ -7,27 +7,45 @@ This is a Python Terminal User Interface (TUI) application for managing media fi
 Key features:
 - Recursive directory scanning
 - Tree-based file navigation
-- Detailed metadata extraction and display
+- Detailed metadata extraction and display from multiple sources
 - Color-coded information
 - Keyboard and mouse navigation
-- Extensible for future renaming and editing features
+- Extensible extractor and formatter architecture
 
 ## Technology Stack
 
 - Python 3.11+
 - Textual (TUI framework)
-- Mutagen (audio/video metadata)
 - PyMediaInfo (detailed track information)
+- Mutagen (embedded metadata)
 - Python-Magic (MIME type detection)
 - UV (package manager)
 
 ## Code Structure
 
-- `main.py`: Main application code
+- `main.py`: Main application entry point
 - `pyproject.toml`: Project configuration and dependencies
 - `README.md`: User documentation
-- `todo.txt`: Development task list
 - `AI_AGENT.md`: This file
+- `renamer/`: Main package
+  - `app.py`: Main Textual application class
+  - `extractor.py`: MediaExtractor class coordinating multiple extractors
+  - `extractors/`: Individual extractor classes
+    - `mediainfo_extractor.py`: PyMediaInfo-based extraction
+    - `filename_extractor.py`: Filename parsing
+    - `metadata_extractor.py`: Mutagen-based metadata
+    - `fileinfo_extractor.py`: Basic file information
+  - `formatters/`: Data formatting classes
+    - `media_formatter.py`: Main formatter coordinating display
+    - `track_formatter.py`: Track information formatting
+    - `size_formatter.py`: File size formatting
+    - `date_formatter.py`: Timestamp formatting
+    - `duration_formatter.py`: Duration formatting
+    - `resolution_formatter.py`: Resolution formatting
+    - `text_formatter.py`: Text styling utilities
+  - `constants.py`: Application constants
+  - `screens.py`: Additional UI screens
+  - `test/`: Unit tests
 
 ## Instructions for AI Agents
 
@@ -42,19 +60,35 @@ Key features:
 
 ### Development Workflow
 
-1. Read the current code and understand the structure
+1. Read the current code and understand the architecture
 2. Check the TODO list for pending tasks
 3. Implement features incrementally
 4. Test changes by running the app with `uv run python main.py [directory]`
-5. Update TODO list as tasks are completed
+5. Update tests as needed
 6. Ensure backward compatibility
 
 ### Key Components
 
 - `RenamerApp`: Main application class inheriting from Textual's App
 - `MediaTree`: Custom Tree widget with file-specific styling
-- `get_media_tracks`: Function to extract media track information
-- Various helper functions for formatting and detection
+- `MediaExtractor`: Coordinates multiple specialized extractors
+- `MediaFormatter`: Formats extracted data for TUI display
+- Various extractor classes for different data sources
+- Various formatter classes for different data types
+
+### Extractor Architecture
+
+Extractors are responsible for gathering raw data from different sources:
+- Each extractor inherits from no base class but follows the pattern of `__init__(file_path)` and `extract_*()` methods
+- The `MediaExtractor` class coordinates multiple extractors and provides a unified `get()` interface
+- Extractors return raw data (strings, numbers, dicts) without formatting
+
+### Formatter Architecture
+
+Formatters are responsible for converting raw data into display strings:
+- Each formatter provides static methods like `format_*()`
+- The `MediaFormatter` coordinates formatters and applies them based on data types
+- Formatters handle text styling, color coding, and human-readable representations
 
 ### Future Enhancements
 
@@ -69,6 +103,7 @@ Key features:
 - Test navigation, selection, and display
 - Verify metadata extraction accuracy
 - Check for any errors or edge cases
+- Run unit tests with `uv run pytest`
 
 ### Contribution Guidelines
 
@@ -76,5 +111,6 @@ Key features:
 - Update documentation as needed
 - Ensure the app runs without errors
 - Follow the existing code patterns
+- Update tests for new functionality
 
 This document should be updated as the project evolves.

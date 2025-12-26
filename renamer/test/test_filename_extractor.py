@@ -17,7 +17,8 @@ def load_test_filenames():
 def test_extract_title(filename):
     """Test title extraction from filename"""
     file_path = Path(filename)
-    title = FilenameExtractor.extract_title(file_path)
+    extractor = FilenameExtractor(file_path)
+    title = extractor.extract_title()
     # Print filename and extracted title clearly
     print(f"\nFilename: \033[1;36m{filename}\033[0m")
     print(f"Extracted title: \033[1;32m{title}\033[0m")
@@ -29,7 +30,8 @@ def test_extract_title(filename):
 def test_extract_year(filename):
     """Test year extraction from filename"""
     file_path = Path(filename)
-    year = FilenameExtractor.extract_year(file_path)
+    extractor = FilenameExtractor(file_path)
+    year = extractor.extract_year()
     # Print filename and extracted year clearly
     print(f"\nFilename: \033[1;36m{filename}\033[0m")
     print(f"Extracted year: \033[1;32m{year}\033[0m")
@@ -42,7 +44,8 @@ def test_extract_year(filename):
 def test_extract_source(filename):
     """Test source extraction from filename"""
     file_path = Path(filename)
-    source = FilenameExtractor.extract_source(file_path)
+    extractor = FilenameExtractor(file_path)
+    source = extractor.extract_source()
     # Print filename and extracted source clearly
     print(f"\nFilename: \033[1;36m{filename}\033[0m")
     print(f"Extracted source: \033[1;32m{source}\033[0m")
@@ -54,7 +57,8 @@ def test_extract_source(filename):
 def test_extract_frame_class(filename):
     """Test frame class extraction from filename"""
     file_path = Path(filename)
-    frame_class = FilenameExtractor.extract_frame_class(file_path)
+    extractor = FilenameExtractor(file_path)
+    frame_class = extractor.extract_frame_class()
     # Print filename and extracted frame class clearly
     print(f"\nFilename: \033[1;36m{filename}\033[0m")
     print(f"Extracted frame_class: \033[1;32m{frame_class}\033[0m")

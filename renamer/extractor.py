@@ -64,6 +64,15 @@ class MediaExtractor:
             'extension': [
                 ('FileInfo', lambda: self.fileinfo_extractor.extract_extension())
             ],
+            'video_tracks': [
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_video_tracks())
+            ],
+            'audio_tracks': [
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_tracks())
+            ],
+            'subtitle_tracks': [
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_subtitle_tracks())
+            ],
         }
         
         # Conditions for when a value is considered valid
@@ -76,8 +85,10 @@ class MediaExtractor:
             'aspect_ratio': lambda x: x is not None,
             'hdr': lambda x: x is not None,
             'audio_langs': lambda x: x is not None,
-            'metadata': lambda x: x is not None,
-            'tracks': lambda x: x is not None and any(x.get(k, []) for k in ['video_tracks', 'audio_tracks', 'subtitle_tracks'])
+            'tracks': lambda x: x is not None and any(x.get(k, []) for k in ['video_tracks', 'audio_tracks', 'subtitle_tracks']),
+            'video_tracks': lambda x: x is not None and len(x) > 0,
+            'audio_tracks': lambda x: x is not None and len(x) > 0,
+            'subtitle_tracks': lambda x: x is not None and len(x) > 0,
         }
 
     def get(self, key: str, source: str | None = None):

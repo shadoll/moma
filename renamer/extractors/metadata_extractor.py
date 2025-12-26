@@ -37,10 +37,6 @@ class MetadataExtractor:
             return type(self.info).__name__
         return self._detect_by_mime()
 
-    def extract_meta_description(self) -> str:
-        """Extract meta description"""
-        meta_type = self.extract_meta_type()
-        return {info['meta_type']: info['description'] for info in MEDIA_TYPES.values()}.get(meta_type, f'Unknown type {meta_type}')
 
     def _detect_by_mime(self) -> str:
         """Detect meta type by MIME"""

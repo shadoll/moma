@@ -132,7 +132,10 @@ class MediaFormatter:
                 "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
             }
         ]
-        for item in self.extractor.get("tracks").get("video_tracks"):
+        
+        # Get video tracks
+        video_tracks = self.extractor.get("video_tracks", "MediaInfo") or []
+        for item in video_tracks:
             data.append(
                 {
                     "group": "Tracks Info",
@@ -142,9 +145,10 @@ class MediaFormatter:
                     "display_formatters": [TextFormatter.green],
                 }
             )
-        for i, item in enumerate(
-            self.extractor.get("tracks").get("audio_tracks"), start=1
-        ):
+        
+        # Get audio tracks
+        audio_tracks = self.extractor.get("audio_tracks", "MediaInfo") or []
+        for i, item in enumerate(audio_tracks, start=1):
             data.append(
                 {
                     "group": "Tracks Info",
@@ -154,9 +158,10 @@ class MediaFormatter:
                     "display_formatters": [TextFormatter.yellow],
                 }
             )
-        for i, item in enumerate(
-            self.extractor.get("tracks").get("subtitle_tracks"), start=1
-        ):
+        
+        # Get subtitle tracks
+        subtitle_tracks = self.extractor.get("subtitle_tracks", "MediaInfo") or []
+        for i, item in enumerate(subtitle_tracks, start=1):
             data.append(
                 {
                     "group": "Tracks Info",
@@ -193,13 +198,6 @@ class MediaFormatter:
                 "label": "Artist",
                 "label_formatters": [TextFormatter.bold],
                 "value": self.extractor.get("artist", "Metadata") or "Not extracted",
-                "display_formatters": [TextFormatter.grey],
-            },
-            {
-                "label": "Description",
-                "label_formatters": [TextFormatter.bold],
-                "value": self.extractor.get("meta_description", "Metadata")
-                or "Not extracted",
                 "display_formatters": [TextFormatter.grey],
             },
         ]

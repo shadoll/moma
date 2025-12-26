@@ -5,8 +5,8 @@ from renamer.extractors.mediainfo_extractor import MediaInfoExtractor
 
 class TestMediaInfoExtractor:
     @pytest.fixture
-    def extractor(self):
-        return MediaInfoExtractor()
+    def extractor(self, test_file):
+        return MediaInfoExtractor(test_file)
 
     @pytest.fixture
     def test_file(self):
@@ -15,18 +15,18 @@ class TestMediaInfoExtractor:
 
     def test_extract_resolution(self, extractor, test_file):
         """Test extracting resolution from media info"""
-        resolution = extractor.extract_resolution(test_file)
+        resolution = extractor.extract_resolution()
         # Text files don't have video resolution
         assert resolution is None
 
     def test_extract_hdr(self, extractor, test_file):
         """Test extracting HDR info"""
-        hdr = extractor.extract_hdr(test_file)
+        hdr = extractor.extract_hdr()
         # Text files don't have HDR
         assert hdr is None
 
     def test_extract_audio_langs(self, extractor, test_file):
         """Test extracting audio languages"""
-        langs = extractor.extract_audio_langs(test_file)
+        langs = extractor.extract_audio_langs()
         # Text files don't have audio tracks
         assert langs == ''

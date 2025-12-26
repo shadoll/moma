@@ -90,7 +90,6 @@ The Invention of Lying (2009) [720p,ukr,eng].mkv
 The Island of Dr. Moreau.(1977).[720p,ukr].mp4
 The Killing.(1956).[SD,ukr,eng].mkv
 The Love Guru.(2008).[SD,ukr].avi
-The Love Guru.(2008).[SD,ukr].avi
 The Manchurian Candidate.(2004).[720p,ukr,eng].mkv
 The Mortal Instruments. City of Bones.(2013).[720p,ukr,eng].mkv
 The Mutant Chronicles.(2008).[SD,ukr,eng].mkv
@@ -203,3 +202,10 @@ Upgrade.(2018).[SD,eng].mkv
 Человек с бульвара Капуцинов (1987) [1080p,rus] [tmdbid-45227].mkv
 Человек-амфибия (1961) [SD,rus] [tmdbid-43685].avi
 Чук и Гек (1953) [SD,rus] [tmdbid-148412].avi
+The long title.(2008).[SD 720p,ukr].avi
+The_long_title.(2008).2K.1440p.ukr.avi
+The long title (2008) SD 720p UKR.avi
+The long title (2008) UHD 1440p ENG.mp4
+The long title (2008) UHD 1440 ENG.mp4
+The long title (2008) 8K 4320p ENG.mp4
+
