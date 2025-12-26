@@ -33,9 +33,14 @@ class OpenScreen(Screen):
 
 class HelpScreen(Screen):
     def compose(self):
-        from .app import VERSION
+        try:
+            from importlib.metadata import version
+            app_version = version("renamer")
+        except Exception:
+            app_version = "unknown"
+        
         help_text = f"""
-Media File Renamer v{VERSION}
+Media File Renamer v{app_version}
 
 A powerful tool for analyzing and renaming media files with intelligent metadata extraction.
 

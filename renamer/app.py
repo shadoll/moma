@@ -13,9 +13,6 @@ from .formatters.proposed_name_formatter import ProposedNameFormatter
 from .formatters.text_formatter import TextFormatter
 
 
-VERSION = "0.2.0"
-
-
 class RenamerApp(App):
     CSS = """
     #left {
