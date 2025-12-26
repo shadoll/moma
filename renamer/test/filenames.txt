@@ -210,3 +210,48 @@ The long title (2008) UHD 1440 ENG.mp4
 The long title (2008) 8K 4320p ENG.mp4
 Troll 2 (2025) WEB-DL 2160p HDR Ukr Nor [Hurtom].mkv
 Moana 2 (2024) MA WEB-DL 2160p SDR Ukr Eng [Hurtom].mkv
+
+# Test cases for title extraction with various edge cases
+2001 A Space Odyssey (1968) [720p,ukr,eng].mkv
+The 100 (2014) Season 1 Episode 1 [720p,ukr].mkv
+[2024] Dune Part Two (2024) [2160p,HDR,ukr,eng].mkv
+Star Wars Episode IV - A New Hope (1977) [1080p,ukr,eng].mkv
+The Lord of the Rings 2001 Extended Edition (2001) BDRip 1080p [ukr,eng].mkv
+Matrix 1999 (1999) [720p,ukr].mkv
+(2023) Talk to Me [720p,ukr,eng].mkv
+Avatar The Way of Water (2022) [2160p,HDR,ukr,eng].mkv
+Guardians of the Galaxy Vol. 3 (2023) [1080p,ukr,eng].mkv
+Spider-Man No Way Home (2021) [2160p,HDR,ukr,eng].mkv
+The Batman (2022) [1080p,ukr,eng].mkv
+Oppenheimer (2023) [2160p,HDR,ukr,eng].mkv
+Barbie (2023) [1080p,ukr,eng].mkv
+Wonka (2023) [2160p,HDR,ukr,eng].mkv
+Aquaman and the Lost Kingdom (2023) [2160p,HDR,ukr,eng].mkv
+Migration (2023) [1080p,ukr,eng].mkv
+The Holdovers (2023) [1080p,ukr,eng].mkv
+Killers of the Flower Moon (2023) [2160p,HDR,ukr,eng].mkv
+Poor Things (2023) [1080p,ukr,eng].mkv
+Anatomy of a Fall (2023) [720p,ukr,eng].mkv
+
+
+# Test cases for title extraction with various edge cases
+2001 A Space Odyssey (1968) [720p,ukr,eng].mkv
+The 100 (2014) Season 1 Episode 1 [720p,ukr].mkv
+[2024] Dune Part Two (2024) [2160p,HDR,ukr,eng].mkv
+Star Wars Episode IV - A New Hope (1977) [1080p,ukr,eng].mkv
+The Lord of the Rings 2001 Extended Edition (2001) BDRip 1080p [ukr,eng].mkv
+Matrix 1999 (1999) [720p,ukr].mkv
+(2023) Talk to Me [720p,ukr,eng].mkv
+Avatar The Way of Water (2022) [2160p,HDR,ukr,eng].mkv
+Guardians of the Galaxy Vol. 3 (2023) [1080p,ukr,eng].mkv
+Spider-Man No Way Home (2021) [2160p,HDR,ukr,eng].mkv
+The Batman (2022) [1080p,ukr,eng].mkv
+Oppenheimer (2023) [2160p,HDR,ukr,eng].mkv
+Barbie (2023) [1080p,ukr,eng].mkv
+Wonka (2023) [2160p,HDR,ukr,eng].mkv
+Aquaman and the Lost Kingdom (2023) [2160p,HDR,ukr,eng].mkv
+Migration (2023) [1080p,ukr,eng].mkv
+The Holdovers (2023) [1080p,ukr,eng].mkv
+Killers of the Flower Moon (2023) [2160p,HDR,ukr,eng].mkv
+Poor Things (2023) [1080p,ukr,eng].mkv
+Anatomy of a Fall (2023) [720p,ukr,eng].mkv

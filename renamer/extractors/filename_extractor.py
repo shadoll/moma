@@ -19,15 +19,65 @@ class FilenameExtractor:
 
     def extract_title(self) -> str | None:
         """Extract movie title from filename"""
-        temp_name = re.sub(r'\s*\(\d{4}\)\s*|\s*\d{4}\s*|\.\d{4}\.', '', self.file_name)
-
-        # Find and remove source
+        # Find positions of year, source, and quality brackets
+        year_pos = -1
+        source_pos = -1
+        quality_pos = -1
+        paren_match = None
+        dot_match = None
+        
+        # Find year position (either (YYYY) or .YYYY.)
+        paren_match = re.search(r'\((\d{4})\)', self.file_name)
+        if paren_match:
+            year_pos = paren_match.start()
+        else:
+            dot_match = re.search(r'\.(\d{4})\.', self.file_name)
+            if dot_match:
+                year_pos = dot_match.start()
+        
+        # Find source position
         source = self.extract_source()
         if source:
             for alias in SOURCE_DICT[source]:
-                temp_name = re.sub(r'\b' + re.escape(alias) + r'\b', '', temp_name, flags=re.IGNORECASE)
-
-        return temp_name.rsplit('.', 1)[0].strip()
+                match = re.search(r'\b' + re.escape(alias) + r'\b', self.file_name, re.IGNORECASE)
+                if match:
+                    source_pos = match.start()
+                    break
+        
+        # Find quality bracket position (like [720p,ukr,eng])
+        quality_match = re.search(r'\[[^\]]*(?:720p|1080p|2160p|480p|SD|HD|HDR)[^\]]*\]', self.file_name)
+        if quality_match:
+            quality_pos = quality_match.start()
+        
+        # Find the earliest position that's not at the beginning
+        positions = [pos for pos in [year_pos, source_pos, quality_pos] if pos > 0]
+        cut_pos = min(positions) if positions else -1
+        
+        # Extract title (everything before the cut position)
+        if cut_pos > 0:
+            title = self.file_name[:cut_pos].strip()
+        else:
+            # No delimiters found after position 0, take everything before the last dot
+            title = self.file_name.rsplit('.', 1)[0].strip()
+        
+        # If year is at the beginning, remove it
+        if year_pos == 0:
+            if paren_match and paren_match.start() == 0:
+                title = re.sub(r'^\(\d{4}\)\s*', '', title)
+            elif dot_match and dot_match.start() == 0:
+                title = re.sub(r'^\.\d{4}\.\s*', '', title)
+        
+        # Remove common prefixes that are not part of the title
+        # Remove bracketed prefixes like [01.1], [1], etc.
+        title = re.sub(r'^\s*\[[^\]]+\]\s*', '', title)
+        
+        # Clean up title: remove leading/trailing brackets and dots
+        title = title.strip('[](). ')
+        
+        # Replace colons with periods in the title
+        title = title.replace(':', '.')
+        
+        return title if title else None
 
     def extract_year(self) -> str | None:
         """Extract year from filename"""
