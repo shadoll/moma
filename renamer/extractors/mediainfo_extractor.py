@@ -2,7 +2,7 @@ from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
 from ..constants import FRAME_CLASSES
-from ..formatters.color_formatter import ColorFormatter
+import langcodes
 
 
 class MediaInfoExtractor:
@@ -37,16 +37,16 @@ class MediaInfoExtractor:
             return self._get_frame_class_from_height(height)
         return 'Unclassified'
 
-    def extract_resolution(self) -> str | None:
-        """Extract actual video resolution (WIDTHxHEIGHT) from media info"""
+    def extract_resolution(self) -> tuple[int, int] | None:
+        """Extract actual video resolution as (width, height) tuple from media info"""
         if not self.video_tracks:
             return None
         width = getattr(self.video_tracks[0], 'width', None)
         height = getattr(self.video_tracks[0], 'height', None)
         if width and height:
-            return f"{width}x{height}"
+            return width, height
         return None
-
+    
     def extract_aspect_ratio(self) -> str | None:
         """Extract video aspect ratio from media info"""
         if not self.video_tracks:
@@ -69,72 +69,65 @@ class MediaInfoExtractor:
         """Extract audio languages from media info"""
         if not self.audio_tracks:
             return ''
-        lang_map = {
-            'en': 'eng', 'fr': 'fre', 'de': 'ger', 'uk': 'ukr', 'ru': 'rus',
-            'es': 'spa', 'it': 'ita', 'pt': 'por', 'ja': 'jpn', 'ko': 'kor',
-            'zh': 'chi', 'und': 'und'
-        }
-        langs = [getattr(a, 'language', 'und').lower()[:3] for a in self.audio_tracks]
-        langs = [lang_map.get(lang, lang) for lang in langs]
+        langs = []
+        for a in self.audio_tracks:
+            lang_code = getattr(a, 'language', 'und').lower()
+            try:
+                # Try to get the 3-letter code
+                lang_obj = langcodes.Language.get(lang_code)
+                alpha3 = lang_obj.to_alpha3()
+                langs.append(alpha3)
+            except:
+                # If conversion fails, use the original code
+                langs.append(lang_code[:3])
+        
         lang_counts = Counter(langs)
         audio_langs = [f"{count}{lang}" if count > 1 else lang for lang, count in lang_counts.items()]
         return ','.join(audio_langs)
 
-    def extract_video_dimensions(self) -> tuple[int, int] | None:
-        """Extract video width and height"""
-        if not self.video_tracks:
-            return None
-        width = getattr(self.video_tracks[0], 'width', None)
-        height = getattr(self.video_tracks[0], 'height', None)
-        if width and height:
-            return width, height
-        return None
+    def extract_video_tracks(self) -> list[dict]:
+        """Extract video track data"""
+        tracks = []
+        for v in self.video_tracks[:2]:  # Up to 2 videos
+            track_data = {
+                'codec': getattr(v, 'format', None) or getattr(v, 'codec', None) or 'unknown',
+                'width': getattr(v, 'width', None),
+                'height': getattr(v, 'height', None),
+                'bitrate': getattr(v, 'bit_rate', None),
+                'fps': getattr(v, 'frame_rate', None),
+                'profile': getattr(v, 'format_profile', None),
+            }
+            tracks.append(track_data)
+        return tracks
 
-    def extract_tracks(self) -> str:
-        """Extract compact media track information"""
-        tracks_info = []
-        try:
-            # Video tracks
-            for i, v in enumerate(self.video_tracks[:2]):  # Up to 2 videos
-                codec = getattr(v, 'format', None) or getattr(v, 'codec', None) or 'unknown'
-                width = getattr(v, 'width', None) or '?'
-                height = getattr(v, 'height', None) or '?'
-                bitrate = getattr(v, 'bit_rate', None)
-                fps = getattr(v, 'frame_rate', None)
-                profile = getattr(v, 'format_profile', None)
-                
-                video_str = f"{codec} {width}x{height}"
-                if bitrate:
-                    video_str += f" {bitrate}bps"
-                if fps:
-                    video_str += f" {fps}fps"
-                if profile:
-                    video_str += f" ({profile})"
-                
-                tracks_info.append(ColorFormatter.green(f"Video {i+1}: {video_str}"))
-            
-            # Audio tracks
-            for i, a in enumerate(self.audio_tracks[:3]):  # Up to 3 audios
-                codec = getattr(a, 'format', None) or getattr(a, 'codec', None) or 'unknown'
-                channels = getattr(a, 'channel_s', None) or '?'
-                lang = getattr(a, 'language', None) or 'und'
-                bitrate = getattr(a, 'bit_rate', None)
-                
-                audio_str = f"{codec} {channels}ch {lang}"
-                if bitrate:
-                    audio_str += f" {bitrate}bps"
-                
-                tracks_info.append(ColorFormatter.yellow(f"Audio {i+1}: {audio_str}"))
-            
-            # Subtitle tracks
-            for i, s in enumerate(self.sub_tracks[:3]):  # Up to 3 subs
-                lang = getattr(s, 'language', None) or 'und'
-                format = getattr(s, 'format', None) or getattr(s, 'codec', None) or 'unknown'
-                
-                sub_str = f"{lang} ({format})"
-                tracks_info.append(ColorFormatter.magenta(f"Sub {i+1}: {sub_str}"))
-                
-        except Exception as e:
-            tracks_info.append(ColorFormatter.red(f"Track info error: {str(e)}"))
-        
-        return "\n".join(tracks_info) if tracks_info else ""
+    def extract_audio_tracks(self) -> list[dict]:
+        """Extract audio track data"""
+        tracks = []
+        for a in self.audio_tracks[:3]:  # Up to 3 audios
+            track_data = {
+                'codec': getattr(a, 'format', None) or getattr(a, 'codec', None) or 'unknown',
+                'channels': getattr(a, 'channel_s', None),
+                'language': getattr(a, 'language', None) or 'und',
+                'bitrate': getattr(a, 'bit_rate', None),
+            }
+            tracks.append(track_data)
+        return tracks
+
+    def extract_subtitle_tracks(self) -> list[dict]:
+        """Extract subtitle track data"""
+        tracks = []
+        for s in self.sub_tracks[:3]:  # Up to 3 subs
+            track_data = {
+                'language': getattr(s, 'language', None) or 'und',
+                'format': getattr(s, 'format', None) or getattr(s, 'codec', None) or 'unknown',
+            }
+            tracks.append(track_data)
+        return tracks
+
+    def extract_tracks(self) -> dict:
+        """Extract media track information as data"""
+        return {
+            'video_tracks': self.extract_video_tracks(),
+            'audio_tracks': self.extract_audio_tracks(),
+            'subtitle_tracks': self.extract_subtitle_tracks(),
+        }

@@ -1,4 +1,4 @@
-from .color_formatter import ColorFormatter
+from .text_formatter import TextFormatter
 from .date_formatter import DateFormatter
 
 
@@ -6,11 +6,11 @@ class ProposedNameFormatter:
     """Class for formatting proposed filenames"""
 
     def __init__(self, extractor):
-        self.extractor = extractor
+        """Initialize with media extractor data"""
 
         self.__title = extractor.get("title") or "Unknown Title"
         self.__year = DateFormatter.format_year(extractor.get("year"))
-        self.__source = extractor.get("source") or None
+        self.__source = f" {extractor.get('source')}" if extractor.get("source") else ""
         self.__frame_class = extractor.get("frame_class") or None
         self.__hdr = f",{extractor.get('hdr')}" if extractor.get("hdr") else ""
         self.__audio_langs = extractor.get("audio_langs") or None
@@ -18,8 +18,11 @@ class ProposedNameFormatter:
 
     def __str__(self) -> str:
         """Convert the proposed name to string"""
-        return f"{self.__title} {self.__year} {self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
+        return self.rename_line()
 
-    def format_display_string(self) -> str:
+    def rename_line(self) -> str:
+        return f"{self.__title} {self.__year}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}].{self.__extension}"
+
+    def rename_line_formatted(self) -> str:
         """Format the proposed name for display with color"""
-        return ColorFormatter.bold_yellow(str(self))
+        return f">> {TextFormatter.bold_yellow(str(self))} <<"

@@ -30,9 +30,3 @@ class TestMediaInfoExtractor:
         langs = extractor.extract_audio_langs(test_file)
         # Text files don't have audio tracks
         assert langs == ''
-
-    def test_extract_video_dimensions(self, extractor, test_file):
-        """Test extracting video dimensions"""
-        dims = extractor.extract_video_dimensions(test_file)
-        # Text files don't have video dimensions
-        assert dims is None

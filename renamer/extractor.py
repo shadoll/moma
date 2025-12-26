@@ -18,57 +18,57 @@ class MediaExtractor:
         # Define sources for each data type
         self._sources = {
             'title': [
-                ('metadata', lambda: self.metadata_extractor.extract_title()),
-                ('filename', lambda: self.filename_extractor.extract_title())
+                ('Metadata', lambda: self.metadata_extractor.extract_title()),
+                ('Filename', lambda: self.filename_extractor.extract_title())
             ],
             'year': [
-                ('filename', lambda: self.filename_extractor.extract_year())
+                ('Filename', lambda: self.filename_extractor.extract_year())
             ],
             'source': [
-                ('filename', lambda: self.filename_extractor.extract_source())
+                ('Filename', lambda: self.filename_extractor.extract_source())
             ],
             'frame_class': [
-                ('mediainfo', lambda: self.mediainfo_extractor.extract_frame_class()),
-                ('filename', lambda: self.filename_extractor.extract_frame_class())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_frame_class()),
+                ('Filename', lambda: self.filename_extractor.extract_frame_class())
             ],
             'resolution': [
-                ('mediainfo', lambda: self.mediainfo_extractor.extract_resolution())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_resolution())
             ],
             'aspect_ratio': [
-                ('mediainfo', lambda: self.mediainfo_extractor.extract_aspect_ratio())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_aspect_ratio())
             ],
             'hdr': [
-                ('mediainfo', lambda: self.mediainfo_extractor.extract_hdr())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_hdr())
             ],
             'audio_langs': [
-                ('mediainfo', lambda: self.mediainfo_extractor.extract_audio_langs())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_audio_langs())
             ],
             'metadata': [
-                ('metadata', lambda: self.metadata_extractor.extract_all_metadata())
+                ('Metadata', lambda: self.metadata_extractor.extract_all_metadata())
             ],
             'meta_type': [
-                ('metadata', lambda: self.metadata_extractor.extract_meta_type())
+                ('Metadata', lambda: self.metadata_extractor.extract_meta_type())
             ],
             'meta_description': [
-                ('metadata', lambda: self.metadata_extractor.extract_meta_description())
+                ('Metadata', lambda: self.metadata_extractor.extract_meta_description())
             ],
             'file_size': [
-                ('fileinfo', lambda: self.fileinfo_extractor.extract_size())
+                ('FileInfo', lambda: self.fileinfo_extractor.extract_size())
             ],
             'modification_time': [
-                ('fileinfo', lambda: self.fileinfo_extractor.extract_modification_time())
+                ('FileInfo', lambda: self.fileinfo_extractor.extract_modification_time())
             ],
             'file_name': [
-                ('fileinfo', lambda: self.fileinfo_extractor.extract_file_name())
+                ('FileInfo', lambda: self.fileinfo_extractor.extract_file_name())
             ],
             'file_path': [
-                ('fileinfo', lambda: self.fileinfo_extractor.extract_file_path())
+                ('FileInfo', lambda: self.fileinfo_extractor.extract_file_path())
             ],
             'extension': [
-                ('fileinfo', lambda: self.fileinfo_extractor.extract_extension())
+                ('FileInfo', lambda: self.fileinfo_extractor.extract_extension())
             ],
             'tracks': [
-                ('mediainfo', lambda: self.mediainfo_extractor.extract_tracks())
+                ('MediaInfo', lambda: self.mediainfo_extractor.extract_tracks())
             ]
         }
         
@@ -83,7 +83,7 @@ class MediaExtractor:
             'hdr': lambda x: x is not None,
             'audio_langs': lambda x: x is not None,
             'metadata': lambda x: x is not None,
-            'tracks': lambda x: x != ""
+            'tracks': lambda x: x is not None and any(x.get(k, []) for k in ['video_tracks', 'audio_tracks', 'subtitle_tracks'])
         }
 
     def get(self, key: str, source: str | None = None):
@@ -95,10 +95,10 @@ class MediaExtractor:
         
         if source:
             for src, func in self._sources[key]:
-                if src == source:
+                if src.lower() == source.lower():
                     val = func()
                     return val if condition(val) else None
-            raise ValueError(f"No such source '{source}' for key '{key}'")
+            return None  # Source not found for this key, return None
         else:
             # Use fallback: return first valid value
             for src, func in self._sources[key]:

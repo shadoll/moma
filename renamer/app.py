@@ -11,7 +11,7 @@ from .screens import OpenScreen
 from .extractor import MediaExtractor
 from .formatters.media_formatter import MediaFormatter
 from .formatters.proposed_name_formatter import ProposedNameFormatter
-from .formatters.color_formatter import ColorFormatter
+from .formatters.text_formatter import TextFormatter
 
 
 class RenamerApp(App):
@@ -116,19 +116,17 @@ class RenamerApp(App):
         try:
             # Initialize extractors and formatters
             extractor = MediaExtractor(file_path)
-            formatter = MediaFormatter()
-            name_formatter = ProposedNameFormatter(extractor)
 
             # Update UI
             self.call_later(
                 self._update_details,
-                formatter.format_file_info_panel(extractor),
-                name_formatter.format_display_string(),
+                MediaFormatter(extractor).file_info_panel(),
+                ProposedNameFormatter(extractor).rename_line_formatted(),
             )
         except Exception as e:
             self.call_later(
                 self._update_details,
-                ColorFormatter.red(f"Error extracting details: {str(e)}"),
+                TextFormatter.red(f"Error extracting details: {str(e)}"),
                 "",
             )
 

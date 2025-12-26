@@ -3,113 +3,220 @@ from .size_formatter import SizeFormatter
 from .date_formatter import DateFormatter
 from .extension_extractor import ExtensionExtractor
 from .extension_formatter import ExtensionFormatter
-from .color_formatter import ColorFormatter
+from .text_formatter import TextFormatter
+from .track_formatter import TrackFormatter
+from .resolution_formatter import ResolutionFormatter
 
 
 class MediaFormatter:
     """Class to format media data for display"""
 
-    def format_file_info_panel(self, extractor) -> str:
-        """Format file information for the file info panel"""
-        data = [
-            {
-                "label": "Path",
-                "value": extractor.get("file_path"),
-                "format_func": ColorFormatter.bold_blue,
-            },
-            {
-                "label": "Size",
-                "value": SizeFormatter.format_size_full(extractor.get("file_size")),
-                "format_func": ColorFormatter.bold_green,
-            },
-            {
-                "label": "File",
-                "value": extractor.get("file_name"),
-                "format_func": ColorFormatter.bold_cyan,
-            },
-            {
-                "label": "Modified",
-                "value": DateFormatter.format_modification_date(
-                    extractor.get("modification_time")
-                ),
-                "format_func": ColorFormatter.bold_magenta,
-            },
-        ]
+    def __init__(self, extractor):
+        self.extractor = extractor
 
-        # Get extension info
-        ext_name = ExtensionExtractor.get_extension_name(
-            Path(extractor.get("file_path"))
-        )
-        ext_desc = ExtensionExtractor.get_extension_description(ext_name)
-        meta_type = extractor.get("meta_type")
-        meta_desc = extractor.get("meta_description")
-        match = ExtensionFormatter.check_extension_match(ext_name, meta_type)
-        ext_info = ExtensionFormatter.format_extension_info(
-            ext_name, ext_desc, meta_type, meta_desc, match
-        )
+    def _format_data_item(self, item: dict) -> str:
+        """Apply all formatting to a data item and return the formatted string"""
+        # Define text formatters that should be applied before markup
+        text_formatters_set = {
+            TextFormatter.uppercase,
+            TextFormatter.lowercase,
+            TextFormatter.camelcase,
+        }
 
-        output = [ColorFormatter.bold_blue("FILE INFO"), ""]
-        output.extend(
-            item["format_func"](f"{item['label']}: {item['value']}") for item in data
-        )
-        output.append(ext_info)
+        # Handle value formatting first (e.g., size formatting)
+        value = item.get("value")
+        if value is not None:
+            value_formatters = item.get("value_formatters", [])
+            if not isinstance(value_formatters, list):
+                value_formatters = [value_formatters] if value_formatters else []
+            for formatter in value_formatters:
+                value = formatter(value)
+
+        # Handle label formatting
+        label = item.get("label", "")
+        if label:
+            label_formatters = item.get("label_formatters", [])
+            if not isinstance(label_formatters, list):
+                label_formatters = [label_formatters] if label_formatters else []
+            # Separate text and markup formatters, apply text first
+            text_fs = [f for f in label_formatters if f in text_formatters_set]
+            markup_fs = [f for f in label_formatters if f not in text_formatters_set]
+            ordered_formatters = text_fs + markup_fs
+            for formatter in ordered_formatters:
+                label = formatter(label)
+
+        # Create the display string
+        if value is not None:
+            display_string = f"{label}: {value}"
+        else:
+            display_string = label
+
+        # Handle display formatting (e.g., color)
+        display_formatters = item.get("display_formatters", [])
+        if not isinstance(display_formatters, list):
+            display_formatters = [display_formatters] if display_formatters else []
+        # Separate text and markup formatters, apply text first
+        text_fs = [f for f in display_formatters if f in text_formatters_set]
+        markup_fs = [f for f in display_formatters if f not in text_formatters_set]
+        ordered_formatters = text_fs + markup_fs
+        for formatter in ordered_formatters:
+            display_string = formatter(display_string)
+
+        return display_string
+
+    def file_info_panel(self) -> str:
+        """Return formatted file info panel string"""
+
+        output = self.file_info()
 
         # Add tracks info
-        tracks_text = extractor.get('tracks')
-        if not tracks_text:
-            tracks_text = ColorFormatter.grey("No track info available")
         output.append("")
-        output.append(tracks_text)
+        output.extend(self.tracks_info())
 
-        # Add rename lines
-        rename_lines = self.format_rename_lines(extractor)
+        # Add filename extracted data
         output.append("")
-        output.extend(rename_lines)
+        output.extend(self.filename_extracted_data())
+
+        # Add mediainfo extracted data
+        output.append("")
+        output.extend(self.mediainfo_extracted_data())
 
         return "\n".join(output)
 
-    def format_filename_extraction_panel(self, extractor) -> str:
+    def file_info(self) -> list[str]:
+        data = [
+            {
+                "group": "File Info",
+                "label": "File Info",
+                "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
+            },
+            {
+                "group": "File Info",
+                "label": "Path",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("file_path"),
+                "display_formatters": [TextFormatter.blue],
+            },
+            {
+                "group": "File Info",
+                "label": "Size",
+                "value": self.extractor.get("file_size"),
+                "value_formatters": [SizeFormatter.format_size_full],
+                "display_formatters": [TextFormatter.bold, TextFormatter.green],
+            },
+            {
+                "group": "File Info",
+                "label": "Name",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("file_name"),
+                "display_formatters": [TextFormatter.cyan],
+            },
+            {
+                "group": "File Info",
+                "label": "Modified",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("modification_time"),
+                "value_formatters": [DateFormatter.format_modification_date],
+                "display_formatters": [TextFormatter.bold, TextFormatter.magenta],
+            },
+            {
+                "group": "File Info",
+                "label": "Extension",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("extension"),
+                "value_formatters": [ExtensionFormatter.format_extension_info],
+                "display_formatters": [TextFormatter.green],
+            },
+        ]
+        return [self._format_data_item(item) for item in data]
+
+    def tracks_info(self) -> list[str]:
+        """Return formatted tracks information"""
+        data = [
+            {
+                "group": "Tracks Info",
+                "label": "Tracks Info",
+                "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
+            }
+        ]
+        for item in self.extractor.get("tracks").get("video_tracks"):
+            data.append(
+                {
+                    "group": "Tracks Info",
+                    "label": "Video Track",
+                    "value": item,
+                    "value_formatters": TrackFormatter.format_video_track,
+                    "display_formatters": [TextFormatter.green],
+                }
+            )
+        for i, item in enumerate(
+            self.extractor.get("tracks").get("audio_tracks"), start=1
+        ):
+            data.append(
+                {
+                    "group": "Tracks Info",
+                    "label": f"Audio Track {i}",
+                    "value": item,
+                    "value_formatters": TrackFormatter.format_audio_track,
+                    "display_formatters": [TextFormatter.yellow],
+                }
+            )
+        for i, item in enumerate(
+            self.extractor.get("tracks").get("subtitle_tracks"), start=1
+        ):
+            data.append(
+                {
+                    "group": "Tracks Info",
+                    "label": f"Subtitle Track {i}",
+                    "value": item,
+                    "value_formatters": TrackFormatter.format_subtitle_track,
+                    "display_formatters": [TextFormatter.magenta],
+                }
+            )
+
+        return [self._format_data_item(item) for item in data]
+
+    def format_filename_extraction_panel(self) -> str:
         """Format filename extraction data for the filename panel"""
         data = [
             {
                 "label": "Title",
-                "value": extractor.get("title") or "Not found",
-                "format_func": ColorFormatter.yellow,
+                "value": self.extractor.get("title") or "Not found",
+                "display_formatters": [TextFormatter.yellow],
             },
             {
                 "label": "Year",
-                "value": extractor.get("year") or "Not found",
-                "format_func": ColorFormatter.yellow,
+                "value": self.extractor.get("year") or "Not found",
+                "display_formatters": [TextFormatter.yellow],
             },
             {
                 "label": "Source",
-                "value": extractor.get("source") or "Not found",
-                "format_func": ColorFormatter.yellow,
+                "value": self.extractor.get("source") or "Not found",
+                "display_formatters": [TextFormatter.yellow],
             },
             {
                 "label": "Frame Class",
-                "value": extractor.get("frame_class") or "Not found",
-                "format_func": ColorFormatter.yellow,
+                "value": self.extractor.get("frame_class") or "Not found",
+                "display_formatters": [TextFormatter.yellow],
             },
         ]
 
-        output = [ColorFormatter.bold_yellow("FILENAME EXTRACTION"), ""]
-        output.extend(
-            item["format_func"](f"{item['label']}: {item['value']}") for item in data
-        )
+        output = [TextFormatter.bold_yellow("FILENAME EXTRACTION"), ""]
+        for item in data:
+            output.append(self._format_data_item(item))
 
         return "\n".join(output)
 
-    def format_metadata_extraction_panel(self, extractor) -> str:
+    def format_metadata_extraction_panel(self) -> str:
         """Format metadata extraction data for the metadata panel"""
-        metadata = extractor.get("metadata") or {}
+        metadata = self.extractor.get("metadata") or {}
         data = []
         if metadata.get("duration"):
             data.append(
                 {
                     "label": "Duration",
                     "value": f"{metadata['duration']:.1f} seconds",
-                    "format_func": ColorFormatter.cyan,
+                    "display_formatters": [TextFormatter.cyan],
                 }
             )
         if metadata.get("title"):
@@ -117,7 +224,7 @@ class MediaFormatter:
                 {
                     "label": "Title",
                     "value": metadata["title"],
-                    "format_func": ColorFormatter.cyan,
+                    "display_formatters": [TextFormatter.cyan],
                 }
             )
         if metadata.get("artist"):
@@ -125,67 +232,119 @@ class MediaFormatter:
                 {
                     "label": "Artist",
                     "value": metadata["artist"],
-                    "format_func": ColorFormatter.cyan,
+                    "display_formatters": [TextFormatter.cyan],
                 }
             )
 
-        output = [ColorFormatter.bold_cyan("METADATA EXTRACTION"), ""]
+        output = [TextFormatter.bold_cyan("METADATA EXTRACTION"), ""]
         if data:
-            output.extend(
-                item["format_func"](f"{item['label']}: {item['value']}")
-                for item in data
-            )
+            for item in data:
+                output.append(self._format_data_item(item))
         else:
-            output.append(ColorFormatter.dim("No metadata found"))
+            output.append(TextFormatter.dim("No metadata found"))
 
         return "\n".join(output)
 
-    def format_mediainfo_extraction_panel(self, extractor) -> str:
+    def mediainfo_extracted_data(self) -> list[str]:
         """Format media info extraction data for the mediainfo panel"""
         data = [
             {
+                "label": "Media Info Extraction",
+                "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
+            },
+            {
+                "label": "Frame Class",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("frame_class", "MediaInfo")
+                or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
                 "label": "Resolution",
-                "value": extractor.get("resolution") or "Not found",
-                "format_func": ColorFormatter.green,
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("resolution", "MediaInfo")
+                or "Not extracted",
+                "value_formatters": [ResolutionFormatter.format_resolution_dimensions],
+                "display_formatters": [TextFormatter.grey],
             },
             {
                 "label": "Aspect Ratio",
-                "value": extractor.get("aspect_ratio") or "Not found",
-                "format_func": ColorFormatter.green,
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("aspect_ratio", "MediaInfo")
+                or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
             },
             {
                 "label": "HDR",
-                "value": extractor.get("hdr") or "Not found",
-                "format_func": ColorFormatter.green,
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("hdr", "MediaInfo") or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
             },
             {
                 "label": "Audio Languages",
-                "value": extractor.get("audio_langs") or "Not found",
-                "format_func": ColorFormatter.green,
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("audio_langs", "MediaInfo")
+                or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+        ]
+        return [self._format_data_item(item) for item in data]
+
+    def filename_extracted_data(self) -> list[str]:
+        """Return formatted filename extracted data"""
+        data = [
+            {
+                "label": "Filename Extracted Data",
+                "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
+            },
+            {
+                "label": "Movie title",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("title", "Filename"),
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "Year",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("year", "Filename"),
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "Video source",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("source", "Filename") or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "Frame class",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("frame_class", "Filename")
+                or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "Aspect ratio",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("aspect_ratio", "Filename")
+                or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "HDR",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("hdr", "Filename") or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "Audio langs",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("audio_langs", "Filename")
+                or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
             },
         ]
 
-        output = [ColorFormatter.bold_green("MEDIA INFO EXTRACTION"), ""]
-        output.extend(
-            item["format_func"](f"{item['label']}: {item['value']}") for item in data
-        )
-
-        return "\n".join(output)
-
-    def format_rename_lines(self, extractor) -> list[str]:
-        """Format the rename information lines"""
-        data = {
-            "Movie title": extractor.get("title") or "Unknown",
-            "Year": extractor.get("year") or "Unknown",
-            "Video source": extractor.get("source") or "Unknown",
-            "Frame class": extractor.get("frame_class") or "Unknown",
-            "Resolution": extractor.get("resolution") or "Unknown",
-            "Aspect ratio": extractor.get("aspect_ratio") or "Unknown",
-            "HDR": extractor.get("hdr") or "No",
-            "Audio langs": extractor.get("audio_langs") or "None",
-        }
-
-        return [f"{key}: {value}" for key, value in data.items()]
+        return [self._format_data_item(item) for item in data]
 
     def _format_extra_metadata(self, metadata: dict) -> str:
         """Format extra metadata like duration, title, artist"""
@@ -198,5 +357,5 @@ class MediaFormatter:
             data["Artist"] = metadata["artist"]
 
         return "\n".join(
-            ColorFormatter.cyan(f"{key}: {value}") for key, value in data.items()
+            TextFormatter.cyan(f"{key}: {value}") for key, value in data.items()
         )

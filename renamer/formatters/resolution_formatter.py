@@ -54,6 +54,7 @@ class ResolutionFormatter:
             return f'{height}p'
 
     @staticmethod
-    def format_resolution_dimensions(width: int, height: int) -> str:
+    def format_resolution_dimensions(resolution: tuple[int, int]) -> str:
         """Format resolution as WIDTHxHEIGHT"""
+        width, height = resolution
         return f"{width}x{height}"
