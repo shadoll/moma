@@ -1,16 +1,18 @@
 # Renamer - Media File Renamer and Metadata Editor
 
-A terminal-based (TUI) application for scanning directories, viewing media file details, and managing file metadata. Built with Python and Textual.
+A terminal-based (TUI) application for scanning directories, viewing media file details, and renaming files based on extracted metadata. Built with Python and Textual.
 
 ## Features
 
 - Recursive directory scanning for video files
 - Tree view navigation with keyboard and mouse support
 - Detailed metadata extraction from multiple sources (MediaInfo, filename parsing, embedded metadata)
+- Intelligent file renaming with proposed names based on metadata
 - Color-coded information display
 - Command-based interface with hotkeys
 - Extensible extractor and formatter system
 - Support for video, audio, and subtitle track information
+- Confirmation dialogs for file operations
 
 ## Installation
 
@@ -50,11 +52,24 @@ renamer /path/to/media/directory
 - **q**: Quit the application
 - **o**: Open directory selection dialog
 - **s**: Rescan current directory
+- **f**: Refresh metadata for selected file
+- **r**: Rename selected file with proposed name
+- **p**: Toggle tree expansion (expand/collapse all)
+- **h**: Show help screen
 
 ### Navigation
 - Use arrow keys to navigate the file tree
+- Right arrow: Expand directory
+- Left arrow: Collapse directory or go to parent
 - Mouse clicks supported
 - Select a video file to view its details in the right panel
+
+### File Renaming
+1. Select a media file in the tree
+2. Press **r** to initiate rename
+3. Review the proposed new name
+4. Press **y** to confirm or **n** to cancel
+5. The file will be renamed and the tree updated automatically
 
 ## Architecture
 
@@ -68,11 +83,18 @@ The application uses a modular architecture with separate extractors and formatt
 
 ### Formatters
 - **MediaFormatter**: Formats extracted data for display
+- **ProposedNameFormatter**: Generates intelligent rename suggestions
 - **TrackFormatter**: Formats video/audio/subtitle track information
 - **SizeFormatter**: Formats file sizes
 - **DateFormatter**: Formats timestamps
 - **DurationFormatter**: Formats time durations
 - **ResolutionFormatter**: Formats video resolutions
+- **TextFormatter**: Text styling utilities
+
+### Screens
+- **OpenScreen**: Directory selection dialog
+- **HelpScreen**: Application help and key bindings
+- **RenameConfirmScreen**: File rename confirmation dialog
 
 ### Setup Development Environment
 ```bash
@@ -117,3 +139,4 @@ uv tool uninstall renamer
 - pymediainfo: Detailed media track information
 - mutagen: Embedded metadata extraction
 - python-magic: MIME type detection
+- langcodes: Language code handling

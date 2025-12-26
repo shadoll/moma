@@ -2,15 +2,18 @@
 
 ## Project Description
 
-This is a Python Terminal User Interface (TUI) application for managing media files. It uses the Textual library to provide a curses-like interface in the terminal. The app allows users to scan directories for video files, display them in a hierarchical tree view, and view detailed metadata information including video, audio, and subtitle tracks.
+This is a Python Terminal User Interface (TUI) application for managing media files. It uses the Textual library to provide a curses-like interface in the terminal. The app allows users to scan directories for video files, display them in a hierarchical tree view, view detailed metadata information including video, audio, and subtitle tracks, and rename files based on intelligent metadata extraction.
 
 Key features:
 - Recursive directory scanning
-- Tree-based file navigation
-- Detailed metadata extraction and display from multiple sources
-- Color-coded information
+- Tree-based file navigation with expand/collapse functionality
+- Detailed metadata extraction from multiple sources
+- Intelligent file renaming with proposed names
+- Color-coded information display
 - Keyboard and mouse navigation
+- Multiple UI screens (main app, directory selection, help, rename confirmation)
 - Extensible extractor and formatter architecture
+- Loading indicators and error handling
 
 ## Technology Stack
 
@@ -19,6 +22,7 @@ Key features:
 - PyMediaInfo (detailed track information)
 - Mutagen (embedded metadata)
 - Python-Magic (MIME type detection)
+- Langcodes (language code handling)
 - UV (package manager)
 
 ## Code Structure

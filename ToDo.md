@@ -14,5 +14,15 @@ TODO Steps:
 11. ✅ Add custom tree styling with file icons and colored guides
 12. ✅ Add scrollable details panel
 13. ✅ Handle markup escaping for file names with brackets
-14. Implement metadata editing capabilities (future steps)
-15. Implement file renaming functionality (future steps)
+14. ✅ Implement file renaming functionality with confirmation dialog
+15. ✅ Add proposed name generation based on metadata extraction
+16. ✅ Add help screen with key bindings and usage information
+17. ✅ Add tree expansion/collapse toggle functionality
+18. ✅ Add file refresh functionality to reload metadata for selected file
+19. ✅ Optimize tree updates to avoid full reloads after renaming
+20. ✅ Add loading indicators for metadata extraction
+21. ✅ Add error handling for file operations and metadata extraction
+22. Implement metadata editing capabilities (future enhancement)
+23. Add batch rename operations (future enhancement)
+24. Add configuration file support (future enhancement)
+25. Add plugin system for custom extractors/formatters (future enhancement)
