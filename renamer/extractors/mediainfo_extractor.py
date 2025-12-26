@@ -111,7 +111,7 @@ class MediaInfoExtractor:
     def extract_audio_tracks(self) -> list[dict]:
         """Extract audio track data"""
         tracks = []
-        for a in self.audio_tracks[:3]:  # Up to 3 audios
+        for a in self.audio_tracks[:10]:  # Up to 10 audios
             track_data = {
                 'codec': getattr(a, 'format', None) or getattr(a, 'codec', None) or 'unknown',
                 'channels': getattr(a, 'channel_s', None),
@@ -124,18 +124,10 @@ class MediaInfoExtractor:
     def extract_subtitle_tracks(self) -> list[dict]:
         """Extract subtitle track data"""
         tracks = []
-        for s in self.sub_tracks[:3]:  # Up to 3 subs
+        for s in self.sub_tracks[:10]:  # Up to 10 subs
             track_data = {
                 'language': getattr(s, 'language', None) or 'und',
                 'format': getattr(s, 'format', None) or getattr(s, 'codec', None) or 'unknown',
             }
             tracks.append(track_data)
         return tracks
-
-    def extract_tracks(self) -> dict:
-        """Extract media track information as data"""
-        return {
-            'video_tracks': self.extract_video_tracks(),
-            'audio_tracks': self.extract_audio_tracks(),
-            'subtitle_tracks': self.extract_subtitle_tracks(),
-        }

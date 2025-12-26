@@ -64,9 +64,6 @@ class MediaExtractor:
             'extension': [
                 ('FileInfo', lambda: self.fileinfo_extractor.extract_extension())
             ],
-            'tracks': [
-                ('MediaInfo', lambda: self.mediainfo_extractor.extract_tracks())
-            ]
         }
         
         # Conditions for when a value is considered valid
