@@ -1,6 +1,7 @@
 from textual.screen import Screen
 from textual.widgets import Input, Button, Static
 from textual.containers import Vertical, Horizontal, Center, Container
+from rich.markup import escape
 from pathlib import Path
 
 
@@ -122,8 +123,8 @@ class RenameConfirmScreen(Screen):
         confirm_text = f"""
 {TextFormatter.bold(TextFormatter.red("RENAME CONFIRMATION"))}
 
-Current name: {TextFormatter.cyan(self.old_path.name)}
-New name:     {TextFormatter.green(self.new_name)}
+Current name: {TextFormatter.cyan(escape(self.old_path.name))}
+New name:     {TextFormatter.green(escape(self.new_name))}
 
 {TextFormatter.yellow("This action cannot be undone!")}
 
