@@ -29,4 +29,4 @@ class TestMediaInfoExtractor:
         """Test extracting audio languages"""
         langs = extractor.extract_audio_langs()
         # Text files don't have audio tracks
-        assert langs == ''
+        assert langs is None
