@@ -78,7 +78,7 @@ class MediaInfoExtractor:
                         min_diff = diff
                         closest_height = info['nominal_height']
             
-            if closest_height and min_diff <= 50:
+            if closest_height and min_diff <= 100:
                 return f"{closest_height}{scan_type}"
         return None
 
