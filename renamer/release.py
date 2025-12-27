@@ -5,7 +5,7 @@ def main():
     try:
         # Bump version
         print("Bumping version...")
-        subprocess.run([sys.executable, '-m', 'renamer.bump'], check=True)
+        subprocess.run(['uv', 'run', 'bump-version'], check=True)
 
         # Sync dependencies
         print("Syncing dependencies...")
