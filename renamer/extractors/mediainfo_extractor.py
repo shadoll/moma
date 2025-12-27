@@ -105,7 +105,7 @@ class MediaInfoExtractor:
         """Extract HDR info from media info"""
         if not self.video_tracks:
             return None
-        profile = getattr(self.video_tracks[0], 'format_profile', '')
+        profile = getattr(self.video_tracks[0], 'format_profile', '') or ''
         if 'HDR' in profile.upper():
             return 'HDR'
         return None
@@ -116,15 +116,15 @@ class MediaInfoExtractor:
             return None
         langs = []
         for a in self.audio_tracks:
-            lang_code = getattr(a, 'language', 'und').lower()
+            lang_code = getattr(a, 'language', 'und') or 'und'
             try:
                 # Try to get the 3-letter code
-                lang_obj = langcodes.Language.get(lang_code)
+                lang_obj = langcodes.Language.get(lang_code.lower())
                 alpha3 = lang_obj.to_alpha3()
                 langs.append(alpha3)
             except:
                 # If conversion fails, use the original code
-                langs.append(lang_code[:3])
+                langs.append(lang_code.lower()[:3])
         
         lang_counts = Counter(langs)
         audio_langs = [f"{count}{lang}" if count > 1 else lang for lang, count in lang_counts.items()]
@@ -140,7 +140,7 @@ class MediaInfoExtractor:
                 'height': getattr(v, 'height', None),
                 'bitrate': getattr(v, 'bit_rate', None),
                 'fps': getattr(v, 'frame_rate', None),
-                'profile': getattr(v, 'format_profile', None),
+                'profile': getattr(v, 'format_profile', None) or '',
             }
             tracks.append(track_data)
         return tracks
