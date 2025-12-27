@@ -40,9 +40,17 @@ SOURCE_DICT = {
     "BDRip": ["BDRip", "BD-Rip", "BDRIP"],
     "BDRemux": ["BDRemux", "BD-Remux", "BDREMUX"],
     "DVDRip": ["DVDRip", "DVD-Rip", "DVDRIP"],
-    "HDTV": ["HDTV"],
+    "HDTVRip": ["HDTVRip", "HDTV"],
     "BluRay": ["BluRay", "BLURAY", "Blu-ray"],
-    "VHSRecord": ["VHSRecord", "VHS Record", "VHS-Rip", "VHSRip", "VHS", "VHS Tape", "VHS-Tape"],
+    "VHSRecord": [
+        "VHSRecord",
+        "VHS Record",
+        "VHS-Rip",
+        "VHSRip",
+        "VHS",
+        "VHS Tape",
+        "VHS-Tape",
+    ],
 }
 
 FRAME_CLASSES = {
@@ -127,7 +135,7 @@ MOVIE_DB_DICT = {
 
 SPECIAL_EDITIONS = [
     "Theatrical Cut",
-    "Director's Cut", 
+    "Director's Cut",
     "Director Cut",
     "Extended Edition",
     "Ultimate Extended Edition",
