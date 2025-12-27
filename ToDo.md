@@ -23,7 +23,8 @@ TODO Steps:
 20. ✅ Add loading indicators for metadata extraction
 21. ✅ Add error handling for file operations and metadata extraction
 22. 🔄 Implement blue highlighting for changed parts in proposed filename display (show differences between current and proposed names)
-23. Implement metadata editing capabilities (future enhancement)
-24. Add batch rename operations (future enhancement)
-25. Add configuration file support (future enhancement)
-26. Add plugin system for custom extractors/formatters (future enhancement)
+23. 🔄 Implement build script to exclude dev commands (bump-version, release) from distributed package
+24. Implement metadata editing capabilities (future enhancement)
+25. Add batch rename operations (future enhancement)
+26. Add configuration file support (future enhancement)
+27. Add plugin system for custom extractors/formatters (future enhancement)

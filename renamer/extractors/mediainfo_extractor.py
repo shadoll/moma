@@ -59,7 +59,27 @@ class MediaInfoExtractor:
             return None
         height = getattr(self.video_tracks[0], 'height', None)
         if height:
-            return self._get_frame_class_from_height(height)
+            # Check if interlaced
+            interlaced = getattr(self.video_tracks[0], 'interlaced', None)
+            scan_type = 'i' if interlaced == 'Yes' else 'p'
+            
+            # First try exact match
+            frame_class = f"{height}{scan_type}"
+            if frame_class in FRAME_CLASSES:
+                return frame_class
+            
+            # Find closest height with same scan type
+            closest_height = None
+            min_diff = float('inf')
+            for fc, info in FRAME_CLASSES.items():
+                if fc.endswith(scan_type):
+                    diff = abs(height - info['nominal_height'])
+                    if diff < min_diff:
+                        min_diff = diff
+                        closest_height = info['nominal_height']
+            
+            if closest_height and min_diff <= 50:
+                return f"{closest_height}{scan_type}"
         return None
 
     def extract_resolution(self) -> tuple[int, int] | None:

@@ -11,7 +11,6 @@ class FilenameExtractor:
     def __init__(self, file_path: Path):
         self.file_path = file_path
         self.file_name = file_path.name
-        self.file_name = self._normalize_cyrillic(self.file_name)
 
     def _normalize_cyrillic(self, text: str) -> str:
         """Normalize Cyrillic characters to English equivalents for parsing"""
@@ -157,10 +156,18 @@ class FilenameExtractor:
 
     def extract_frame_class(self) -> str | None:
         """Extract frame class from filename (480p, 720p, 1080p, 2160p, etc.)"""
-        # First check for specific numeric resolutions
-        match = re.search(r'(\d{3,4})[pi]', self.file_name, re.IGNORECASE)
+        # Normalize Cyrillic characters for resolution parsing
+        normalized_name = self._normalize_cyrillic(self.file_name)
+        
+        # First check for specific numeric resolutions with p/i
+        match = re.search(r'(\d{3,4})([pi])', normalized_name, re.IGNORECASE)
         if match:
             height = int(match.group(1))
+            scan_type = match.group(2).lower()
+            frame_class = f"{height}{scan_type}"
+            if frame_class in FRAME_CLASSES:
+                return frame_class
+            # Fallback to height-based if not in constants
             return self._get_frame_class_from_height(height)
         
         # If no specific resolution found, check for quality indicators

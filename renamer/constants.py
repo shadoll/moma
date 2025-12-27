@@ -51,10 +51,20 @@ FRAME_CLASSES = {
         "typical_widths": [640, 704, 720],
         "description": "Standard Definition (SD) - DVD quality",
     },
+    "480i": {
+        "nominal_height": 480,
+        "typical_widths": [640, 704, 720],
+        "description": "Standard Definition (SD) interlaced - NTSC quality",
+    },
     "576p": {
         "nominal_height": 576,
         "typical_widths": [720, 768],
         "description": "PAL Standard Definition (SD) - European DVD quality",
+    },
+    "576i": {
+        "nominal_height": 576,
+        "typical_widths": [720, 768],
+        "description": "PAL Standard Definition (SD) interlaced - European quality",
     },
     "720p": {
         "nominal_height": 720,
@@ -65,6 +75,11 @@ FRAME_CLASSES = {
         "nominal_height": 1080,
         "typical_widths": [1920],
         "description": "Full High Definition (FHD) - 1080p HD",
+    },
+    "1080i": {
+        "nominal_height": 1080,
+        "typical_widths": [1920],
+        "description": "Full High Definition (FHD) interlaced - 1080i HD",
     },
     "1440p": {
         "nominal_height": 1440,
