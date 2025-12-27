@@ -15,6 +15,8 @@ dependencies = [
 
 [project.scripts]
 renamer = "renamer.main:main"
+bump-version = "renamer.bump:main"
+release = "renamer.release:main"
 
 [tool.uv]
 package = true

@@ -1,9 +1,9 @@
 from pathlib import Path
-from .extractors.filename_extractor import FilenameExtractor
-from .extractors.metadata_extractor import MetadataExtractor
-from .extractors.mediainfo_extractor import MediaInfoExtractor
-from .extractors.fileinfo_extractor import FileInfoExtractor
-from .extractors.default_extractor import DefaultExtractor
+from .filename_extractor import FilenameExtractor
+from .metadata_extractor import MetadataExtractor
+from .mediainfo_extractor import MediaInfoExtractor
+from .fileinfo_extractor import FileInfoExtractor
+from .default_extractor import DefaultExtractor
 
 
 class MediaExtractor:

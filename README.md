@@ -71,74 +71,9 @@ renamer /path/to/media/directory
 4. Press **y** to confirm or **n** to cancel
 5. The file will be renamed and the tree updated automatically
 
-## Debugging
+## Development
 
-### Formatter Logging
-The application includes detailed logging for formatter operations that can be enabled for debugging purposes.
-
-To enable formatter logging:
-```bash
-FORMATTER_LOG=1 renamer /path/to/directory
-```
-
-This will create a `formatter.log` file in the current directory containing:
-- Formatter call sequences and ordering
-- Input/output values for each formatter
-- Caller information (file and line number)
-- Any errors during formatting
-
-Useful for troubleshooting metadata display issues or formatter problems.
-
-## Architecture
-
-The application uses a modular architecture with separate extractors and formatters:
-
-### Extractors
-- **MediaInfoExtractor**: Extracts detailed track information using PyMediaInfo
-- **FilenameExtractor**: Parses metadata from filenames
-- **MetadataExtractor**: Extracts embedded metadata using Mutagen
-- **FileInfoExtractor**: Provides basic file information
-
-### Formatters
-- **MediaFormatter**: Formats extracted data for display
-- **ProposedNameFormatter**: Generates intelligent rename suggestions
-- **TrackFormatter**: Formats video/audio/subtitle track information
-- **SizeFormatter**: Formats file sizes
-- **DateFormatter**: Formats timestamps
-- **DurationFormatter**: Formats time durations
-- **ResolutionFormatter**: Formats video resolutions
-- **TextFormatter**: Text styling utilities
-
-### Screens
-- **OpenScreen**: Directory selection dialog
-- **HelpScreen**: Application help and key bindings
-- **RenameConfirmScreen**: File rename confirmation dialog
-
-### Setup Development Environment
-```bash
-# Install in development mode
-uv sync
-
-# Run directly (development)
-uv run python main.py
-
-# Or run installed version
-renamer
-```
-
-### Running Without Rebuilding (Development)
-```bash
-# Run directly from source (no installation needed)
-uv run python main.py
-
-# Or run with specific directory
-uv run python main.py /path/to/directory
-```
-
-### Uninstall
-```bash
-uv tool uninstall renamer
-```
+For development setup, architecture details, debugging information, and contribution guidelines, see [DEVELOP.md](DEVELOP.md).
 
 ## Supported Video Formats
 - .mkv

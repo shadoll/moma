@@ -10,7 +10,7 @@ import os
 
 from .constants import MEDIA_TYPES
 from .screens import OpenScreen, HelpScreen, RenameConfirmScreen
-from .extractor import MediaExtractor
+from .extractors.extractor import MediaExtractor
 from .formatters.media_formatter import MediaFormatter
 from .formatters.proposed_name_formatter import ProposedNameFormatter
 from .formatters.text_formatter import TextFormatter
