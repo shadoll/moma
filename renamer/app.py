@@ -1,9 +1,12 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Tree, Static, Footer, LoadingIndicator
 from textual.containers import Horizontal, Container, ScrollableContainer, Vertical
+from rich.markup import escape
 from pathlib import Path
 import threading
 import time
+import logging
+import os
 
 from .constants import MEDIA_TYPES
 from .screens import OpenScreen, HelpScreen, RenameConfirmScreen
@@ -11,6 +14,14 @@ from .extractor import MediaExtractor
 from .formatters.media_formatter import MediaFormatter
 from .formatters.proposed_name_formatter import ProposedNameFormatter
 from .formatters.text_formatter import TextFormatter
+
+
+# Set up logging conditionally
+if os.getenv('FORMATTER_LOG', '0') == '1':
+    logging.basicConfig(filename='formatter.log', level=logging.INFO, 
+                        format='%(asctime)s - %(levelname)s - %(message)s')
+else:
+    logging.basicConfig(level=logging.CRITICAL)  # Disable logging
 
 
 class RenamerApp(App):
@@ -78,12 +89,13 @@ class RenamerApp(App):
                     if item.is_dir():
                         if item.name.startswith(".") or item.name == "lost+found":
                             continue
-                        subnode = node.add(item.name, data=item)
+                        subnode = node.add(escape(item.name), data=item)
                         self.build_tree(item, subnode)
                     elif item.is_file() and item.suffix.lower() in {
                         f".{ext}" for ext in MEDIA_TYPES
                     }:
-                        node.add(item.name, data=item)
+                        logging.info(f"Adding file to tree: {item.name!r} (full path: {item})")
+                        node.add(escape(item.name), data=item)
                 except PermissionError:
                     pass
         except PermissionError:
@@ -211,7 +223,7 @@ class RenamerApp(App):
         
         node = find_node(tree.root)
         if node:
-            node.label = new_path.name
+            node.label = escape(new_path.name)
             node.data = new_path
             # If this node is currently selected, refresh the details
             if tree.cursor_node == node:

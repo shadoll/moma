@@ -24,8 +24,11 @@ powershell -c "irm https://astral.sh/uv/install.sh | iex"
 
 #### Install Renamer
 ```bash
-# From the built wheel (if available)
-uv tool install dist/renamer-0.2.0-py3-none-any.whl
+# One-command install from remote wheel
+uv tool install https://git.shadoll.dev/sha/renamer/raw/branch/main/dist/renamer-0.2.4-py3-none-any.whl
+
+# Or from local wheel (if downloaded)
+uv tool install dist/renamer-0.2.4-py3-none-any.whl
 
 # Or from PyPI (when published)
 uv tool install renamer

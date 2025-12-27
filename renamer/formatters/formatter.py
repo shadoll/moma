@@ -41,6 +41,7 @@ class FormatterApplier:
         TrackFormatter.format_audio_track,
         TrackFormatter.format_subtitle_track,
         SpecialInfoFormatter.format_special_info,
+        SpecialInfoFormatter.format_database_info,
         
         # Text formatters second (transform text content)
         TextFormatter.uppercase,

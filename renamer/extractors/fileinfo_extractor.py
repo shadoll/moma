@@ -1,4 +1,13 @@
 from pathlib import Path
+import logging
+import os
+
+# Set up logging conditionally
+if os.getenv('FORMATTER_LOG', '0') == '1':
+    logging.basicConfig(filename='formatter.log', level=logging.INFO, 
+                        format='%(asctime)s - %(levelname)s - %(message)s')
+else:
+    logging.basicConfig(level=logging.CRITICAL)  # Disable logging
 
 
 class FileInfoExtractor:
@@ -10,6 +19,7 @@ class FileInfoExtractor:
         self._modification_time = file_path.stat().st_mtime
         self._file_name = file_path.name
         self._file_path = str(file_path)
+        logging.info(f"FileInfoExtractor: file_name={self._file_name!r}, file_path={self._file_path!r}")
 
     def extract_size(self) -> int:
         """Extract file size in bytes"""

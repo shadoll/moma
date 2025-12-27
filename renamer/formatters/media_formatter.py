@@ -1,7 +1,7 @@
 from pathlib import Path
+from rich.markup import escape
 from .size_formatter import SizeFormatter
 from .date_formatter import DateFormatter
-from .extension_extractor import ExtensionExtractor
 from .extension_formatter import ExtensionFormatter
 from .text_formatter import TextFormatter
 from .track_formatter import TrackFormatter
@@ -40,7 +40,7 @@ class MediaFormatter:
                 "group": "File Info",
                 "label": "Path",
                 "label_formatters": [TextFormatter.bold],
-                "value": self.extractor.get("file_path", "FileInfo"),
+                "value": escape(str(self.extractor.get("file_path", "FileInfo"))),
                 "display_formatters": [TextFormatter.blue],
             },
             {
@@ -54,7 +54,7 @@ class MediaFormatter:
                 "group": "File Info",
                 "label": "Name",
                 "label_formatters": [TextFormatter.bold],
-                "value": self.extractor.get("file_name", "FileInfo"),
+                "value": escape(str(self.extractor.get("file_name", "FileInfo"))),
                 "display_formatters": [TextFormatter.cyan],
             },
             {
@@ -283,26 +283,77 @@ class MediaFormatter:
 
     def selected_data(self) -> list[str]:
         """Return formatted selected data string"""
+        import logging
+        import os
+        if os.getenv("FORMATTER_LOG"):
+            frame_class = self.extractor.get("frame_class")
+            audio_langs = self.extractor.get("audio_langs")
+            logging.info(f"Selected data - frame_class: {frame_class!r}, audio_langs: {audio_langs!r}")
+            # Also check from Filename source
+            frame_class_filename = self.extractor.get("frame_class", "Filename")
+            audio_langs_filename = self.extractor.get("audio_langs", "Filename")
+            logging.info(f"From Filename - frame_class: {frame_class_filename!r}, audio_langs: {audio_langs_filename!r}")
         data = [
             {
                 "label": "Selected Data",
                 "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
             },
             {
+                "label": "Order",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("order") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
                 "label": "Title",
-                "label_formatters": [TextFormatter.bold, TextFormatter.yellow],
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
                 "value": self.extractor.get("title") or "<None>",
-                "value_formatters": [TextFormatter.blue],
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "Year",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("year") or "<None>",
+                "value_formatters": [TextFormatter.yellow, DateFormatter.format_year],
             },
             {
                 "label": "Special info",
-                "label_formatters": [TextFormatter.bold],
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
                 "value": self.extractor.get("special_info") or "<None>",
                 "value_formatters": [
                     SpecialInfoFormatter.format_special_info,
-                    TextFormatter.blue,
+                    TextFormatter.yellow,
                 ],
-                "display_formatters": [TextFormatter.yellow],
             },
+            {
+                "label": "Source",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("source") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "Frame class",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("frame_class") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "HDR",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("hdr") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "Audio langs",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("audio_langs") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "DBid",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("movie_db") or "<None>",
+                "value_formatters": [SpecialInfoFormatter.format_database_info, TextFormatter.yellow],
+            }
         ]
         return FormatterApplier.format_data_items(data)

@@ -11,6 +11,18 @@ class FilenameExtractor:
     def __init__(self, file_path: Path):
         self.file_path = file_path
         self.file_name = file_path.name
+        self.file_name = self._normalize_cyrillic(self.file_name)
+
+    def _normalize_cyrillic(self, text: str) -> str:
+        """Normalize Cyrillic characters to English equivalents for parsing"""
+        replacements = {
+            'р': 'p',
+            'і': 'i',
+            # Add more as needed
+        }
+        for cyr, eng in replacements.items():
+            text = text.replace(cyr, eng)
+        return text
 
     def _get_frame_class_from_height(self, height: int) -> str | None:
         """Get frame class from video height using FRAME_CLASSES constant"""

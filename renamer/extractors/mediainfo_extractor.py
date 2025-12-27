@@ -73,10 +73,10 @@ class MediaInfoExtractor:
             return 'HDR'
         return None
 
-    def extract_audio_langs(self) -> str:
+    def extract_audio_langs(self) -> str | None:
         """Extract audio languages from media info"""
         if not self.audio_tracks:
-            return ''
+            return None
         langs = []
         for a in self.audio_tracks:
             lang_code = getattr(a, 'language', 'und').lower()
