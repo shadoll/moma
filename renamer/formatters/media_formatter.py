@@ -8,6 +8,7 @@ from .track_formatter import TrackFormatter
 from .resolution_formatter import ResolutionFormatter
 from .duration_formatter import DurationFormatter
 from .special_info_formatter import SpecialInfoFormatter
+from .formatter import FormatterApplier
 
 
 class MediaFormatter:
@@ -15,56 +16,6 @@ class MediaFormatter:
 
     def __init__(self, extractor):
         self.extractor = extractor
-
-    def _format_data_item(self, item: dict) -> str:
-        """Apply all formatting to a data item and return the formatted string"""
-        # Define text formatters that should be applied before markup
-        text_formatters_set = {
-            TextFormatter.uppercase,
-            TextFormatter.lowercase,
-            TextFormatter.camelcase,
-        }
-
-        # Handle value formatting first (e.g., size formatting)
-        value = item.get("value")
-        if value is not None and not isinstance(value, str):
-            value_formatters = item.get("value_formatters", [])
-            if not isinstance(value_formatters, list):
-                value_formatters = [value_formatters] if value_formatters else []
-            for formatter in value_formatters:
-                value = formatter(value)
-
-        # Handle label formatting
-        label = item.get("label", "")
-        if label:
-            label_formatters = item.get("label_formatters", [])
-            if not isinstance(label_formatters, list):
-                label_formatters = [label_formatters] if label_formatters else []
-            # Separate text and markup formatters, apply text first
-            text_fs = [f for f in label_formatters if f in text_formatters_set]
-            markup_fs = [f for f in label_formatters if f not in text_formatters_set]
-            ordered_formatters = text_fs + markup_fs
-            for formatter in ordered_formatters:
-                label = formatter(label)
-
-        # Create the display string
-        if value is not None:
-            display_string = f"{label}: {value}"
-        else:
-            display_string = label
-
-        # Handle display formatting (e.g., color)
-        display_formatters = item.get("display_formatters", [])
-        if not isinstance(display_formatters, list):
-            display_formatters = [display_formatters] if display_formatters else []
-        # Separate text and markup formatters, apply text first
-        text_fs = [f for f in display_formatters if f in text_formatters_set]
-        markup_fs = [f for f in display_formatters if f not in text_formatters_set]
-        ordered_formatters = text_fs + markup_fs
-        for formatter in ordered_formatters:
-            display_string = formatter(display_string)
-
-        return display_string
 
     def file_info_panel(self) -> str:
         """Return formatted file info panel string"""
@@ -123,7 +74,7 @@ class MediaFormatter:
                 "display_formatters": [TextFormatter.green],
             },
         ]
-        return [self._format_data_item(item) for item in data]
+        return FormatterApplier.format_data_items(data)
 
     def tracks_info(self) -> list[str]:
         """Return formatted tracks information"""
@@ -174,7 +125,7 @@ class MediaFormatter:
                 }
             )
 
-        return [self._format_data_item(item) for item in data]
+        return FormatterApplier.format_data_items(data)
 
     def metadata_extracted_data(self) -> list[str]:
         """Format metadata extraction data for the metadata panel"""
@@ -204,7 +155,7 @@ class MediaFormatter:
             },
         ]
 
-        return [self._format_data_item(item) for item in data]
+        return FormatterApplier.format_data_items(data)
 
     def mediainfo_extracted_data(self) -> list[str]:
         """Format media info extraction data for the mediainfo panel"""
@@ -256,7 +207,7 @@ class MediaFormatter:
                 "display_formatters": [TextFormatter.grey],
             },
         ]
-        return [self._format_data_item(item) for item in data]
+        return FormatterApplier.format_data_items(data)
 
     def filename_extracted_data(self) -> list[str]:
         """Return formatted filename extracted data"""
@@ -328,7 +279,7 @@ class MediaFormatter:
             },
         ]
 
-        return [self._format_data_item(item) for item in data]
+        return FormatterApplier.format_data_items(data)
 
     def selected_data(self) -> list[str]:
         """Return formatted selected data string"""
@@ -336,6 +287,12 @@ class MediaFormatter:
             {
                 "label": "Selected Data",
                 "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
+            },
+            {
+                "label": "Title",
+                "label_formatters": [TextFormatter.bold, TextFormatter.yellow],
+                "value": self.extractor.get("title") or "<None>",
+                "value_formatters": [TextFormatter.blue],
             },
             {
                 "label": "Special info",
@@ -348,18 +305,4 @@ class MediaFormatter:
                 "display_formatters": [TextFormatter.yellow],
             },
         ]
-        return [self._format_data_item(item) for item in data]
-
-    def _format_extra_metadata(self, metadata: dict) -> str:
-        """Format extra metadata like duration, title, artist"""
-        data = {}
-        if metadata.get("duration"):
-            data["Duration"] = f"{metadata['duration']:.1f} seconds"
-        if metadata.get("title"):
-            data["Title"] = metadata["title"]
-        if metadata.get("artist"):
-            data["Artist"] = metadata["artist"]
-
-        return "\n".join(
-            TextFormatter.cyan(f"{key}: {value}") for key, value in data.items()
-        )
+        return FormatterApplier.format_data_items(data)

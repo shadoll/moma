@@ -151,4 +151,9 @@ SPECIAL_EDITIONS = [
     "Festival Cut",
     "Workprint",
     "Rough Cut",
+    "Special Assembly Cut",
+    "Amazon Edition",
+    "Amazon",
+    "Netflix Edition",
+    "HBO Edition",
 ]

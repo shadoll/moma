@@ -71,6 +71,24 @@ renamer /path/to/media/directory
 4. Press **y** to confirm or **n** to cancel
 5. The file will be renamed and the tree updated automatically
 
+## Debugging
+
+### Formatter Logging
+The application includes detailed logging for formatter operations that can be enabled for debugging purposes.
+
+To enable formatter logging:
+```bash
+FORMATTER_LOG=1 renamer /path/to/directory
+```
+
+This will create a `formatter.log` file in the current directory containing:
+- Formatter call sequences and ordering
+- Input/output values for each formatter
+- Caller information (file and line number)
+- Any errors during formatting
+
+Useful for troubleshooting metadata display issues or formatter problems.
+
 ## Architecture
 
 The application uses a modular architecture with separate extractors and formatters:
