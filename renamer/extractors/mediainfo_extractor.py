@@ -22,10 +22,27 @@ class MediaInfoExtractor:
             self.sub_tracks = []
 
     def _get_frame_class_from_height(self, height: int) -> str | None:
-        """Get frame class from video height using FRAME_CLASSES constant"""
+        """Get frame class from video height, finding closest match if exact not found"""
+        if not height:
+            return None
+        
+        # First try exact match
         for frame_class, info in FRAME_CLASSES.items():
             if height == info['nominal_height']:
                 return frame_class
+        
+        # If no exact match, find closest
+        closest = None
+        min_diff = float('inf')
+        for frame_class, info in FRAME_CLASSES.items():
+            diff = abs(height - info['nominal_height'])
+            if diff < min_diff:
+                min_diff = diff
+                closest = frame_class
+        
+        # Only return if difference is reasonable (within 50 pixels)
+        if min_diff <= 50:
+            return closest
         return None
 
     def extract_duration(self) -> float | None:
