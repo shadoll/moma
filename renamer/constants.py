@@ -42,6 +42,7 @@ SOURCE_DICT = {
     "DVDRip": ["DVDRip", "DVD-Rip", "DVDRIP"],
     "HDTV": ["HDTV"],
     "BluRay": ["BluRay", "BLURAY", "Blu-ray"],
+    "VHSRecord": ["VHSRecord", "VHS Record", "VHS-Rip", "VHSRip", "VHS", "VHS Tape", "VHS-Tape"],
 }
 
 FRAME_CLASSES = {
