@@ -4,6 +4,11 @@ MEDIA_TYPES = {
         "meta_type": "Matroska",
         "mime": "video/x-matroska",
     },
+    "mk3d": {
+        "description": "Matroska 3D multimedia container",
+        "meta_type": "Matroska",
+        "mime": "video/x-matroska",
+    },
     "avi": {
         "description": "Audio Video Interleave",
         "meta_type": "AVI",
