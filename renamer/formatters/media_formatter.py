@@ -253,6 +253,25 @@ class MediaFormatter:
                 or "Not extracted",
                 "display_formatters": [TextFormatter.grey],
             },
+            {
+                "label": "Anamorphic",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("anamorphic", "MediaInfo") or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "Extension",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("extension", "MediaInfo") or "Not extracted",
+                "value_formatters": [ExtensionFormatter.format_extension_info],
+                "display_formatters": [TextFormatter.grey],
+            },
+            {
+                "label": "3D Layout",
+                "label_formatters": [TextFormatter.bold],
+                "value": self.extractor.get("3d_layout", "MediaInfo") or "Not extracted",
+                "display_formatters": [TextFormatter.grey],
+            },
         ]
         return FormatterApplier.format_data_items(data)
 

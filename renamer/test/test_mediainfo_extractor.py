@@ -30,3 +30,21 @@ class TestMediaInfoExtractor:
         langs = extractor.extract_audio_langs()
         # Text files don't have audio tracks
         assert langs is None
+
+    def test_extract_anamorphic(self, extractor, test_file):
+        """Test extracting anamorphic info"""
+        anamorphic = extractor.extract_anamorphic()
+        # Text files don't have video tracks
+        assert anamorphic is None
+
+    def test_extract_extension(self, extractor, test_file):
+        """Test extracting extension"""
+        extension = extractor.extract_extension()
+        # For text file, should return None since no media info
+        assert extension is None
+
+    def test_is_3d(self, extractor, test_file):
+        """Test checking if video is 3D"""
+        is_3d = extractor.is_3d()
+        # Text files don't have video tracks
+        assert is_3d is False

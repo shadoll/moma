@@ -1,6 +1,6 @@
 [project]
 name = "renamer"
-version = "0.4.6"
+version = "0.4.7"
 description = "Terminal-based media file renamer and metadata viewer"
 readme = "README.md"
 requires-python = ">=3.11"

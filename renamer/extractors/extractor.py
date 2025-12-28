@@ -76,6 +76,18 @@ class MediaExtractor:
                     ("Default", "extract_hdr"),
                 ],
             },
+            "anamorphic": {
+                "sources": [
+                    ("MediaInfo", "extract_anamorphic"),
+                    ("Default", "extract_anamorphic"),
+                ],
+            },
+            "3d_layout": {
+                "sources": [
+                    ("MediaInfo", "extract_3d_layout"),
+                    ("Default", "extract_3d_layout"),
+                ],
+            },
             "movie_db": {
                 "sources": [
                     ("TMDB", "extract_movie_db"),
@@ -128,6 +140,7 @@ class MediaExtractor:
             },
             "extension": {
                 "sources": [
+                    ("MediaInfo", "extract_extension"),
                     ("FileInfo", "extract_extension"),
                     ("Default", "extract_extension"),
                 ],

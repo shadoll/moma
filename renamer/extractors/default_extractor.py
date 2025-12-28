@@ -23,7 +23,7 @@ class DefaultExtractor:
         return None
 
     def extract_special_info(self):
-        return []
+        return None
 
     def extract_audio_langs(self):
         return None
@@ -54,6 +54,12 @@ class DefaultExtractor:
 
     def extract_subtitle_tracks(self):
         return []
+
+    def extract_anamorphic(self):
+        return None
+
+    def extract_extension(self):
+        return None
 
     def extract_tmdb_url(self):
         return None

@@ -1,7 +1,7 @@
 from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
-from ..constants import FRAME_CLASSES
+from ..constants import FRAME_CLASSES, MEDIA_TYPES
 import langcodes
 
 
@@ -20,6 +20,15 @@ class MediaInfoExtractor:
             self.video_tracks = []
             self.audio_tracks = []
             self.sub_tracks = []
+
+        # Build mapping from meta_type to extensions
+        self._format_to_extensions = {}
+        for ext, info in MEDIA_TYPES.items():
+            meta_type = info.get('meta_type')
+            if meta_type:
+                if meta_type not in self._format_to_extensions:
+                    self._format_to_extensions[meta_type] = []
+                self._format_to_extensions[meta_type].append(ext)
 
     def _get_frame_class_from_height(self, height: int) -> str | None:
         """Get frame class from video height, finding closest match if exact not found"""
@@ -183,3 +192,50 @@ class MediaInfoExtractor:
             }
             tracks.append(track_data)
         return tracks
+
+    def is_3d(self) -> bool:
+        """Check if the video is 3D"""
+        if not self.video_tracks:
+            return False
+        multi_view = getattr(self.video_tracks[0], 'multi_view_count', None)
+        if multi_view and int(multi_view) > 1:
+            return True
+        stereoscopic = getattr(self.video_tracks[0], 'stereoscopic', None)
+        if stereoscopic == 'Yes':
+            return True
+        return False
+
+    def extract_anamorphic(self) -> str | None:
+        """Extract anamorphic info for 3D videos"""
+        if not self.video_tracks:
+            return None
+        anamorphic = getattr(self.video_tracks[0], 'anamorphic', None)
+        if anamorphic == 'Yes' and self.is_3d():
+            return 'Anamorphic:Yes'
+        return None
+
+    def extract_extension(self) -> str | None:
+        """Extract file extension based on container format"""
+        if not self.media_info:
+            return None
+        general_track = next((t for t in self.media_info.tracks if t.track_type == 'General'), None)
+        if not general_track:
+            return None
+        format_ = getattr(general_track, 'format', None)
+        if format_ in self._format_to_extensions:
+            exts = self._format_to_extensions[format_]
+            if format_ == 'Matroska':
+                if self.is_3d() and 'mk3d' in exts:
+                    return 'mk3d'
+                else:
+                    return 'mkv'
+            else:
+                return exts[0] if exts else None
+        return None
+
+    def extract_3d_layout(self) -> str | None:
+        """Extract 3D stereoscopic layout from MediaInfo"""
+        if not self.is_3d():
+            return None
+        stereoscopic = getattr(self.video_tracks[0], 'stereoscopic', None)
+        return stereoscopic if stereoscopic else None
