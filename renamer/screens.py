@@ -27,8 +27,8 @@ class OpenScreen(Screen):
         if not path.is_dir():
             self.query_one("#dir_input", Input).value = f"Not a directory: {path_str}"
             return
-        self.app.scan_dir = path
-        self.app.scan_files()
+        self.app.scan_dir = path # type: ignore
+        self.app.scan_files() # type: ignore
         self.app.pop_screen()
 
 
@@ -175,7 +175,7 @@ Do you want to proceed with renaming?
             try:
                 self.old_path.rename(self.new_path)
                 # Update the tree node
-                self.app.update_renamed_file(self.old_path, self.new_path)
+                self.app.update_renamed_file(self.old_path, self.new_path) # type: ignore
                 self.app.pop_screen()
             except Exception as e:
                 # Show error
@@ -216,17 +216,20 @@ Do you want to proceed with renaming?
                         self.set_focus(self.query_one("#cancel"))
                     elif current.id == "cancel":
                         self.set_focus(self.query_one("#new_name_input"))
-        elif event.key == "y":
-            # Trigger rename
-            try:
-                self.old_path.rename(self.new_path)
-                # Update the tree node
-                self.app.update_renamed_file(self.old_path, self.new_path)
+        
+        # Hotkeys only work when not focused on input
+        if not current or not hasattr(current, 'id') or current.id != "new_name_input":
+            if event.key == "y":
+                # Trigger rename
+                try:
+                    self.old_path.rename(self.new_path)
+                    # Update the tree node
+                    self.app.update_renamed_file(self.old_path, self.new_path) # type: ignore
+                    self.app.pop_screen()
+                except Exception as e:
+                    # Show error
+                    content = self.query_one("#confirm_content", Static)
+                    content.update(f"Error renaming file: {str(e)}")
+            elif event.key == "n":
+                # Cancel
                 self.app.pop_screen()
-            except Exception as e:
-                # Show error
-                content = self.query_one("#confirm_content", Static)
-                content.update(f"Error renaming file: {str(e)}")
-        elif event.key == "n":
-            # Cancel
-            self.app.pop_screen()
