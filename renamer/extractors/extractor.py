@@ -3,6 +3,7 @@ from .filename_extractor import FilenameExtractor
 from .metadata_extractor import MetadataExtractor
 from .mediainfo_extractor import MediaInfoExtractor
 from .fileinfo_extractor import FileInfoExtractor
+from .tmdb_extractor import TMDBExtractor
 from .default_extractor import DefaultExtractor
 
 
@@ -14,6 +15,7 @@ class MediaExtractor:
         self.metadata_extractor = MetadataExtractor(file_path)
         self.mediainfo_extractor = MediaInfoExtractor(file_path)
         self.fileinfo_extractor = FileInfoExtractor(file_path)
+        self.tmdb_extractor = TMDBExtractor(file_path)
         self.default_extractor = DefaultExtractor()
 
         # Extractor mapping
@@ -22,6 +24,7 @@ class MediaExtractor:
             "Filename": self.filename_extractor,
             "MediaInfo": self.mediainfo_extractor,
             "FileInfo": self.fileinfo_extractor,
+            "TMDB": self.tmdb_extractor,
             "Default": self.default_extractor,
         }
 
@@ -74,6 +77,7 @@ class MediaExtractor:
             },
             "movie_db": {
                 "sources": [
+                    ("TMDB", "extract_movie_db"),
                     ("Filename", "extract_movie_db"),
                     ("Default", "extract_movie_db"),
                 ],

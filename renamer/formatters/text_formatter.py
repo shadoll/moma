@@ -101,3 +101,18 @@ class TextFormatter:
     @staticmethod
     def dim(text: str) -> str:
         return f"[dim]{text}[/dim]"
+
+    @staticmethod
+    def link(url: str, text: str | None = None) -> str:
+        """Create a clickable link. If text is None, uses the URL as text."""
+        if text is None:
+            text = url
+        return f"[link={url}]{text}[/link]"
+
+    @staticmethod
+    def format_url(url: str) -> str:
+        """Format a URL as a clickable link using OSC 8 if it's a valid URL, otherwise return as-is."""
+        if url and url != "<None>" and url.startswith("http"):
+            # Use OSC 8 hyperlink escape sequence for clickable links
+            return f"\x1b]8;;{url}\x1b\\Open in TMDB\x1b]8;;\x1b\\"
+        return url

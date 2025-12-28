@@ -22,6 +22,7 @@ class MediaFormatter:
         sections = [
             self.file_info(),
             self.selected_data(),
+            self.tmdb_data(),
             self.tracks_info(),
             self.filename_extracted_data(),
             self.metadata_extracted_data(),
@@ -73,6 +74,52 @@ class MediaFormatter:
                 "value_formatters": [ExtensionFormatter.format_extension_info],
                 "display_formatters": [TextFormatter.green],
             },
+        ]
+        return FormatterApplier.format_data_items(data)
+
+    def tmdb_data(self) -> list[str]:
+        """Return formatted TMDB data"""
+        data = [
+            {
+                "label": "TMDB Data",
+                "label_formatters": [TextFormatter.bold, TextFormatter.uppercase],
+            },
+            {
+                "label": "ID",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("tmdb_id", "TMDB") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "Title",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("title", "TMDB") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "Original Title",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("original_title", "TMDB") or "<None>",
+                "value_formatters": [TextFormatter.yellow],
+            },
+            {
+                "label": "Year",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("year", "TMDB") or "<None>",
+                "value_formatters": [TextFormatter.yellow,],
+            },
+            {
+                "label": "Database Info",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("movie_db", "TMDB") or "<None>",
+                "value_formatters": [SpecialInfoFormatter.format_database_info, TextFormatter.yellow],
+            },
+            {
+                "label": "URL",
+                "label_formatters": [TextFormatter.bold, TextFormatter.blue],
+                "value": self.extractor.get("tmdb_url", "TMDB") or "<None>",
+                "value_formatters": [TextFormatter.format_url],
+            }
         ]
         return FormatterApplier.format_data_items(data)
 
@@ -350,7 +397,7 @@ class MediaFormatter:
                 "value_formatters": [TextFormatter.yellow],
             },
             {
-                "label": "DBid",
+                "label": "Database Info",
                 "label_formatters": [TextFormatter.bold, TextFormatter.blue],
                 "value": self.extractor.get("movie_db") or "<None>",
                 "value_formatters": [SpecialInfoFormatter.format_database_info, TextFormatter.yellow],

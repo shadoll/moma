@@ -64,6 +64,7 @@ class FormatterApplier:
         TextFormatter.blue,
         TextFormatter.grey,
         TextFormatter.dim,
+        TextFormatter.format_url,
     ]
 
     @staticmethod

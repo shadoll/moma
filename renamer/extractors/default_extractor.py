@@ -54,3 +54,12 @@ class DefaultExtractor:
 
     def extract_subtitle_tracks(self):
         return []
+
+    def extract_tmdb_url(self):
+        return None
+
+    def extract_tmdb_id(self):
+        return None
+
+    def extract_original_title(self):
+        return None
