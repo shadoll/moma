@@ -92,9 +92,9 @@ def test_extract_movie_db(filename):
     # Print filename and extracted movie DB clearly
     print(f"\nFilename: \033[1;36m{filename}\033[0m")
     print(f"Extracted movie DB: \033[1;32m{movie_db}\033[0m")
-    # Movie DB should be tuple (str, str) or None
+    # Movie DB should be list [str, str] or None
     if movie_db:
-        assert isinstance(movie_db, tuple) and len(movie_db) == 2
+        assert isinstance(movie_db, list) and len(movie_db) == 2
         assert isinstance(movie_db[0], str) and isinstance(movie_db[1], str)
     else:
         assert movie_db is None

@@ -8,9 +8,13 @@ import langcodes
 class FilenameExtractor:
     """Class to extract information from filename"""
 
-    def __init__(self, file_path: Path):
-        self.file_path = file_path
-        self.file_name = file_path.name
+    def __init__(self, file_path: Path | str):
+        if isinstance(file_path, str):
+            self.file_path = Path(file_path)
+            self.file_name = file_path
+        else:
+            self.file_path = file_path
+            self.file_name = file_path.name
 
     def _normalize_cyrillic(self, text: str) -> str:
         """Normalize Cyrillic characters to English equivalents for parsing"""
@@ -47,6 +51,15 @@ class FilenameExtractor:
             dot_match = re.search(r'\.(\d{4})\.', self.file_name)
             if dot_match:
                 year_pos = dot_match.start()
+            else:
+                # Last resort: any 4-digit number
+                any_match = re.search(r'\b(\d{4})\b', self.file_name)
+                if any_match:
+                    year = any_match.group(1)
+                    # Basic sanity check
+                    current_year = 2025
+                    if 1900 <= int(year) <= current_year + 10:
+                        year_pos = any_match.start()  # Cut before the year for plain years
         
         # Find source position
         source = self.extract_source()
@@ -85,17 +98,25 @@ class FilenameExtractor:
         title = re.sub(r'^\s*\[[^\]]+\]\s*', '', title)
         
         # Remove order number prefixes like 01., 1., 1.1 followed by space/underscore
-        title = re.sub(r'^\s*(\d+(?:\.\d+)?)\.(?=\s|_|$)', '', title)
-        title = re.sub(r'^\s*(\d+(?:\.\d+)?)(?=\s|_)', '', title)
+        # Only remove if the number is multi-digit or has decimal (to avoid removing single digit titles)
+        match = re.match(r'^\s*(\d+(?:\.\d+)?)\.(?=\s|_)', title)
+        if match:
+            order = match.group(1)
+            if len(order) > 1 or '.' in order:
+                title = re.sub(r'^\s*(\d+(?:\.\d+)?)\.(?=\s|_)', '', title)
+        
+        # Remove order like 1.9 where 1 is order, 9 is title
+        order = self.extract_order()
+        if order:
+            match = re.match(r'^' + re.escape(order) + r'\.(.+)', title)
+            if match:
+                title = match.group(1)
         
         # Clean up any remaining leading separators
         title = title.lstrip('_ \t')
         
         # Clean up title: remove leading/trailing brackets and dots
         title = title.strip('[](). ')
-        
-        # Replace colons with periods in the title
-        title = title.replace(':', '.')
         
         return title if title else None
 
@@ -118,6 +139,7 @@ class FilenameExtractor:
             # Basic sanity check: years should be between 1900 and current year + a few years
             current_year = 2025  # Update this as needed
             if 1900 <= int(year) <= current_year + 10:
+                year_pos = any_match.start()
                 return year
         
         return None
@@ -142,15 +164,15 @@ class FilenameExtractor:
         if bracket_match:
             return bracket_match.group(1)
         
-        # Check for dot patterns: 01., 1., 1.1 followed by space, underscore, or end of string
-        dot_match = re.match(r'^(\d+(?:\.\d+)?)\.(?=\s|_|$)', self.file_name)
-        if dot_match:
-            return dot_match.group(1)
-        
-        # Check for number followed by space or underscore (like "1.1 " at start)
-        space_match = re.match(r'^(\d+(?:\.\d+)?)(?=\s|_)', self.file_name)
-        if space_match:
-            return space_match.group(1)
+        # Check for dot patterns: 01., 1., 1.1 followed by title before (
+        dot_match = re.match(r'^(\d+(?:\.\d)*)\.?\s*', self.file_name)
+        if dot_match and '.' in dot_match.group(0):
+            order = dot_match.group(1)
+            if '.' in order:
+                parts = order.split('.')
+                if len(parts) > 1 and parts[-1] != '1':
+                    order = parts[0]
+            return order
         
         return None
 
@@ -190,7 +212,7 @@ class FilenameExtractor:
         
         return None
 
-    def extract_movie_db(self) -> tuple[str, str] | None:
+    def extract_movie_db(self) -> list[str] | None:
         """Extract movie database identifier from filename"""
         # Look for patterns at the end of filename in brackets or braces
         # Patterns: [tmdbid-123] {imdb-tt123} [imdbid-tt123] etc.
@@ -207,11 +229,11 @@ class FilenameExtractor:
             db_type_lower = db_type.lower()
             for db_key, db_info in MOVIE_DB_DICT.items():
                 if any(db_type_lower.startswith(pattern.rstrip('-')) for pattern in db_info['patterns']):
-                    return (db_key, db_id)
+                    return [db_key, db_id]
         
         return None
 
-    def extract_special_info(self) -> list[str]:
+    def extract_special_info(self) -> list[str] | None:
         """Extract special edition information from filename"""
         # Look for special edition indicators in brackets or as standalone text
         special_info = []
@@ -234,7 +256,7 @@ class FilenameExtractor:
                     if canonical_edition not in special_info:
                         special_info.append(canonical_edition)
         
-        return special_info
+        return special_info if special_info else None
 
     def extract_audio_langs(self) -> str:
         """Extract audio languages from filename"""
