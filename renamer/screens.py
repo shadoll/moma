@@ -1,7 +1,7 @@
 from textual.screen import Screen
 from textual.widgets import Input, Button, Static
 from textual.containers import Vertical, Horizontal, Center, Container
-from rich.markup import escape
+from textual.markup import escape
 from pathlib import Path
 
 
@@ -97,17 +97,29 @@ class RenameConfirmScreen(Screen):
     #confirm_content {
         text-align: center;
     }
-    Button {
-        background: $surface;
-        border: solid $surface;
-    }
+    # Button {
+    #     background: $surface;
+    #     border: solid $surface;
+    # }
     Button:focus {
-        background: $primary;
-        color: $text-primary;
-        border: solid $primary;
+         background: $primary;
+    #     color: $text-primary;
+    #     border: solid $primary;
     }
     #buttons {
         align: center middle;
+    }
+    #new_name_input {
+        width: 100%;
+        margin: 1 0;
+    }
+    #new_name_display {
+        text-align: center;
+        margin-bottom: 1;
+    }
+    #warning_content {
+        text-align: center;
+        margin-bottom: 0;
     }
     """
 
@@ -123,23 +135,40 @@ class RenameConfirmScreen(Screen):
         confirm_text = f"""
 {TextFormatter.bold(TextFormatter.red("RENAME CONFIRMATION"))}
 
-Current name: {TextFormatter.cyan(escape(self.old_path.name))}
-New name:     {TextFormatter.green(escape(self.new_name))}
+RAW name: {escape(self.old_path.name)}
 
-{TextFormatter.yellow("This action cannot be undone!")}
+Current name:  {TextFormatter.cyan(escape(self.old_path.name))}
+Proposed name: {TextFormatter.green(escape(self.new_name))}
 
+{TextFormatter.yellow("Edit the new name below:")}
+        """.strip()
+
+        warning_text = f"""
+{TextFormatter.bold(TextFormatter.red("This action cannot be undone!"))}
 Do you want to proceed with renaming?
         """.strip()
 
         with Center():
             with Vertical():
                 yield Static(confirm_text, id="confirm_content", markup=True)
+                yield Input(value=self.new_name, id="new_name_input", placeholder="New file name")
+                yield Static(f"{TextFormatter.green(escape(self.new_name))}", id="new_name_display", markup=True)
+                yield Static(warning_text, id="warning_content", markup=True)
                 with Horizontal(id="buttons"):
                     yield Button("Rename (y)", id="rename")
                     yield Button("Cancel (n)", id="cancel")
 
     def on_mount(self):
         self.set_focus(self.query_one("#rename"))
+
+    def on_input_changed(self, event):
+        if event.input.id == "new_name_input":
+            self.new_name = event.input.value
+            self.new_path = self.old_path.parent / self.new_name
+            # Update the display
+            from .formatters.text_formatter import TextFormatter
+            display = self.query_one("#new_name_display", Static)
+            display.update(f"{TextFormatter.green(escape(self.new_name))}")
 
     def on_button_pressed(self, event):
         if event.button.id == "rename":
@@ -156,10 +185,37 @@ Do you want to proceed with renaming?
             self.app.pop_screen()
 
     def on_key(self, event):
-        if event.key == "left":
-            self.set_focus(self.query_one("#rename"))
-        elif event.key == "right":
-            self.set_focus(self.query_one("#cancel"))
+        current = self.focused
+        if current and hasattr(current, 'id'):
+            if current.id == "new_name_input":
+                # When input is focused, let left/right move cursor, use up/down to change focus
+                if event.key == "up":
+                    self.set_focus(self.query_one("#cancel"))
+                elif event.key == "down":
+                    self.set_focus(self.query_one("#rename"))
+            elif current.id in ("rename", "cancel"):
+                if event.key == "left":
+                    if current.id == "rename":
+                        self.set_focus(self.query_one("#new_name_input"))
+                    elif current.id == "cancel":
+                        self.set_focus(self.query_one("#rename"))
+                elif event.key == "right":
+                    if current.id == "new_name_input":
+                        self.set_focus(self.query_one("#rename"))
+                    elif current.id == "rename":
+                        self.set_focus(self.query_one("#cancel"))
+                elif event.key == "up":
+                    if current.id == "rename":
+                        self.set_focus(self.query_one("#new_name_input"))
+                    elif current.id == "cancel":
+                        self.set_focus(self.query_one("#rename"))
+                elif event.key == "down":
+                    if current.id == "new_name_input":
+                        self.set_focus(self.query_one("#rename"))
+                    elif current.id == "rename":
+                        self.set_focus(self.query_one("#cancel"))
+                    elif current.id == "cancel":
+                        self.set_focus(self.query_one("#new_name_input"))
         elif event.key == "y":
             # Trigger rename
             try:

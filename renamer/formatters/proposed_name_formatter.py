@@ -17,7 +17,7 @@ class ProposedNameFormatter:
         self.__frame_class = extractor.get("frame_class") or None
         self.__hdr = f",{extractor.get('hdr')}" if extractor.get("hdr") else ""
         self.__audio_langs = extractor.get("audio_langs") or None
-        self.__special_info = f" [{SpecialInfoFormatter.format_special_info(extractor.get('special_info'))}]" if extractor.get("special_info") else ""
+        self.__special_info = f" \[{SpecialInfoFormatter.format_special_info(extractor.get('special_info'))}]" if extractor.get("special_info") else ""
         self.__db_info = f" [{SpecialInfoFormatter.format_database_info(extractor.get('movie_db'))}]" if extractor.get("movie_db") else ""
         self.__extension = extractor.get("extension") or "ext"
 

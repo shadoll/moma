@@ -355,10 +355,16 @@ class FilenameExtractor:
         if not langs:
             return ''
             
-        # Count occurrences and format like mediainfo: "2ukr,eng"
-        lang_counts = Counter(langs)
+        # Count occurrences while preserving order of first appearance
+        lang_counts = {}
+        for lang in langs:
+            if lang not in lang_counts:
+                lang_counts[lang] = 0
+            lang_counts[lang] += 1
+        
+        # Format like mediainfo: "2ukr,eng" preserving order
         audio_langs = [f"{count}{lang}" if count > 1 else lang for lang, count in lang_counts.items()]
-        return ','.join(sorted(audio_langs))
+        return ','.join(audio_langs)
 
     def extract_audio_tracks(self) -> list[dict]:
         """Extract audio track data from filename (simplified version with only language)"""

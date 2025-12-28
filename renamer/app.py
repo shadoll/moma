@@ -185,8 +185,11 @@ class RenamerApp(App):
             extractor = MediaExtractor(node.data)
             proposed_formatter = ProposedNameFormatter(extractor)
             new_name = str(proposed_formatter)
+            logging.info(f"Proposed new name: {new_name!r} for file: {node.data}")
             if new_name and new_name != node.data.name:
                 self.push_screen(RenameConfirmScreen(node.data, new_name))
+            else:
+                self.notify("Proposed name is the same as current name; no rename needed.", severity="information", timeout=3)
 
     async def action_expand(self):
         tree = self.query_one("#file_tree", Tree)
