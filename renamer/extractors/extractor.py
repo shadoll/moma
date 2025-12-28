@@ -32,6 +32,7 @@ class MediaExtractor:
         self._data = {
             "title": {
                 "sources": [
+                    ("TMDB", "extract_title"),
                     ("Metadata", "extract_title"),
                     ("Filename", "extract_title"),
                     ("Default", "extract_title"),
