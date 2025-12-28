@@ -216,22 +216,23 @@ class FilenameExtractor:
         # Look for special edition indicators in brackets or as standalone text
         special_info = []
         
-        for edition in SPECIAL_EDITIONS:
-            # Check in brackets: [Theatrical Cut], [Director's Cut], etc.
-            bracket_pattern = r'\[([^\]]+)\]'
-            brackets = re.findall(bracket_pattern, self.file_name)
-            for bracket in brackets:
-                # Check if bracket contains comma-separated items
-                items = [item.strip() for item in bracket.split(',')]
-                for item in items:
-                    if edition.lower() == item.lower().strip():
-                        if edition not in special_info:
-                            special_info.append(edition)
-            
-            # Check as standalone text (case-insensitive)
-            if re.search(r'\b' + re.escape(edition) + r'\b', self.file_name, re.IGNORECASE):
-                if edition not in special_info:
-                    special_info.append(edition)
+        for canonical_edition, variants in SPECIAL_EDITIONS.items():
+            for edition in variants:
+                # Check in brackets: [Theatrical Cut], [Director's Cut], etc.
+                bracket_pattern = r'\[([^\]]+)\]'
+                brackets = re.findall(bracket_pattern, self.file_name)
+                for bracket in brackets:
+                    # Check if bracket contains comma-separated items
+                    items = [item.strip() for item in bracket.split(',')]
+                    for item in items:
+                        if edition.lower() == item.lower().strip():
+                            if canonical_edition not in special_info:
+                                special_info.append(canonical_edition)
+                
+                # Check as standalone text (case-insensitive)
+                if re.search(r'\b' + re.escape(edition) + r'\b', self.file_name, re.IGNORECASE):
+                    if canonical_edition not in special_info:
+                        special_info.append(canonical_edition)
         
         return special_info
 
