@@ -71,6 +71,7 @@ class RenamerApp(App):
         self.scan_files()
 
     def scan_files(self):
+        logging.info("scan_files called")
         if not self.scan_dir or not self.scan_dir.exists() or not self.scan_dir.is_dir():
             details = self.query_one("#details", Static)
             details.update("Error: Directory does not exist or is not a directory")
@@ -213,8 +214,12 @@ class RenamerApp(App):
 
     def update_renamed_file(self, old_path: Path, new_path: Path):
         """Update the tree node for a renamed file."""
-        tree = self.query_one("#file_tree", Tree)
+        logging.info(f"update_renamed_file called with old_path={old_path}, new_path={new_path}")
         
+        tree = self.query_one("#file_tree", Tree)
+        logging.info(f"Before update: cursor_node.data = {tree.cursor_node.data if tree.cursor_node else None}")
+        
+        # Update only the specific node
         def find_node(node):
             if node.data == old_path:
                 return node
@@ -226,14 +231,27 @@ class RenamerApp(App):
         
         node = find_node(tree.root)
         if node:
+            logging.info(f"Found node for {old_path}, updating to {new_path.name}")
             node.label = escape(new_path.name)
             node.data = new_path
-            # If this node is currently selected, refresh the details
-            if tree.cursor_node == node:
-                self._start_loading_animation()
-                threading.Thread(
-                    target=self._extract_and_show_details, args=(new_path,)
-                ).start()
+            logging.info(f"After update: node.data = {node.data}, node.label = {node.label}")
+            # Ensure cursor stays on the renamed file
+            tree.select_node(node)
+            logging.info(f"Selected node: {tree.cursor_node.data if tree.cursor_node else None}")
+        else:
+            logging.info(f"No node found for {old_path}")
+        
+        logging.info(f"After update: cursor_node.data = {tree.cursor_node.data if tree.cursor_node else None}")
+        
+        # Refresh the details if the node is currently selected
+        if tree.cursor_node and tree.cursor_node.data == new_path:
+            logging.info("Refreshing details for renamed file")
+            self._start_loading_animation()
+            threading.Thread(
+                target=self._extract_and_show_details, args=(new_path,)
+            ).start()
+        else:
+            logging.info("Not refreshing details, cursor not on renamed file")
 
     def on_key(self, event):
         if event.key == "right":

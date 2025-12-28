@@ -3,6 +3,7 @@ from textual.widgets import Input, Button, Static
 from textual.containers import Vertical, Horizontal, Center, Container
 from textual.markup import escape
 from pathlib import Path
+import logging
 
 
 class OpenScreen(Screen):
@@ -128,6 +129,7 @@ class RenameConfirmScreen(Screen):
         self.old_path = old_path
         self.new_name = new_name
         self.new_path = old_path.parent / new_name
+        self.was_edited = False
 
     def compose(self):
         from .formatters.text_formatter import TextFormatter
@@ -165,6 +167,7 @@ Do you want to proceed with renaming?
         if event.input.id == "new_name_input":
             self.new_name = event.input.value
             self.new_path = self.old_path.parent / self.new_name
+            self.was_edited = True
             # Update the display
             from .formatters.text_formatter import TextFormatter
             display = self.query_one("#new_name_display", Static)
@@ -173,6 +176,7 @@ Do you want to proceed with renaming?
     def on_button_pressed(self, event):
         if event.button.id == "rename":
             try:
+                logging.info(f"Renaming {self.old_path} to {self.new_path}")
                 self.old_path.rename(self.new_path)
                 # Update the tree node
                 self.app.update_renamed_file(self.old_path, self.new_path) # type: ignore
@@ -222,6 +226,7 @@ Do you want to proceed with renaming?
             if event.key == "y":
                 # Trigger rename
                 try:
+                    logging.info(f"Hotkey renaming {self.old_path} to {self.new_path}")
                     self.old_path.rename(self.new_path)
                     # Update the tree node
                     self.app.update_renamed_file(self.old_path, self.new_path) # type: ignore
