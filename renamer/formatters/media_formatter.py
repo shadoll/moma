@@ -361,7 +361,7 @@ class MediaFormatter:
                 "label": "Year",
                 "label_formatters": [TextFormatter.bold, TextFormatter.blue],
                 "value": self.extractor.get("year") or "<None>",
-                "value_formatters": [TextFormatter.yellow, DateFormatter.format_year],
+                "value_formatters": [TextFormatter.yellow],
             },
             {
                 "label": "Special info",

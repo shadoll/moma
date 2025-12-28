@@ -213,7 +213,7 @@ class TMDBExtractor:
         """Extract TMDB original title"""
         movie_info = self._get_movie_info()
         if movie_info:
-            return movie_info.get('original_title')
+            return f"({movie_info.get('original_language')}) {movie_info.get('original_title')}"
         return None
 
     def extract_year(self) -> Optional[str]:
