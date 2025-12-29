@@ -71,43 +71,26 @@ class MediaInfoExtractor:
         if not self.video_tracks:
             return None
         height = getattr(self.video_tracks[0], 'height', None)
-        width = getattr(self.video_tracks[0], 'width', None)
-        if not height or not width:
+        if not height:
             return None
         
         # Check if interlaced
         interlaced = getattr(self.video_tracks[0], 'interlaced', None)
         scan_type = 'i' if interlaced == 'Yes' else 'p'
         
-        # First, try to match width to typical widths
-        matching_classes = []
-        for frame_class, info in FRAME_CLASSES.items():
-            if width in info['typical_widths'] and frame_class.endswith(scan_type):
-                matching_classes.append((frame_class, info))
-        
-        if matching_classes:
-            # If multiple matches, choose the one with closest height
-            closest = min(matching_classes, key=lambda x: abs(height - x[1]['nominal_height']))
-            return closest[0]
-        
-        # If no width match, fall back to height-based matching
-        # First try exact match
-        frame_class = f"{height}{scan_type}"
-        if frame_class in FRAME_CLASSES:
-            return frame_class
-        
-        # Find closest height with same scan type
-        closest_height = None
+        # Find the closest frame class based on height
+        closest_class = None
         min_diff = float('inf')
-        for fc, info in FRAME_CLASSES.items():
-            if fc.endswith(scan_type):
+        for frame_class, info in FRAME_CLASSES.items():
+            if frame_class.endswith(scan_type):
                 diff = abs(height - info['nominal_height'])
                 if diff < min_diff:
                     min_diff = diff
-                    closest_height = info['nominal_height']
+                    closest_class = frame_class
         
-        if closest_height and min_diff <= 100:
-            return f"{closest_height}{scan_type}"
+        # Return the closest match if within reasonable distance
+        if closest_class and min_diff <= 100:
+            return closest_class
         return None
 
     @cached_method()
