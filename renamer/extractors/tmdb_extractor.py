@@ -205,6 +205,13 @@ class TMDBExtractor:
         if movie_info and movie_info.get('runtime'):
             return str(movie_info['runtime'])
         return None
+    
+    def extract_movie_db(self) -> Optional[Tuple[str, str]]:
+        """Extract TMDB database info as (name, id) tuple"""
+        movie_id = self.extract_tmdb_id()
+        if movie_id:
+            return ("tmdb", movie_id)
+        return None
 
     def extract_popularity(self) -> Optional[str]:
         """Extract TMDB popularity"""
