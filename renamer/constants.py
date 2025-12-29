@@ -47,6 +47,7 @@ SOURCE_DICT = {
     "DVDRip": ["DVDRip", "DVD-Rip", "DVDRIP"],
     "HDTVRip": ["HDTVRip", "HDTV"],
     "BluRay": ["BluRay", "BLURAY", "Blu-ray"],
+    "SATRip": ["SATRip", "SAT-Rip", "SATRIP"],
     "VHSRecord": [
         "VHSRecord",
         "VHS Record",
@@ -68,6 +69,11 @@ FRAME_CLASSES = {
         "nominal_height": 480,
         "typical_widths": [640, 704, 720],
         "description": "Standard Definition (SD) interlaced - NTSC quality",
+    },
+    "360p": {
+        "nominal_height": 360,
+        "typical_widths": [480, 640],
+        "description": "Low Definition (LD) - 360p",
     },
     "576p": {
         "nominal_height": 576,

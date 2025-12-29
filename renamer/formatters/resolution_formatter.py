@@ -1,3 +1,5 @@
+from renamer.constants import FRAME_CLASSES
+
 class ResolutionFormatter:
     """Class for formatting video resolutions and frame classes"""
 
@@ -20,38 +22,19 @@ class ResolutionFormatter:
                 else:
                     return 'Unclassified'
 
-            if height == 4320:
-                return '4320p'
-            elif height >= 2160:
-                return '2160p'
-            elif height >= 1440:
-                return '1440p'
-            elif height >= 1080:
-                return '1080p'
-            elif height >= 720:
-                return '720p'
-            elif height >= 576:
-                return '576p'
-            elif height >= 480:
-                return '480p'
-            else:
-                return 'Unclassified'
+            # Find the closest frame class based on nominal height
+            closest_class = 'Unclassified'
+            min_diff = float('inf')
+            for frame_class, info in FRAME_CLASSES.items():
+                nominal_height = info['nominal_height']
+                diff = abs(height - nominal_height)
+                if diff < min_diff:
+                    min_diff = diff
+                    closest_class = frame_class
+
+            return closest_class
         except (ValueError, IndexError):
             return 'Unclassified'
-
-    @staticmethod
-    def format_resolution_p(height: int) -> str:
-        """Format resolution as 2160p, 1080p, etc."""
-        if height >= 2160:
-            return '2160p'
-        elif height >= 1080:
-            return '1080p'
-        elif height >= 720:
-            return '720p'
-        elif height >= 480:
-            return '480p'
-        else:
-            return f'{height}p'
 
     @staticmethod
     def format_resolution_dimensions(resolution: tuple[int, int]) -> str:

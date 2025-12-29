@@ -35,7 +35,6 @@ class FormatterApplier:
         DateFormatter.format_year,
         ExtensionFormatter.format_extension_info,
         ResolutionFormatter.get_frame_class_from_resolution,
-        ResolutionFormatter.format_resolution_p,
         ResolutionFormatter.format_resolution_dimensions,
         TrackFormatter.format_video_track,
         TrackFormatter.format_audio_track,

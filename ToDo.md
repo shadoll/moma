@@ -28,3 +28,41 @@ TODO Steps:
 25. Add batch rename operations (future enhancement)
 26. Add configuration file support (future enhancement)
 27. Add plugin system for custom extractors/formatters (future enhancement)
+
+---
+
+## Media Catalog Mode Implementation Plan
+
+**New big app evolution step: Add media catalog mode with settings, caching, and enhanced TMDB display.**
+
+### Phase 1: Settings Management Foundation
+1. ✅ Create settings module (`renamer/settings.py`) for JSON config in `~/.config/renamer/config.json` with schema: mode, cache TTLs
+2. ✅ Integrate settings into app startup (load/save on launch/exit)
+3. ✅ Add settings window to UI with fields for mode and TTLs
+4. ✅ Add "Open Settings" command to command panel
+5. ✅ Order setting menu item in the action bar by right side, close to the sysytem menu item ^p palette
+
+### Phase 2: Mode Toggle and UI Switching
+5. ✅ Add "Toggle Mode" command to switch between "technical" and "catalog" modes
+6. ✅ Modify right pane for mode-aware display (technical vs catalog info)
+7. ✅ Persist and restore mode state from settings
+
+### Phase 3: Caching System
+8. ✅ Create caching module (`renamer/cache.py`) for file-based cache with TTL support
+9. ✅ Integrate caching into extractors (check cache first, store results)
+10. ✅ Add refresh command to force re-extraction and cache update
+11. ✅ Handle cache cleanup on file rename (invalidate old filename)
+
+### Phase 4: Media Catalog Display
+12. ✅ Update TMDB extractor for catalog data: title, year, duration, rates, overview, genres codes, poster_path
+13. ✅ Create catalog formatter (`formatters/catalog_formatter.py`) for beautiful display
+14. ✅ Integrate catalog display into right pane
+
+### Phase 5: Poster Handling and Display
+15. ✅ Add poster caching (images in cache dir with 1-month TTL)
+16. ✅ Implement terminal image display (research rich-pixels or alternatives, add poster_display.py)
+
+### Additional TODOs from Plan
+- Retrieve full movie details from TMDB (future)
+- Expand genres to full names instead of codes (future)
+- Optimize poster quality and display (future)

@@ -1,6 +1,6 @@
 [project]
 name = "renamer"
-version = "0.4.7"
+version = "0.5.1"
 description = "Terminal-based media file renamer and metadata viewer"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,6 +12,7 @@ dependencies = [
     "pytest>=7.0.0",
     "langcodes>=3.5.1",
     "requests>=2.31.0",
+    "rich-pixels>=1.0.0",
 ]
 
 [project.scripts]

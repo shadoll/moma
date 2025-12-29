@@ -2,6 +2,7 @@ from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
 from ..constants import FRAME_CLASSES, MEDIA_TYPES
+from ..decorators import cached_method
 import langcodes
 
 
@@ -10,6 +11,7 @@ class MediaInfoExtractor:
 
     def __init__(self, file_path: Path):
         self.file_path = file_path
+        self._cache = {}  # Internal cache for method results
         try:
             self.media_info = MediaInfo.parse(file_path)
             self.video_tracks = [t for t in self.media_info.tracks if t.track_type == 'Video']
@@ -54,6 +56,7 @@ class MediaInfoExtractor:
             return closest
         return None
 
+    @cached_method()
     def extract_duration(self) -> float | None:
         """Extract duration from media info in seconds"""
         if self.media_info:
@@ -62,6 +65,7 @@ class MediaInfoExtractor:
                     return getattr(track, 'duration', 0) / 1000 if getattr(track, 'duration', None) else None
         return None
 
+    @cached_method()
     def extract_frame_class(self) -> str | None:
         """Extract frame class from media info (480p, 720p, 1080p, etc.)"""
         if not self.video_tracks:
@@ -106,6 +110,7 @@ class MediaInfoExtractor:
             return f"{closest_height}{scan_type}"
         return None
 
+    @cached_method()
     def extract_resolution(self) -> tuple[int, int] | None:
         """Extract actual video resolution as (width, height) tuple from media info"""
         if not self.video_tracks:
@@ -116,6 +121,7 @@ class MediaInfoExtractor:
             return width, height
         return None
     
+    @cached_method()
     def extract_aspect_ratio(self) -> str | None:
         """Extract video aspect ratio from media info"""
         if not self.video_tracks:
@@ -125,6 +131,7 @@ class MediaInfoExtractor:
             return str(aspect_ratio)
         return None
 
+    @cached_method()
     def extract_hdr(self) -> str | None:
         """Extract HDR info from media info"""
         if not self.video_tracks:
@@ -134,6 +141,7 @@ class MediaInfoExtractor:
             return 'HDR'
         return None
 
+    @cached_method()
     def extract_audio_langs(self) -> str | None:
         """Extract audio languages from media info"""
         if not self.audio_tracks:
@@ -154,6 +162,7 @@ class MediaInfoExtractor:
         audio_langs = [f"{count}{lang}" if count > 1 else lang for lang, count in lang_counts.items()]
         return ','.join(audio_langs)
 
+    @cached_method()
     def extract_video_tracks(self) -> list[dict]:
         """Extract video track data"""
         tracks = []
@@ -169,6 +178,7 @@ class MediaInfoExtractor:
             tracks.append(track_data)
         return tracks
 
+    @cached_method()
     def extract_audio_tracks(self) -> list[dict]:
         """Extract audio track data"""
         tracks = []
@@ -182,6 +192,7 @@ class MediaInfoExtractor:
             tracks.append(track_data)
         return tracks
 
+    @cached_method()
     def extract_subtitle_tracks(self) -> list[dict]:
         """Extract subtitle track data"""
         tracks = []
@@ -193,6 +204,7 @@ class MediaInfoExtractor:
             tracks.append(track_data)
         return tracks
 
+    @cached_method()
     def is_3d(self) -> bool:
         """Check if the video is 3D"""
         if not self.video_tracks:
@@ -205,6 +217,7 @@ class MediaInfoExtractor:
             return True
         return False
 
+    @cached_method()
     def extract_anamorphic(self) -> str | None:
         """Extract anamorphic info for 3D videos"""
         if not self.video_tracks:
@@ -214,6 +227,7 @@ class MediaInfoExtractor:
             return 'Anamorphic:Yes'
         return None
 
+    @cached_method()
     def extract_extension(self) -> str | None:
         """Extract file extension based on container format"""
         if not self.media_info:
@@ -233,6 +247,7 @@ class MediaInfoExtractor:
                 return exts[0] if exts else None
         return None
 
+    @cached_method()
     def extract_3d_layout(self) -> str | None:
         """Extract 3D stereoscopic layout from MediaInfo"""
         if not self.is_3d():

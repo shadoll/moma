@@ -10,14 +10,40 @@ from .default_extractor import DefaultExtractor
 class MediaExtractor:
     """Class to extract various metadata from media files using specialized extractors"""
 
-    def __init__(self, file_path: Path):
+    @classmethod
+    def create(cls, file_path: Path, cache=None, ttl_seconds: int = 21600):
+        """Factory method that returns cached object if available, else creates new."""
+        if cache:
+            cache_key = f"extractor_{file_path}"
+            cached_obj = cache.get_object(cache_key)
+            if cached_obj:
+                print(f"Loaded MediaExtractor object from cache for {file_path.name}")
+                return cached_obj
+        
+        # Create new instance
+        instance = cls(file_path, cache, ttl_seconds)
+        
+        # Cache the object
+        if cache:
+            cache_key = f"extractor_{file_path}"
+            cache.set_object(cache_key, instance, ttl_seconds)
+            print(f"Cached MediaExtractor object for {file_path.name}")
+        
+        return instance
+
+    def __init__(self, file_path: Path, cache=None, ttl_seconds: int = 21600):
+        self.file_path = file_path
+        self.cache = cache
+        self.ttl_seconds = ttl_seconds
+        self.cache_key = f"file_data_{file_path}"
+        
         self.filename_extractor = FilenameExtractor(file_path)
         self.metadata_extractor = MetadataExtractor(file_path)
         self.mediainfo_extractor = MediaInfoExtractor(file_path)
         self.fileinfo_extractor = FileInfoExtractor(file_path)
-        self.tmdb_extractor = TMDBExtractor(file_path)
+        self.tmdb_extractor = TMDBExtractor(file_path, cache, ttl_seconds)
         self.default_extractor = DefaultExtractor()
-
+        
         # Extractor mapping
         self._extractors = {
             "Metadata": self.metadata_extractor,
@@ -164,9 +190,16 @@ class MediaExtractor:
                 ],
             },
         }
-
+        
+        # No caching logic here - handled in create() method
+    
     def get(self, key: str, source: str | None = None):
         """Get extracted data by key, optionally from specific source"""
+        print(f"Extracting real data for key '{key}' in {self.file_path.name}")
+        return self._get_uncached(key, source)
+
+    def _get_uncached(self, key: str, source: str | None = None):
+        """Original get logic without caching"""
         if source:
             # Specific source requested - find the extractor and call the method directly
             for extractor_name, extractor in self._extractors.items():
@@ -174,27 +207,20 @@ class MediaExtractor:
                     method = f"extract_{key}"
                     if hasattr(extractor, method):
                         val = getattr(extractor, method)()
-                        # Apply condition if specified
-                        if key in self._data and "condition" in self._data[key]:
-                            condition = self._data[key]["condition"]
-                            return val if condition(val) else None
-                        return val
+                        return val if val is not None else None
             return None
         
         # Fallback mode - try sources in order
         if key in self._data:
-            data = self._data[key]
-            sources = data["sources"]
-            condition = data.get("condition", lambda x: x is not None)
+            sources = self._data[key]["sources"]
         else:
             # Try extractors in order for unconfigured keys
             sources = [(name, f"extract_{key}") for name in ["MediaInfo", "Metadata", "Filename", "FileInfo"]]
-            condition = lambda x: x is not None
         
         # Try each source in order until a valid value is found
         for src, method in sources:
             if src in self._extractors and hasattr(self._extractors[src], method):
                 val = getattr(self._extractors[src], method)()
-                if condition(val):
+                if val is not None:
                     return val
         return None

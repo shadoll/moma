@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from collections import Counter
 from ..constants import SOURCE_DICT, FRAME_CLASSES, MOVIE_DB_DICT, SPECIAL_EDITIONS
+from ..decorators import cached_method
 import langcodes
 
 
@@ -34,6 +35,7 @@ class FilenameExtractor:
                 return frame_class
         return None
 
+    @cached_method()
     def extract_title(self) -> str | None:
         """Extract movie title from filename"""
         # Find positions of year, source, and quality brackets
@@ -120,6 +122,7 @@ class FilenameExtractor:
         
         return title if title else None
 
+    @cached_method()
     def extract_year(self) -> str | None:
         """Extract year from filename"""
         # First try to find year in parentheses (most common and reliable)
@@ -144,6 +147,7 @@ class FilenameExtractor:
         
         return None
 
+    @cached_method()
     def extract_source(self) -> str | None:
         """Extract video source from filename"""
         temp_name = re.sub(r'\s*\(\d{4}\)\s*|\s*\d{4}\s*|\.\d{4}\.', ' ', self.file_name)
@@ -154,6 +158,7 @@ class FilenameExtractor:
                     return src
         return None
 
+    @cached_method()
     def extract_order(self) -> str | None:
         """Extract collection order number from filename (at the beginning)"""
         # Look for order patterns at the start of filename
@@ -176,6 +181,7 @@ class FilenameExtractor:
         
         return None
 
+    @cached_method()
     def extract_frame_class(self) -> str | None:
         """Extract frame class from filename (480p, 720p, 1080p, 2160p, etc.)"""
         # Normalize Cyrillic characters for resolution parsing
@@ -200,6 +206,7 @@ class FilenameExtractor:
         
         return None
 
+    @cached_method()
     def extract_hdr(self) -> str | None:
         """Extract HDR information from filename"""
         # Check for SDR first - indicates no HDR
@@ -212,6 +219,7 @@ class FilenameExtractor:
         
         return None
 
+    @cached_method()
     def extract_movie_db(self) -> list[str] | None:
         """Extract movie database identifier from filename"""
         # Look for patterns at the end of filename in brackets or braces
@@ -233,6 +241,7 @@ class FilenameExtractor:
         
         return None
 
+    @cached_method()
     def extract_special_info(self) -> list[str] | None:
         """Extract special edition information from filename"""
         # Look for special edition indicators in brackets or as standalone text
@@ -258,6 +267,7 @@ class FilenameExtractor:
         
         return special_info if special_info else None
 
+    @cached_method()
     def extract_audio_langs(self) -> str:
         """Extract audio languages from filename"""
         # Look for language patterns in brackets and outside brackets
@@ -389,6 +399,7 @@ class FilenameExtractor:
         audio_langs = [f"{count}{lang}" if count > 1 else lang for lang, count in lang_counts.items()]
         return ','.join(audio_langs)
 
+    @cached_method()
     def extract_audio_tracks(self) -> list[dict]:
         """Extract audio track data from filename (simplified version with only language)"""
         # Similar to extract_audio_langs but returns list of dicts

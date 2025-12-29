@@ -11,53 +11,22 @@ from ..secrets import TMDB_API_KEY, TMDB_ACCESS_TOKEN
 class TMDBExtractor:
     """Class to extract TMDB movie information"""
 
-    CACHE_DIR = Path.home() / ".cache" / "renamer" / "tmdb"
-    CACHE_DURATION = 5 * 24 * 60 * 60  # 5 days in seconds
-
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, cache=None, ttl_seconds: int = 21600):
         self.file_path = file_path
+        self.cache = cache
+        self.ttl_seconds = ttl_seconds
         self._movie_db_info = None
-
-    def _get_cache_file_path(self, cache_key: str) -> Path:
-        """Get the cache file path for a given cache key"""
-        # Create a hash of the cache key for the filename
-        key_hash = hashlib.md5(cache_key.encode('utf-8')).hexdigest()
-        return self.CACHE_DIR / f"{key_hash}.json"
-
-    def _is_cache_valid(self, cache_key: str) -> bool:
-        """Check if cache entry is still valid"""
-        cache_file = self._get_cache_file_path(cache_key)
-        if not cache_file.exists():
-            return False
-        
-        try:
-            # Check file modification time
-            stat = cache_file.stat()
-            return time.time() - stat.st_mtime < self.CACHE_DURATION
-        except OSError:
-            return False
 
     def _get_cached_data(self, cache_key: str) -> Optional[Dict[str, Any]]:
         """Get data from cache if valid"""
-        if not self._is_cache_valid(cache_key):
-            return None
-        
-        cache_file = self._get_cache_file_path(cache_key)
-        try:
-            with open(cache_file, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except (json.JSONDecodeError, OSError):
-            return None
+        if self.cache:
+            return self.cache.get(f"tmdb_{cache_key}")
+        return None
 
     def _set_cached_data(self, cache_key: str, data: Dict[str, Any]):
         """Store data in cache"""
-        try:
-            self.CACHE_DIR.mkdir(parents=True, exist_ok=True)
-            cache_file = self._get_cache_file_path(cache_key)
-            with open(cache_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-        except OSError:
-            pass  # Silently fail if we can't save cache
+        if self.cache:
+            self.cache.set(f"tmdb_{cache_key}", data, self.ttl_seconds)
 
     def _make_tmdb_request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         """Make a request to TMDB API"""
@@ -230,9 +199,70 @@ class TMDBExtractor:
             return f"https://www.themoviedb.org/movie/{movie_id}"
         return None
 
-    def extract_movie_db(self) -> Optional[Tuple[str, str]]:
-        """Extract TMDB database info as (name, id) tuple"""
-        movie_id = self.extract_tmdb_id()
-        if movie_id:
-            return ("tmdb", movie_id)
+    def extract_duration(self) -> Optional[str]:
+        """Extract TMDB runtime in minutes"""
+        movie_info = self._get_movie_info()
+        if movie_info and movie_info.get('runtime'):
+            return str(movie_info['runtime'])
         return None
+
+    def extract_popularity(self) -> Optional[str]:
+        """Extract TMDB popularity"""
+        movie_info = self._get_movie_info()
+        if movie_info:
+            return str(movie_info.get('popularity', ''))
+        return None
+
+    def extract_vote_average(self) -> Optional[str]:
+        """Extract TMDB vote average"""
+        movie_info = self._get_movie_info()
+        if movie_info:
+            return str(movie_info.get('vote_average', ''))
+        return None
+
+    def extract_overview(self) -> Optional[str]:
+        """Extract TMDB overview"""
+        movie_info = self._get_movie_info()
+        if movie_info:
+            return movie_info.get('overview')
+        return None
+
+    def extract_genres(self) -> Optional[str]:
+        """Extract TMDB genres as codes"""
+        movie_info = self._get_movie_info()
+        if movie_info and movie_info.get('genres'):
+            return ', '.join(genre['name'] for genre in movie_info['genres'])
+        return None
+
+    def extract_poster_path(self) -> Optional[str]:
+        """Extract TMDB poster path"""
+        movie_info = self._get_movie_info()
+        if movie_info:
+            return movie_info.get('poster_path')
+        return None
+
+    def extract_poster_image_path(self) -> Optional[str]:
+        """Download and cache poster image, return local path"""
+        poster_path = self.extract_poster_path()
+        if not poster_path or not self.cache:
+            return None
+        
+        cache_key = f"poster_{poster_path}"
+        cached_path = self.cache.get_image(cache_key)
+        if cached_path:
+            return str(cached_path)
+        
+        # Download poster
+        base_url = "https://image.tmdb.org/t/p/w500"  # Medium size
+        url = f"{base_url}{poster_path}"
+        
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            image_data = response.content
+            
+            # Cache image
+            local_path = self.cache.set_image(cache_key, image_data, self.ttl_seconds)
+            return str(local_path) if local_path else None
+        except requests.RequestException:
+            return None

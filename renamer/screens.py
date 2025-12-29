@@ -58,6 +58,8 @@ ACTIONS:
 • f: Refresh - Reload metadata for selected file
 • r: Rename - Rename selected file with proposed name
 • p: Expand/Collapse - Toggle expansion of selected directory
+• m: Toggle Mode - Switch between technical and catalog display modes
+• ctrl+s: Settings - Open settings window
 • h: Help - Show this help screen
 • q: Quit - Exit the application
 
@@ -238,3 +240,91 @@ Do you want to proceed with renaming?
             elif event.key == "n":
                 # Cancel
                 self.app.pop_screen()
+
+
+class SettingsScreen(Screen):
+    CSS = """
+    #settings_content {
+        text-align: center;
+    }
+    Button:focus {
+         background: $primary;
+    }
+    #buttons {
+        align: center middle;
+    }
+    .input_field {
+        width: 100%;
+        margin: 1 0;
+    }
+    .label {
+        text-align: left;
+        margin-bottom: 0;
+    }
+    """
+
+    def compose(self):
+        from .formatters.text_formatter import TextFormatter
+        
+        settings = self.app.settings  # type: ignore
+        
+        content = f"""
+{TextFormatter.bold("SETTINGS")}
+
+Configure application settings.
+        """.strip()
+
+        with Center():
+            with Vertical():
+                yield Static(content, id="settings_content", markup=True)
+                
+                # Mode selection
+                yield Static("Display Mode:", classes="label")
+                with Horizontal():
+                    yield Button("Technical", id="mode_technical", variant="primary" if settings.get("mode") == "technical" else "default")
+                    yield Button("Catalog", id="mode_catalog", variant="primary" if settings.get("mode") == "catalog" else "default")
+                
+                # TTL inputs
+                yield Static("Cache TTL - Extractors (hours):", classes="label")
+                yield Input(value=str(settings.get("cache_ttl_extractors") // 3600), id="ttl_extractors", classes="input_field")
+                
+                yield Static("Cache TTL - TMDB (hours):", classes="label")
+                yield Input(value=str(settings.get("cache_ttl_tmdb") // 3600), id="ttl_tmdb", classes="input_field")
+                
+                yield Static("Cache TTL - Posters (days):", classes="label")
+                yield Input(value=str(settings.get("cache_ttl_posters") // 86400), id="ttl_posters", classes="input_field")
+                
+                with Horizontal(id="buttons"):
+                    yield Button("Save", id="save")
+                    yield Button("Cancel", id="cancel")
+
+    def on_button_pressed(self, event):
+        if event.button.id == "save":
+            self.save_settings()
+            self.app.pop_screen()  # type: ignore
+        elif event.button.id == "cancel":
+            self.app.pop_screen()  # type: ignore
+        elif event.button.id.startswith("mode_"):
+            # Toggle mode buttons
+            mode = event.button.id.split("_")[1]
+            self.app.settings.set("mode", mode)  # type: ignore
+            # Update button variants
+            tech_btn = self.query_one("#mode_technical", Button)
+            cat_btn = self.query_one("#mode_catalog", Button)
+            tech_btn.variant = "primary" if mode == "technical" else "default"
+            cat_btn.variant = "primary" if mode == "catalog" else "default"
+
+    def save_settings(self):
+        try:
+            # Get values and convert to seconds
+            ttl_extractors = int(self.query_one("#ttl_extractors", Input).value) * 3600
+            ttl_tmdb = int(self.query_one("#ttl_tmdb", Input).value) * 3600
+            ttl_posters = int(self.query_one("#ttl_posters", Input).value) * 86400
+            
+            self.app.settings.set("cache_ttl_extractors", ttl_extractors)  # type: ignore
+            self.app.settings.set("cache_ttl_tmdb", ttl_tmdb)  # type: ignore
+            self.app.settings.set("cache_ttl_posters", ttl_posters)  # type: ignore
+            
+            self.app.notify("Settings saved!", severity="information", timeout=2)  # type: ignore
+        except ValueError:
+            self.app.notify("Invalid TTL values. Please enter numbers only.", severity="error", timeout=3)  # type: ignore
