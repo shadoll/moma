@@ -65,33 +65,60 @@ class MediaInfoExtractor:
                     return getattr(track, 'duration', 0) / 1000 if getattr(track, 'duration', None) else None
         return None
 
-    @cached_method()
     def extract_frame_class(self) -> str | None:
         """Extract frame class from media info (480p, 720p, 1080p, etc.)"""
         if not self.video_tracks:
             return None
         height = getattr(self.video_tracks[0], 'height', None)
-        if not height:
+        width = getattr(self.video_tracks[0], 'width', None)
+        if not height or not width:
             return None
         
         # Check if interlaced
         interlaced = getattr(self.video_tracks[0], 'interlaced', None)
         scan_type = 'i' if interlaced == 'Yes' else 'p'
         
-        # Find the closest frame class based on height
+        # Calculate effective height for frame class determination
+        aspect_ratio = 16 / 9
+        if height > width:
+            effective_height = height / aspect_ratio
+        else:
+            effective_height = height
+        
+        # First, try to match width to typical widths
+        width_matches = []
+        for frame_class, info in FRAME_CLASSES.items():
+            if width in info['typical_widths'] and frame_class.endswith(scan_type):
+                diff = abs(height - info['nominal_height'])
+                width_matches.append((frame_class, diff))
+        
+        if width_matches:
+            # Choose the frame class with the smallest height difference
+            width_matches.sort(key=lambda x: x[1])
+            return width_matches[0][0]
+        
+        # If no width match, fall back to height-based matching
+        # First try exact match with standard frame classes
+        frame_class = f"{int(round(effective_height))}{scan_type}"
+        if frame_class in FRAME_CLASSES:
+            return frame_class
+        
+        # Find closest standard height match
         closest_class = None
         min_diff = float('inf')
-        for frame_class, info in FRAME_CLASSES.items():
-            if frame_class.endswith(scan_type):
-                diff = abs(height - info['nominal_height'])
+        for fc, info in FRAME_CLASSES.items():
+            if fc.endswith(scan_type):
+                diff = abs(effective_height - info['nominal_height'])
                 if diff < min_diff:
                     min_diff = diff
-                    closest_class = frame_class
+                    closest_class = fc
         
-        # Return the closest match if within reasonable distance
-        if closest_class and min_diff <= 100:
+        # Return closest standard match if within reasonable distance (20 pixels)
+        if closest_class and min_diff <= 20:
             return closest_class
-        return None
+        
+        # For non-standard resolutions, create a custom frame class
+        return frame_class
 
     @cached_method()
     def extract_resolution(self) -> tuple[int, int] | None:

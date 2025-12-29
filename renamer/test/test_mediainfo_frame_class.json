@@ -1,0 +1,146 @@
+[
+  {
+    "testname": "test-480p-sd",
+    "resolution": [720, 480],
+    "interlaced": false,
+    "expected_frame_class": "480p"
+  },
+  {
+    "testname": "test-576p-pal",
+    "resolution": [720, 576],
+    "interlaced": false,
+    "expected_frame_class": "576p"
+  },
+  {
+    "testname": "test-720p-hd",
+    "resolution": [1280, 720],
+    "interlaced": false,
+    "expected_frame_class": "720p"
+  },
+  {
+    "testname": "test-1080p-fullhd",
+    "resolution": [1920, 1080],
+    "interlaced": false,
+    "expected_frame_class": "1080p"
+  },
+  {
+    "testname": "test-1080i-broadcast",
+    "resolution": [1920, 1080],
+    "interlaced": true,
+    "expected_frame_class": "1080i"
+  },
+  {
+    "testname": "test-1440p-qhd",
+    "resolution": [2560, 1440],
+    "interlaced": false,
+    "expected_frame_class": "1440p"
+  },
+  {
+    "testname": "test-2160p-uhd",
+    "resolution": [3840, 2160],
+    "interlaced": false,
+    "expected_frame_class": "2160p"
+  },
+  {
+    "testname": "test-4320p-8k",
+    "resolution": [7680, 4320],
+    "interlaced": false,
+    "expected_frame_class": "4320p"
+  },
+  {
+    "testname": "test-1080p-cinema-240",
+    "resolution": [1920, 804],
+    "interlaced": false,
+    "expected_frame_class": "1080p"
+  },
+  {
+    "testname": "test-1080p-cinema-235",
+    "resolution": [1920, 816],
+    "interlaced": false,
+    "expected_frame_class": "1080p"
+  },
+  {
+    "testname": "test-720p-cinema",
+    "resolution": [1280, 536],
+    "interlaced": false,
+    "expected_frame_class": "720p"
+  },
+  {
+    "testname": "test-2160p-cinema",
+    "resolution": [3840, 1608],
+    "interlaced": false,
+    "expected_frame_class": "2160p"
+  },
+  {
+    "testname": "test-mobile-vertical-iphone",
+    "resolution": [1170, 2532],
+    "interlaced": false,
+    "expected_frame_class": "1440p"
+  },
+  {
+    "testname": "test-mobile-vertical-4k",
+    "resolution": [2160, 3840],
+    "interlaced": false,
+    "expected_frame_class": "2160p"
+  },
+  {
+    "testname": "test-square-video",
+    "resolution": [1080, 1080],
+    "interlaced": false,
+    "expected_frame_class": "1080p"
+  },
+  {
+    "testname": "test-vhs-capture",
+    "resolution": [720, 404],
+    "interlaced": false,
+    "expected_frame_class": "480p"
+  },
+  {
+    "testname": "test-miniDV-pal",
+    "resolution": [720, 576],
+    "interlaced": true,
+    "expected_frame_class": "576i"
+  },
+  {
+    "testname": "test-old-digital-camera-4by3",
+    "resolution": [1024, 768],
+    "interlaced": false,
+    "expected_frame_class": "768p"
+  },
+  {
+    "testname": "test-old-digital-camera-lowres",
+    "resolution": [800, 600],
+    "interlaced": false,
+    "expected_frame_class": "600p"
+  },
+  {
+    "testname": "test-webcam-legacy",
+    "resolution": [640, 480],
+    "interlaced": false,
+    "expected_frame_class": "480p"
+  },
+  {
+    "testname": "test-odd-nonstandard-wide",
+    "resolution": [1600, 900],
+    "interlaced": false,
+    "expected_frame_class": "900p"
+  },
+  {
+    "testname": "test-odd-nonstandard-small",
+    "resolution": [854, 480],
+    "interlaced": false,
+    "expected_frame_class": "480p"
+  },
+  {
+    "testname": "test-ultrawide-monitor-capture",
+    "resolution": [3440, 1440],
+    "interlaced": false,
+    "expected_frame_class": "1440p"
+  },
+  {
+    "testname": "test-strange-lowres",
+    "resolution": [512, 288],
+    "interlaced": false,
+    "expected_frame_class": "288p"
+  }
+]
