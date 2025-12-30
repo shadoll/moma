@@ -167,7 +167,7 @@ Do you want to proceed with renaming?
 
     def on_input_changed(self, event):
         if event.input.id == "new_name_input":
-            self.new_name = event.input.value
+            self.new_name = event.input.value.replace("/", "-").replace("\\", "-")
             self.new_path = self.old_path.parent / self.new_name
             self.was_edited = True
             # Update the display

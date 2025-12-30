@@ -11,7 +11,7 @@ class ProposedNameFormatter:
         """Initialize with media extractor data"""
 
         self.__order = f"[{extractor.get('order')}] " if extractor.get("order") else ""
-        self.__title = extractor.get("title") or "Unknown Title"
+        self.__title = (extractor.get("title") or "Unknown Title").replace("/", "-").replace("\\", "-")
         self.__year = DateFormatter.format_year(extractor.get("year"))
         self.__source = f" {extractor.get('source')}" if extractor.get("source") else ""
         self.__frame_class = extractor.get("frame_class") or None

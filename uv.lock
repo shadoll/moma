@@ -342,7 +342,7 @@ wheels = [
 
 [[package]]
 name = "renamer"
-version = "0.5.5"
+version = "0.5.8"
 source = { editable = "." }
 dependencies = [
     { name = "langcodes" },
