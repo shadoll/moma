@@ -88,9 +88,10 @@ class MediaInfoExtractor:
         # First, try to match width to typical widths
         width_matches = []
         for frame_class, info in FRAME_CLASSES.items():
-            if width in info['typical_widths'] and frame_class.endswith(scan_type):
-                diff = abs(height - info['nominal_height'])
-                width_matches.append((frame_class, diff))
+            for tw in info['typical_widths']:
+                if abs(width - tw) <= 5 and frame_class.endswith(scan_type):
+                    diff = abs(height - info['nominal_height'])
+                    width_matches.append((frame_class, diff))
         
         if width_matches:
             # Choose the frame class with the smallest height difference

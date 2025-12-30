@@ -142,5 +142,11 @@
     "resolution": [512, 288],
     "interlaced": false,
     "expected_frame_class": "288p"
+  },
+  {
+    "resolution": [1918, 812],
+    "interlaced": false,
+    "expected_frame_class": "1080p",
+    "testname": "test-mistakenly-high-height"
   }
 ]

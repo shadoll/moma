@@ -193,7 +193,7 @@ SPECIAL_EDITIONS = {
     "Workprint": ["Workprint"],
     "Rough Cut": ["Rough Cut"],
     "Special Assembly Cut": ["Special Assembly Cut"],
-    "Amazon Edition": ["Amazon Edition", "Amazon"],
+    "Amazon Edition": ["Amazon Edition", "Amazon", "AMZN"],
     "Netflix Edition": ["Netflix Edition"],
     "HBO Edition": ["HBO Edition"],
 }
