@@ -74,18 +74,6 @@ class FormatterApplier:
         # Sort formatters according to the global order
         ordered_formatters = sorted(formatters, key=lambda f: FormatterApplier.FORMATTER_ORDER.index(f) if f in FormatterApplier.FORMATTER_ORDER else len(FormatterApplier.FORMATTER_ORDER))
         
-        # Get caller info
-        frame = inspect.currentframe()
-        if frame and frame.f_back:
-            caller = f"{frame.f_back.f_code.co_filename}:{frame.f_back.f_lineno} in {frame.f_back.f_code.co_name}"
-        else:
-            caller = "Unknown"
-        
-        logging.info(f"Caller: {caller}")
-        logging.info(f"Original formatters: {[f.__name__ if hasattr(f, '__name__') else str(f) for f in formatters]}")
-        logging.info(f"Ordered formatters: {[f.__name__ if hasattr(f, '__name__') else str(f) for f in ordered_formatters]}")
-        logging.info(f"Input value: {repr(value)}")
-        
         # Apply in the ordered sequence
         for formatter in ordered_formatters:
             try:
@@ -96,7 +84,6 @@ class FormatterApplier:
                 logging.error(f"Error applying {formatter.__name__ if hasattr(formatter, '__name__') else str(formatter)}: {e}")
                 value = "Unknown"
         
-        logging.info(f"Final value: {repr(value)}")
         return value
         
     @staticmethod

@@ -10,38 +10,14 @@ from .default_extractor import DefaultExtractor
 class MediaExtractor:
     """Class to extract various metadata from media files using specialized extractors"""
 
-    @classmethod
-    def create(cls, file_path: Path, cache=None, ttl_seconds: int = 21600):
-        """Factory method that returns cached object if available, else creates new."""
-        if cache:
-            cache_key = f"extractor_{file_path}"
-            cached_obj = cache.get_object(cache_key)
-            if cached_obj:
-                print(f"Loaded MediaExtractor object from cache for {file_path.name}")
-                return cached_obj
-        
-        # Create new instance
-        instance = cls(file_path, cache, ttl_seconds)
-        
-        # Cache the object
-        if cache:
-            cache_key = f"extractor_{file_path}"
-            cache.set_object(cache_key, instance, ttl_seconds)
-            print(f"Cached MediaExtractor object for {file_path.name}")
-        
-        return instance
-
-    def __init__(self, file_path: Path, cache=None, ttl_seconds: int = 21600):
+    def __init__(self, file_path: Path):
         self.file_path = file_path
-        self.cache = cache
-        self.ttl_seconds = ttl_seconds
-        self.cache_key = f"file_data_{file_path}"
         
         self.filename_extractor = FilenameExtractor(file_path)
         self.metadata_extractor = MetadataExtractor(file_path)
         self.mediainfo_extractor = MediaInfoExtractor(file_path)
         self.fileinfo_extractor = FileInfoExtractor(file_path)
-        self.tmdb_extractor = TMDBExtractor(file_path, cache, ttl_seconds)
+        self.tmdb_extractor = TMDBExtractor(file_path)
         self.default_extractor = DefaultExtractor()
         
         # Extractor mapping
@@ -190,16 +166,9 @@ class MediaExtractor:
                 ],
             },
         }
-        
-        # No caching logic here - handled in create() method
-    
+
     def get(self, key: str, source: str | None = None):
         """Get extracted data by key, optionally from specific source"""
-        print(f"Extracting real data for key '{key}' in {self.file_path.name}")
-        return self._get_uncached(key, source)
-
-    def _get_uncached(self, key: str, source: str | None = None):
-        """Original get logic without caching"""
         if source:
             # Specific source requested - find the extractor and call the method directly
             for extractor_name, extractor in self._extractors.items():

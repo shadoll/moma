@@ -31,12 +31,17 @@ def cached_method(ttl_seconds: int = 3600) -> Callable:
             
             # Use instance identifier (file_path for extractors)
             instance_id = getattr(self, 'file_path', str(id(self)))
+            # If instance_id contains path separators, hash it to avoid creating subdirs
+            if '/' in str(instance_id) or '\\' in str(instance_id):
+                instance_id = hashlib.md5(str(instance_id).encode('utf-8')).hexdigest()
             
-            # Create hash from args and kwargs (excluding self)
-            param_str = json.dumps((args, kwargs), sort_keys=True, default=str)
-            param_hash = hashlib.md5(param_str.encode('utf-8')).hexdigest()
-            
-            cache_key = f"{class_name}.{method_name}.{instance_id}.{param_hash}"
+            # Create hash from args and kwargs only if they exist (excluding self)
+            if args or kwargs:
+                param_str = json.dumps((args, kwargs), sort_keys=True, default=str)
+                param_hash = hashlib.md5(param_str.encode('utf-8')).hexdigest()
+                cache_key = f"{class_name}.{method_name}.{instance_id}.{param_hash}"
+            else:
+                cache_key = f"{class_name}.{method_name}.{instance_id}"
             
             # Try to get from cache
             cached_result = _cache.get_object(cache_key)

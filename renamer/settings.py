@@ -51,9 +51,9 @@ class Settings:
         except IOError as e:
             print(f"Error: Could not save settings: {e}")
 
-    def get(self, key: str) -> Any:
+    def get(self, key: str, default: Any = None) -> Any:
         """Get a setting value."""
-        return self._settings.get(key, self.DEFAULTS.get(key))
+        return self._settings.get(key, self.DEFAULTS.get(key, default))
 
     def set(self, key: str, value: Any) -> None:
         """Set a setting value and save."""

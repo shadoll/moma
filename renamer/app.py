@@ -17,7 +17,6 @@ from .formatters.proposed_name_formatter import ProposedNameFormatter
 from .formatters.text_formatter import TextFormatter
 from .formatters.catalog_formatter import CatalogFormatter
 from .settings import Settings
-from .cache import Cache
 
 
 # Set up logging conditionally
@@ -57,7 +56,6 @@ class RenamerApp(App):
         self.scan_dir = Path(scan_dir) if scan_dir else None
         self.tree_expanded = False
         self.settings = Settings()
-        self.cache = Cache()
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -148,10 +146,9 @@ class RenamerApp(App):
                 ).start()
 
     def _extract_and_show_details(self, file_path: Path):
-        time.sleep(1)  # Minimum delay to show loading
         try:
             # Initialize extractors and formatters
-            extractor = MediaExtractor.create(file_path, self.cache, self.settings.get("cache_ttl_extractors"))
+            extractor = MediaExtractor(file_path)
             
             mode = self.settings.get("mode")
             if mode == "technical":
@@ -205,11 +202,6 @@ class RenamerApp(App):
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node
         if node and node.data and isinstance(node.data, Path) and node.data.is_file():
-            # Clear cache for this file
-            cache_key_base = str(node.data)
-            # Invalidate all keys for this file (we can improve this later)
-            for key in ["title", "year", "source", "extension", "video_tracks", "audio_tracks", "subtitle_tracks"]:
-                self.cache.invalidate(f"{cache_key_base}_{key}")
             self._start_loading_animation()
             threading.Thread(
                 target=self._extract_and_show_details, args=(node.data,)
@@ -240,7 +232,7 @@ class RenamerApp(App):
         node = tree.cursor_node
         if node and node.data and isinstance(node.data, Path) and node.data.is_file():
             # Get the proposed name from the extractor
-            extractor = MediaExtractor.create(node.data, self.cache, self.settings.get("cache_ttl_extractors"))
+            extractor = MediaExtractor(node.data)
             proposed_formatter = ProposedNameFormatter(extractor)
             new_name = str(proposed_formatter)
             logging.info(f"Proposed new name: {new_name!r} for file: {node.data}")
@@ -272,11 +264,6 @@ class RenamerApp(App):
     def update_renamed_file(self, old_path: Path, new_path: Path):
         """Update the tree node for a renamed file."""
         logging.info(f"update_renamed_file called with old_path={old_path}, new_path={new_path}")
-        
-        # Clear cache for old file
-        cache_key_base = str(old_path)
-        for key in ["title", "year", "source", "extension", "video_tracks", "audio_tracks", "subtitle_tracks"]:
-            self.cache.invalidate(f"{cache_key_base}_{key}")
         
         tree = self.query_one("#file_tree", Tree)
         logging.info(f"Before update: cursor_node.data = {tree.cursor_node.data if tree.cursor_node else None}")

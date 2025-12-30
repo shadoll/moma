@@ -3,30 +3,34 @@ import os
 import time
 import hashlib
 import requests
+import logging
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Any
 from ..secrets import TMDB_API_KEY, TMDB_ACCESS_TOKEN
-
+from ..cache import Cache
+from ..settings import Settings
 
 class TMDBExtractor:
     """Class to extract TMDB movie information"""
 
-    def __init__(self, file_path: Path, cache=None, ttl_seconds: int = 21600):
+    def __init__(self, file_path: Path):
         self.file_path = file_path
-        self.cache = cache
-        self.ttl_seconds = ttl_seconds
+        self.cache = Cache()
+        self.ttl_seconds = Settings().get("cache_ttl_extractors", 21600)
         self._movie_db_info = None
 
     def _get_cached_data(self, cache_key: str) -> Optional[Dict[str, Any]]:
         """Get data from cache if valid"""
         if self.cache:
-            return self.cache.get(f"tmdb_{cache_key}")
+            return self.cache.get_object(f"tmdb_{cache_key}")
         return None
 
     def _set_cached_data(self, cache_key: str, data: Dict[str, Any]):
         """Store data in cache"""
         if self.cache:
-            self.cache.set(f"tmdb_{cache_key}", data, self.ttl_seconds)
+            self.cache.set_object(f"tmdb_{cache_key}", data, self.ttl_seconds)
+
+
 
     def _make_tmdb_request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         """Make a request to TMDB API"""
@@ -56,8 +60,10 @@ class TMDBExtractor:
         # Check cache first
         cached = self._get_cached_data(cache_key)
         if cached is not None:
+            logging.info(f"TMDB cache hit for search: {title} ({year})")
             return cached
 
+        logging.info(f"TMDB cache miss for search: {title} ({year}), making request")
         params = {'query': title}
         if year:
             params['year'] = year
@@ -95,8 +101,10 @@ class TMDBExtractor:
         # Check cache first
         cached = self._get_cached_data(cache_key)
         if cached is not None:
+            logging.info(f"TMDB cache hit for movie details: {movie_id}")
             return cached
 
+        logging.info(f"TMDB cache miss for movie details: {movie_id}, making request")
         result = self._make_tmdb_request(f'/movie/{movie_id}')
         if result:
             # Cache the result
