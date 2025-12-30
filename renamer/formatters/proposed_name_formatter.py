@@ -26,7 +26,8 @@ class ProposedNameFormatter:
         return self.rename_line()
 
     def rename_line(self) -> str:
-        return f"{self.__order}{self.__title} {self.__year}{self.__special_info}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}]{self.__db_info}.{self.__extension}"
+        result = f"{self.__order}{self.__title} {self.__year}{self.__special_info}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}]{self.__db_info}.{self.__extension}"
+        return result.replace("/", "-").replace("\\", "-")
 
     def rename_line_formatted(self, file_path) -> str:
         """Format the proposed name for display with color"""

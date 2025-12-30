@@ -129,8 +129,8 @@ class RenameConfirmScreen(Screen):
     def __init__(self, old_path: Path, new_name: str):
         super().__init__()
         self.old_path = old_path
-        self.new_name = new_name
-        self.new_path = old_path.parent / new_name
+        self.new_name = new_name.replace("/", "-").replace("\\", "-")
+        self.new_path = old_path.parent / self.new_name
         self.was_edited = False
 
     def compose(self):
@@ -178,12 +178,19 @@ Do you want to proceed with renaming?
     def on_button_pressed(self, event):
         if event.button.id == "rename":
             try:
-                logging.info(f"Renaming {self.old_path} to {self.new_path}")
+                logging.info(f"Starting rename: old_path={self.old_path}, new_path={self.new_path}")
+                logging.info(f"Old file name: {self.old_path.name}")
+                logging.info(f"New file name: {self.new_name}")
+                logging.info(f"New path parent: {self.new_path.parent}, Old path parent: {self.old_path.parent}")
+                if "/" in self.new_name or "\\" in self.new_name:
+                    logging.warning(f"New name contains path separators: {self.new_name}")
                 self.old_path.rename(self.new_path)
+                logging.info(f"Rename successful: {self.old_path} -> {self.new_path}")
                 # Update the tree node
                 self.app.update_renamed_file(self.old_path, self.new_path) # type: ignore
                 self.app.pop_screen()
             except Exception as e:
+                logging.error(f"Rename failed: {self.old_path} -> {self.new_path}, error: {str(e)}")
                 # Show error
                 content = self.query_one("#confirm_content", Static)
                 content.update(f"Error renaming file: {str(e)}")
@@ -228,12 +235,19 @@ Do you want to proceed with renaming?
             if event.key == "y":
                 # Trigger rename
                 try:
-                    logging.info(f"Hotkey renaming {self.old_path} to {self.new_path}")
+                    logging.info(f"Hotkey rename: old_path={self.old_path}, new_path={self.new_path}")
+                    logging.info(f"Old file name: {self.old_path.name}")
+                    logging.info(f"New file name: {self.new_name}")
+                    logging.info(f"New path parent: {self.new_path.parent}, Old path parent: {self.old_path.parent}")
+                    if "/" in self.new_name or "\\" in self.new_name:
+                        logging.warning(f"New name contains path separators: {self.new_name}")
                     self.old_path.rename(self.new_path)
+                    logging.info(f"Hotkey rename successful: {self.old_path} -> {self.new_path}")
                     # Update the tree node
                     self.app.update_renamed_file(self.old_path, self.new_path) # type: ignore
                     self.app.pop_screen()
                 except Exception as e:
+                    logging.error(f"Hotkey rename failed: {self.old_path} -> {self.new_path}, error: {str(e)}")
                     # Show error
                     content = self.query_one("#confirm_content", Static)
                     content.update(f"Error renaming file: {str(e)}")

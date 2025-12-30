@@ -25,7 +25,7 @@ if os.getenv('FORMATTER_LOG', '0') == '1':
     logging.basicConfig(filename='formatter.log', level=logging.INFO, 
                         format='%(asctime)s - %(levelname)s - %(message)s')
 else:
-    logging.basicConfig(level=logging.CRITICAL)  # Disable logging
+    logging.basicConfig(level=logging.INFO)  # Enable logging for debugging
 
 
 class RenamerApp(App):
