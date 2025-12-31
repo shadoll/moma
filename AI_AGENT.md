@@ -4,7 +4,7 @@
 
 This is a Python Terminal User Interface (TUI) application for managing media files. It uses the Textual library to provide a curses-like interface in the terminal. The app allows users to scan directories for video files, display them in a hierarchical tree view, view detailed metadata information including video, audio, and subtitle tracks, and rename files based on intelligent metadata extraction.
 
-**Current Version**: 0.5.10
+**Current Version**: 0.7.0-dev (Phase 1 complete)
 
 Key features:
 - Recursive directory scanning with tree navigation
@@ -13,7 +13,11 @@ Key features:
 - Multi-source metadata extraction (MediaInfo, filename parsing, embedded tags, TMDB API)
 - Intelligent file renaming with proposed names and confirmation
 - Settings management with persistent configuration
-- Advanced caching system with TTL (6h extractors, 6h TMDB, 30d posters)
+- **NEW**: Unified cache subsystem with flexible strategies and decorators
+- **NEW**: Command palette (Ctrl+P) with cache management commands
+- **NEW**: Thread-safe cache with RLock protection
+- **NEW**: Comprehensive logging (warning/debug levels)
+- **NEW**: Proper exception handling (no bare except clauses)
 - Terminal poster display using rich-pixels
 - Color-coded information display
 - Keyboard and mouse navigation
@@ -45,9 +49,14 @@ Key features:
 - `ToDo.md`: Development task tracking
 - `AI_AGENT.md`: This file (AI agent instructions)
 - `renamer/`: Main package
-  - `app.py`: Main Textual application class with tree management and file operations
+  - `app.py`: Main Textual application class with tree management, file operations, and command palette
   - `settings.py`: Settings management with JSON storage
-  - `cache.py`: File-based caching system with TTL support
+  - `cache/`: **NEW** Unified cache subsystem (v0.7.0)
+    - `core.py`: Thread-safe Cache class
+    - `strategies.py`: Cache key generation strategies
+    - `managers.py`: CacheManager for operations
+    - `decorators.py`: Enhanced cache decorators
+    - `types.py`: Type definitions
   - `secrets.py`: API keys and secrets (TMDB)
   - `constants.py`: Application constants (media types, sources, resolutions, special editions)
   - `screens.py`: Additional UI screens (OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen)

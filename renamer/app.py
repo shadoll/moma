@@ -57,6 +57,34 @@ class CacheCommandProvider(Provider):
                 )
 
 
+class AppCommandProvider(Provider):
+    """Command provider for main application operations."""
+
+    async def search(self, query: str):
+        """Search for app commands matching the query."""
+        matcher = self.matcher(query)
+
+        commands = [
+            ("open", "Open Directory", "Open a directory to browse media files (o)"),
+            ("scan", "Scan Directory", "Scan current directory for media files (s)"),
+            ("refresh", "Refresh File", "Refresh metadata for selected file (f)"),
+            ("rename", "Rename File", "Rename the selected file (r)"),
+            ("toggle_mode", "Toggle Display Mode", "Switch between technical and catalog view (m)"),
+            ("expand", "Toggle Tree Expansion", "Expand or collapse all tree nodes (p)"),
+            ("settings", "Settings", "Open settings screen (Ctrl+S)"),
+            ("help", "Help", "Show keyboard shortcuts and help (h)"),
+        ]
+
+        for command_name, display_name, help_text in commands:
+            if (score := matcher.match(display_name)) > 0:
+                yield Hit(
+                    score,
+                    matcher.highlight(display_name),
+                    partial(self.app.run_action, command_name),
+                    help=help_text
+                )
+
+
 class RenamerApp(App):
     CSS = """
     #left {
@@ -81,8 +109,8 @@ class RenamerApp(App):
         ("ctrl+s", "settings", "Settings"),
     ]
 
-    # Command palette - extend built-in commands with cache commands
-    COMMANDS = App.COMMANDS | {CacheCommandProvider}
+    # Command palette - extend built-in commands with cache and app commands
+    COMMANDS = App.COMMANDS | {CacheCommandProvider, AppCommandProvider}
 
     def __init__(self, scan_dir):
         super().__init__()

@@ -7,9 +7,9 @@ This document provides comprehensive project information for AI assistants (like
 **Renamer** is a sophisticated Terminal User Interface (TUI) application for managing, viewing metadata, and renaming media files. Built with Python and the Textual framework, it provides an interactive, curses-like interface for media collection management.
 
 ### Current Version
-- **Version**: 0.5.10
+- **Version**: 0.7.0-dev (in development)
 - **Python**: 3.11+
-- **Status**: Active development with media catalog mode features
+- **Status**: Major refactoring in progress - Phase 1 complete (critical bugs fixed, unified cache subsystem)
 
 ## Project Purpose
 
@@ -130,9 +130,81 @@ Transforms raw extracted data into formatted display strings:
 - Image caching for TMDB posters
 - Automatic expiration and cleanup
 
-#### Caching Decorators (`renamer/decorators/caching.py`)
-- `@cached` decorator for automatic method caching
-- Integrates with Settings for TTL configuration
+#### Unified Cache Subsystem (`renamer/cache/`)
+
+**NEW in v0.7.0**: Complete cache subsystem rewrite with modular architecture.
+
+**Directory Structure**:
+```
+renamer/cache/
+├── __init__.py          # Module exports and convenience functions
+├── core.py              # Core Cache class (thread-safe with RLock)
+├── types.py             # Type definitions (CacheEntry, CacheStats)
+├── strategies.py        # Cache key generation strategies
+├── managers.py          # CacheManager for operations
+└── decorators.py        # Enhanced cache decorators
+```
+
+**Cache Key Strategies**:
+- `FilepathMethodStrategy`: For extractor methods (`extractor_{hash}_{method}`)
+- `APIRequestStrategy`: For API responses (`api_{service}_{hash}`)
+- `SimpleKeyStrategy`: For simple prefix+id patterns
+- `CustomStrategy`: User-defined key generation
+
+**Cache Decorators**:
+- `@cached(strategy, ttl)`: Generic caching with configurable strategy
+- `@cached_method(ttl)`: Method caching (backward compatible)
+- `@cached_api(service, ttl)`: API response caching
+- `@cached_property(ttl)`: Cached property decorator
+
+**Cache Manager Operations**:
+- `clear_all()`: Remove all cache entries
+- `clear_by_prefix(prefix)`: Clear specific cache type (tmdb_, extractor_, poster_)
+- `clear_expired()`: Remove expired entries
+- `get_stats()`: Comprehensive statistics
+- `clear_file_cache(file_path)`: Clear cache for specific file
+- `compact_cache()`: Remove empty directories
+
+**Command Palette Integration**:
+- Access cache commands via Ctrl+P
+- 7 commands: View Stats, Clear All, Clear Extractors, Clear TMDB, Clear Posters, Clear Expired, Compact
+- Integrated using `CacheCommandProvider`
+
+**Thread Safety**:
+- All operations protected by `threading.RLock`
+- Safe for concurrent extractor access
+
+### Error Handling & Logging
+
+**Exception Handling** (v0.7.0):
+- No bare `except:` clauses (all use specific exception types)
+- Language code conversions catch `(LookupError, ValueError, AttributeError)`
+- Network errors catch `(requests.RequestException, ValueError)`
+- All exceptions logged with context
+
+**Logging Strategy**:
+- **Warning level**: Network failures, API errors, MediaInfo parse failures (user-facing issues)
+- **Debug level**: Language code conversions, metadata reads, MIME detection (technical details)
+- **Error level**: Formatter application failures (logged via `FormatterApplier`)
+
+**Logger Usage**:
+```python
+import logging
+logger = logging.getLogger(__name__)
+
+# Examples
+logger.warning(f"TMDB API request failed for {url}: {e}")
+logger.debug(f"Invalid language code '{lang_code}': {e}")
+logger.error(f"Error applying {formatter.__name__}: {e}")
+```
+
+**Files with Logging**:
+- `renamer/extractors/filename_extractor.py` - Language code conversion errors
+- `renamer/extractors/mediainfo_extractor.py` - MediaInfo parse and language errors
+- `renamer/extractors/metadata_extractor.py` - Mutagen and MIME detection errors
+- `renamer/extractors/tmdb_extractor.py` - API request and poster download errors
+- `renamer/formatters/formatter.py` - Formatter application errors
+- `renamer/cache/core.py` - Cache operation errors
 
 ### UI Screens (`renamer/screens.py`)
 
@@ -176,9 +248,33 @@ Additional UI screens for user interaction:
 - `f`: Refresh metadata for selected file
 - `r`: Rename file with proposed name
 - `p`: Toggle tree expansion
+- `m`: Toggle mode (technical/catalog)
 - `h`: Show help screen
-- `^p`: Open command palette
-- Settings menu via action bar
+- `ctrl+s`: Open settings
+- `ctrl+p`: Open command palette
+
+### Command Palette (v0.7.0)
+**Access**: Press `ctrl+p` to open the command palette
+
+**Available Commands**:
+- **System Commands** (built-in from Textual):
+  - Toggle theme
+  - Show key bindings
+  - Other system operations
+
+- **Cache Commands** (from `CacheCommandProvider`):
+  - Cache: View Statistics
+  - Cache: Clear All
+  - Cache: Clear Extractors
+  - Cache: Clear TMDB
+  - Cache: Clear Posters
+  - Cache: Clear Expired
+  - Cache: Compact
+
+**Implementation**:
+- Command palette extends built-in Textual commands
+- Uses `COMMANDS = App.COMMANDS | {CacheCommandProvider}` pattern
+- Future: Will add app operation commands (open, scan, rename, etc.)
 
 ## Technology Stack
 

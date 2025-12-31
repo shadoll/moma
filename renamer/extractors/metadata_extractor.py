@@ -1,7 +1,10 @@
 import mutagen
+import logging
 from pathlib import Path
 from ..constants import MEDIA_TYPES
 from ..decorators import cached_method
+
+logger = logging.getLogger(__name__)
 
 
 class MetadataExtractor:
@@ -12,7 +15,8 @@ class MetadataExtractor:
         self._cache = {}  # Internal cache for method results
         try:
             self.info = mutagen.File(file_path) # type: ignore
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Failed to read metadata from {file_path}: {e}")
             self.info = None
 
     @cached_method()
@@ -52,5 +56,6 @@ class MetadataExtractor:
                 if info['mime'] == mime:
                     return info['meta_type']
             return 'Unknown'
-        except Exception:
+        except Exception as e:
+            logger.debug(f"Failed to detect MIME type for {self.file_path}: {e}")
             return 'Unknown'

@@ -4,6 +4,9 @@ from collections import Counter
 from ..constants import FRAME_CLASSES, MEDIA_TYPES
 from ..decorators import cached_method
 import langcodes
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MediaInfoExtractor:
@@ -17,7 +20,8 @@ class MediaInfoExtractor:
             self.video_tracks = [t for t in self.media_info.tracks if t.track_type == 'Video']
             self.audio_tracks = [t for t in self.media_info.tracks if t.track_type == 'Audio']
             self.sub_tracks = [t for t in self.media_info.tracks if t.track_type == 'Text']
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to parse media info for {file_path}: {e}")
             self.media_info = None
             self.video_tracks = []
             self.audio_tracks = []
@@ -165,8 +169,9 @@ class MediaInfoExtractor:
                 lang_obj = langcodes.Language.get(lang_code.lower())
                 alpha3 = lang_obj.to_alpha3()
                 langs.append(alpha3)
-            except:
+            except (LookupError, ValueError, AttributeError) as e:
                 # If conversion fails, use the original code
+                logger.debug(f"Invalid language code '{lang_code}': {e}")
                 langs.append(lang_code.lower()[:3])
         
         lang_counts = Counter(langs)

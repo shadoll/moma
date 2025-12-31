@@ -50,7 +50,8 @@ class TMDBExtractor:
             response = requests.get(url, headers=headers, params=params, timeout=10)
             response.raise_for_status()
             return response.json()
-        except (requests.RequestException, ValueError):
+        except (requests.RequestException, ValueError) as e:
+            logging.warning(f"TMDB API request failed for {url}: {e}")
             return None
 
     def _search_movie_by_title_year(self, title: str, year: Optional[str] = None) -> Optional[Dict[str, Any]]:
@@ -279,5 +280,6 @@ class TMDBExtractor:
             # Cache image
             local_path = self.cache.set_image(cache_key, image_data, self.ttl_seconds)
             return str(local_path) if local_path else None
-        except requests.RequestException:
+        except requests.RequestException as e:
+            logging.warning(f"Failed to download poster from {poster_url}: {e}")
             return None

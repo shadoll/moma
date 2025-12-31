@@ -1,9 +1,12 @@
 import re
+import logging
 from pathlib import Path
 from collections import Counter
 from ..constants import SOURCE_DICT, FRAME_CLASSES, MOVIE_DB_DICT, SPECIAL_EDITIONS
 from ..decorators import cached_method
 import langcodes
+
+logger = logging.getLogger(__name__)
 
 
 class FilenameExtractor:
@@ -324,8 +327,9 @@ class FilenameExtractor:
                         lang_obj = langcodes.Language.get(lang_code)
                         iso3_code = lang_obj.to_alpha3()
                         langs.extend([iso3_code] * count)
-                    except:
+                    except (LookupError, ValueError, AttributeError) as e:
                         # Skip invalid language codes
+                        logger.debug(f"Invalid language code '{lang_code}': {e}")
                         pass
         
         # Second, look for standalone language codes outside brackets
@@ -375,14 +379,15 @@ class FilenameExtractor:
                 
                 if part_lower not in skip_words and part_lower in known_language_codes:
                     lang_code = part_lower
-                    
+
                     # Convert to 3-letter ISO code
                     try:
                         lang_obj = langcodes.Language.get(lang_code)
                         iso3_code = lang_obj.to_alpha3()
                         langs.append(iso3_code)
-                    except:
+                    except (LookupError, ValueError, AttributeError) as e:
                         # Skip invalid language codes
+                        logger.debug(f"Invalid language code '{lang_code}': {e}")
                         pass
         
         if not langs:
@@ -449,14 +454,15 @@ class FilenameExtractor:
                     prefix = item_lower[:-len(lang_code)]
                     if not re.match(r'^(?:\d+x?)?$', prefix):
                         continue
-                    
+
                     # Convert to 3-letter ISO code
                     try:
                         lang_obj = langcodes.Language.get(lang_code)
                         iso3_code = lang_obj.to_alpha3()
                         tracks.append({'language': iso3_code})
-                    except:
+                    except (LookupError, ValueError, AttributeError) as e:
                         # Skip invalid language codes
+                        logger.debug(f"Invalid language code '{lang_code}': {e}")
                         pass
         
         # Second, look for standalone language codes outside brackets
@@ -506,14 +512,15 @@ class FilenameExtractor:
                 
                 if part_lower not in skip_words and part_lower in known_language_codes:
                     lang_code = part_lower
-                    
+
                     # Convert to 3-letter ISO code
                     try:
                         lang_obj = langcodes.Language.get(lang_code)
                         iso3_code = lang_obj.to_alpha3()
                         tracks.append({'language': iso3_code})
-                    except:
+                    except (LookupError, ValueError, AttributeError) as e:
                         # Skip invalid language codes
+                        logger.debug(f"Invalid language code '{lang_code}': {e}")
                         pass
         
         return tracks
