@@ -2,6 +2,8 @@
 
 This guide contains information for developers working on the Renamer project.
 
+**Current Version**: 0.5.10
+
 ## Development Setup
 
 ### Prerequisites
@@ -67,43 +69,85 @@ Enable detailed logging for formatter operations:
 FORMATTER_LOG=1 uv run renamer /path/to/directory
 ```
 
-This creates `formatter.log` with:
+This creates `formatter.log` in the current directory with:
 - Formatter call sequences and ordering
 - Input/output values for each formatter
 - Caller information (file and line number)
 - Any errors during formatting
+- Timestamp for each operation
+
+### Cache Inspection
+Cache is stored in `~/.cache/renamer/` with subdirectories:
+- `extractors/`: Extractor results cache
+- `tmdb/`: TMDB API response cache
+- `posters/`: Downloaded poster images
+- `general/`: General purpose cache
+
+To clear cache:
+```bash
+rm -rf ~/.cache/renamer/
+```
+
+### Settings Location
+Settings are stored in `~/.config/renamer/config.json`:
+```json
+{
+  "mode": "technical",
+  "cache_ttl_extractors": 21600,
+  "cache_ttl_tmdb": 21600,
+  "cache_ttl_posters": 2592000
+}
+```
 
 ## Architecture
 
-The application uses a modular architecture:
+The application uses a modular architecture with clear separation of concerns:
+
+### Core Application (`renamer/`)
+- **app.py**: Main RenamerApp class (Textual App), tree management, file operations
+- **main.py**: Entry point with argument parsing
+- **constants.py**: Comprehensive constants (media types, sources, resolutions, editions)
+- **settings.py**: Settings management with JSON persistence (`~/.config/renamer/`)
+- **cache.py**: File-based caching system with TTL support (`~/.cache/renamer/`)
+- **secrets.py**: API keys and secrets (TMDB)
 
 ### Extractors (`renamer/extractors/`)
-- **MediaInfoExtractor**: Extracts detailed track information using PyMediaInfo
-- **FilenameExtractor**: Parses metadata from filenames
-- **MetadataExtractor**: Extracts embedded metadata using Mutagen
-- **FileInfoExtractor**: Provides basic file information
-- **DefaultExtractor**: Fallback extractor
-- **MediaExtractor**: Main extractor coordinating all others
+Data extraction from multiple sources:
+- **extractor.py**: MediaExtractor coordinator class
+- **mediainfo_extractor.py**: PyMediaInfo for detailed track information
+- **filename_extractor.py**: Regex-based filename parsing
+- **metadata_extractor.py**: Mutagen for embedded metadata
+- **fileinfo_extractor.py**: Basic file information (size, dates, MIME)
+- **tmdb_extractor.py**: The Movie Database API integration
+- **default_extractor.py**: Fallback extractor
 
 ### Formatters (`renamer/formatters/`)
-- **MediaFormatter**: Formats extracted data for display
-- **ProposedNameFormatter**: Generates intelligent rename suggestions
-- **TrackFormatter**: Formats video/audio/subtitle track information
-- **SizeFormatter**: Formats file sizes
-- **DateFormatter**: Formats timestamps
-- **DurationFormatter**: Formats time durations
-- **ResolutionFormatter**: Formats video resolutions
-- **TextFormatter**: Text styling utilities
+Display formatting and rendering:
+- **formatter.py**: Base formatter interface
+- **media_formatter.py**: Main formatter coordinating all format operations
+- **catalog_formatter.py**: Catalog mode display (TMDB data, posters)
+- **proposed_name_formatter.py**: Intelligent rename suggestions
+- **track_formatter.py**: Video/audio/subtitle track formatting
+- **size_formatter.py**: Human-readable file sizes
+- **date_formatter.py**: Timestamp formatting
+- **duration_formatter.py**: Duration in HH:MM:SS format
+- **resolution_formatter.py**: Resolution display
+- **extension_formatter.py**: File extension handling
+- **special_info_formatter.py**: Edition/source formatting
+- **text_formatter.py**: Text styling utilities
+- **helper_formatter.py**: General formatting helpers
 
 ### Screens (`renamer/screens.py`)
-- **OpenScreen**: Directory selection dialog
-- **HelpScreen**: Application help and key bindings
-- **RenameConfirmScreen**: File rename confirmation dialog
+UI screens for user interaction:
+- **OpenScreen**: Directory selection with validation
+- **HelpScreen**: Comprehensive help with key bindings
+- **RenameConfirmScreen**: File rename confirmation with preview
+- **SettingsScreen**: Settings configuration UI
 
-### Main Components
-- **app.py**: Main TUI application
-- **main.py**: Entry point
-- **constants.py**: Application constants
+### Utilities
+- **decorators/caching.py**: Caching decorator for automatic method caching
+- **bump.py**: Version bump utility script
+- **release.py**: Release automation (bump + sync + build)
 
 ## Testing
 
@@ -133,9 +177,18 @@ uv tool uninstall renamer
 
 ## Code Style
 
-The project uses standard Python formatting. Consider using tools like:
+The project follows Python best practices:
+- **PEP 8**: Standard Python style guide
+- **Type Hints**: Encouraged where appropriate
+- **Docstrings**: For all classes and public methods
+- **Descriptive Naming**: Clear variable and function names
+- **Pathlib**: For all file operations
+- **Error Handling**: Appropriate exception handling at boundaries
+
+Consider using tools like:
 - `ruff` for linting and formatting
-- `mypy` for type checking (if added)
+- `mypy` for type checking
+- `black` for consistent formatting
 
 ## Contributing
 
@@ -146,4 +199,22 @@ The project uses standard Python formatting. Consider using tools like:
 5. Run the release process: `uv run release`
 6. Submit a pull request
 
-For more information, see the main [README.md](../README.md).
+## Additional Documentation
+
+For comprehensive project information:
+- **[README.md](README.md)**: User guide and features
+- **[CLAUDE.md](CLAUDE.md)**: Complete AI assistant reference
+- **[AI_AGENT.md](AI_AGENT.md)**: AI agent instructions
+- **[INSTALL.md](INSTALL.md)**: Installation methods
+- **[ToDo.md](ToDo.md)**: Task list and priorities
+
+## Project Resources
+
+- **Cache Directory**: `~/.cache/renamer/`
+- **Config Directory**: `~/.config/renamer/`
+- **Test Files**: `renamer/test/`
+- **Build Output**: `dist/` and `build/`
+
+---
+
+**Last Updated**: 2025-12-31

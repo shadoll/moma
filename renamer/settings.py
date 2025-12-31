@@ -14,7 +14,7 @@ class Settings:
         "cache_ttl_posters": 2592000,  # 30 days in seconds
     }
 
-    def __init__(self, config_dir: Path = None):
+    def __init__(self, config_dir: Path | None = None):
         if config_dir is None:
             config_dir = Path.home() / ".config" / "renamer"
         self.config_dir = config_dir
@@ -26,7 +26,7 @@ class Settings:
         """Load settings from file, using defaults if file doesn't exist."""
         if self.config_file.exists():
             try:
-                with open(self.config_file, 'r') as f:
+                with open(self.config_file, "r") as f:
                     data = json.load(f)
                     # Validate and merge with defaults
                     for key, default_value in self.DEFAULTS.items():
@@ -46,7 +46,7 @@ class Settings:
         """Save current settings to file."""
         try:
             self.config_dir.mkdir(parents=True, exist_ok=True)
-            with open(self.config_file, 'w') as f:
+            with open(self.config_file, "w") as f:
                 json.dump(self._settings, f, indent=2)
         except IOError as e:
             print(f"Error: Could not save settings: {e}")

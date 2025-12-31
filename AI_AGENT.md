@@ -4,44 +4,67 @@
 
 This is a Python Terminal User Interface (TUI) application for managing media files. It uses the Textual library to provide a curses-like interface in the terminal. The app allows users to scan directories for video files, display them in a hierarchical tree view, view detailed metadata information including video, audio, and subtitle tracks, and rename files based on intelligent metadata extraction.
 
+**Current Version**: 0.5.10
+
 Key features:
-- Recursive directory scanning
+- Recursive directory scanning with tree navigation
+- Dual-mode display: Technical (codec/track details) and Catalog (TMDB metadata with posters)
 - Tree-based file navigation with expand/collapse functionality
-- Detailed metadata extraction from multiple sources
-- Intelligent file renaming with proposed names
+- Multi-source metadata extraction (MediaInfo, filename parsing, embedded tags, TMDB API)
+- Intelligent file renaming with proposed names and confirmation
+- Settings management with persistent configuration
+- Advanced caching system with TTL (6h extractors, 6h TMDB, 30d posters)
+- Terminal poster display using rich-pixels
 - Color-coded information display
 - Keyboard and mouse navigation
-- Multiple UI screens (main app, directory selection, help, rename confirmation)
+- Multiple UI screens (main app, directory selection, help, rename confirmation, settings)
 - Extensible extractor and formatter architecture
-- Loading indicators and error handling
+- Loading indicators and comprehensive error handling
 
 ## Technology Stack
 
 - Python 3.11+
-- Textual (TUI framework)
-- PyMediaInfo (detailed track information)
-- Mutagen (embedded metadata)
-- Python-Magic (MIME type detection)
-- Langcodes (language code handling)
-- UV (package manager)
+- Textual ≥6.11.0 (TUI framework)
+- PyMediaInfo ≥6.0.0 (detailed track information)
+- Mutagen ≥1.47.0 (embedded metadata)
+- Python-Magic ≥0.4.27 (MIME type detection)
+- Langcodes ≥3.5.1 (language code handling)
+- Requests ≥2.31.0 (HTTP client for TMDB API)
+- Rich-Pixels ≥1.0.0 (terminal image display)
+- Pytest ≥7.0.0 (testing framework)
+- UV (package manager and build tool)
 
 ## Code Structure
 
-- `main.py`: Main application entry point with argument parsing
-- `pyproject.toml`: Project configuration and dependencies (version 0.2.0)
+- `renamer/main.py`: Main application entry point with argument parsing
+- `pyproject.toml`: Project configuration and dependencies (version 0.5.10)
 - `README.md`: User documentation
+- `DEVELOP.md`: Developer guide with debugging info
+- `INSTALL.md`: Installation instructions
+- `CLAUDE.md`: Comprehensive AI assistant reference guide
 - `ToDo.md`: Development task tracking
-- `AI_AGENT.md`: This file
+- `AI_AGENT.md`: This file (AI agent instructions)
 - `renamer/`: Main package
   - `app.py`: Main Textual application class with tree management and file operations
-  - `extractor.py`: MediaExtractor class coordinating multiple extractors
+  - `settings.py`: Settings management with JSON storage
+  - `cache.py`: File-based caching system with TTL support
+  - `secrets.py`: API keys and secrets (TMDB)
+  - `constants.py`: Application constants (media types, sources, resolutions, special editions)
+  - `screens.py`: Additional UI screens (OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen)
+  - `bump.py`: Version bump utility
+  - `release.py`: Release automation script
   - `extractors/`: Individual extractor classes
+    - `extractor.py`: MediaExtractor class coordinating all extractors
     - `mediainfo_extractor.py`: PyMediaInfo-based extraction
-    - `filename_extractor.py`: Filename parsing
-    - `metadata_extractor.py`: Mutagen-based metadata
+    - `filename_extractor.py`: Filename parsing with regex patterns
+    - `metadata_extractor.py`: Mutagen-based embedded metadata
     - `fileinfo_extractor.py`: Basic file information
+    - `tmdb_extractor.py`: The Movie Database API integration
+    - `default_extractor.py`: Fallback extractor
   - `formatters/`: Data formatting classes
+    - `formatter.py`: Base formatter interface
     - `media_formatter.py`: Main formatter coordinating display
+    - `catalog_formatter.py`: Catalog mode formatting with TMDB data
     - `proposed_name_formatter.py`: Generates rename suggestions
     - `track_formatter.py`: Track information formatting
     - `size_formatter.py`: File size formatting
@@ -52,9 +75,17 @@ Key features:
     - `extension_formatter.py`: File extension formatting
     - `helper_formatter.py`: Helper formatting utilities
     - `special_info_formatter.py`: Special edition information
-  - `constants.py`: Application constants (supported media types)
-  - `screens.py`: Additional UI screens (OpenScreen, HelpScreen, RenameConfirmScreen)
+  - `decorators/`: Utility decorators
+    - `caching.py`: Caching decorator for automatic method caching
   - `test/`: Unit tests for extractors
+    - `test_filename_extractor.py`: Filename parsing tests
+    - `test_mediainfo_extractor.py`: MediaInfo extraction tests
+    - `test_mediainfo_frame_class.py`: Frame class detection tests
+    - `test_fileinfo_extractor.py`: File info tests
+    - `test_metadata_extractor.py`: Metadata extraction tests
+    - `test_filename_detection.py`: Filename pattern detection tests
+    - `filenames.txt`, `test_filenames.txt`: Sample test data
+    - `test_cases.json`, `test_mediainfo_frame_class.json`: Test fixtures
 
 ## Instructions for AI Agents
 
@@ -113,14 +144,26 @@ The app uses multiple screens for different operations:
 - `HelpScreen`: Comprehensive help with key bindings
 - `RenameConfirmScreen`: File rename confirmation with error handling
 
+### Completed Major Features
+
+- ✅ Settings management with JSON configuration
+- ✅ Mode toggle (technical/catalog)
+- ✅ Caching system with TTL support
+- ✅ TMDB integration for catalog data
+- ✅ Poster display in terminal
+- ✅ Settings UI screen
+
 ### Future Enhancements
 
 - Metadata editing capabilities
 - Batch rename operations
-- Configuration file support
 - Plugin system for custom extractors/formatters
 - Advanced search and filtering
 - Undo/redo functionality
+- Blue highlighting for changed parts in proposed filename
+- Exclude dev commands from distributed package
+- Full genre name expansion (currently shows codes)
+- Optimized poster quality and display
 
 ### Testing
 
@@ -141,4 +184,16 @@ The app uses multiple screens for different operations:
 - Update ToDo.md when completing tasks
 - Update version numbers appropriately
 
+## Important Files for AI Assistants
+
+For comprehensive project information, AI assistants should refer to:
+1. **CLAUDE.md**: Complete AI assistant reference guide (most comprehensive)
+2. **AI_AGENT.md**: This file (concise instructions)
+3. **DEVELOP.md**: Developer setup and debugging
+4. **ToDo.md**: Current task list and completed items
+5. **README.md**: User-facing documentation
+
 This document should be updated as the project evolves.
+
+---
+**Last Updated**: 2025-12-31
