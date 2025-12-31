@@ -4,13 +4,17 @@
 import sys
 import os
 import json
+from pathlib import Path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from renamer.extractors.filename_extractor import FilenameExtractor
 
 def test_detection():
-    with open('renamer/test/test_cases.json', 'r') as f:
-        test_cases = json.load(f)
+    # Load test cases from new dataset location
+    dataset_file = Path(__file__).parent / "datasets" / "filenames" / "filename_patterns.json"
+    with open(dataset_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        test_cases = data['test_cases']
 
     print("Testing filename metadata detection with assertions...\n")
 
@@ -35,7 +39,8 @@ def test_detection():
             "hdr": extractor.extract_hdr(),
             "movie_db": extractor.extract_movie_db(),
             "special_info": extractor.extract_special_info(),
-            "audio_langs": extractor.extract_audio_langs()
+            "audio_langs": extractor.extract_audio_langs(),
+            "extension": extractor.extract_extension()
         }
 
         # Check each field

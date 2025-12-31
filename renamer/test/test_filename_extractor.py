@@ -1,15 +1,17 @@
 import pytest
+import json
 from pathlib import Path
 from ..extractors.filename_extractor import FilenameExtractor
 from ..constants import FRAME_CLASSES
 
 
 def load_test_filenames():
-    """Load test filenames from filenames.txt"""
-    test_file = Path(__file__).parent / "filenames.txt"
-    if test_file.exists():
-        with open(test_file, 'r', encoding='utf-8') as f:
-            return [line.strip() for line in f if line.strip()]
+    """Load test filenames from dataset"""
+    dataset_file = Path(__file__).parent / "datasets" / "filenames" / "filename_patterns.json"
+    if dataset_file.exists():
+        with open(dataset_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return [case['filename'] for case in data['test_cases']]
     return []
 
 

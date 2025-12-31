@@ -1,0 +1,850 @@
+{
+  "description": "Comprehensive test dataset for filename metadata extraction",
+  "version": "2.0",
+  "test_cases": [
+    {
+      "testname": "simple-001",
+      "filename": "Movie Title (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "simple",
+      "description": "Basic filename with standard metadata"
+    },
+    {
+      "testname": "simple-002",
+      "filename": "Independence Day Resurgence.(2016).[720,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Independence Day Resurgence",
+        "year": "2016",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "simple",
+      "description": "Standard movie with year and languages"
+    },
+    {
+      "testname": "order-001",
+      "filename": "[01] Movie Title (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": "01",
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "order",
+      "description": "Order in square brackets"
+    },
+    {
+      "testname": "order-002",
+      "filename": "01. Movie Title (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": "01",
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "order",
+      "description": "Order with dot separator"
+    },
+    {
+      "testname": "order-003",
+      "filename": "1.1 Movie Title (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": "1.1",
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "order",
+      "description": "Decimal order number"
+    },
+    {
+      "testname": "order-004",
+      "filename": "[01.1] Harry Potter and the Philosopher's Stone (2001) [Theatrical Cut] BDRip 1080p x265 [4xUKR_ENG] [Hurtom].mkv",
+      "expected": {
+        "order": "01.1",
+        "title": "Harry Potter and the Philosopher's Stone",
+        "year": "2001",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": ["Theatrical Cut"],
+        "audio_langs": "4ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "complex",
+      "description": "Numbered movie with special edition, multiple languages"
+    },
+    {
+      "testname": "order-005",
+      "filename": "[04] Ice Age: Continental Drift (2012) BDRip [1080p,ukr,eng] [tmdbid-57800].mkv",
+      "expected": {
+        "order": "04",
+        "title": "Ice Age: Continental Drift",
+        "year": "2012",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": ["tmdb", "57800"],
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "complex",
+      "description": "Numbered entry with database ID and full metadata"
+    },
+    {
+      "testname": "order-edge-001",
+      "filename": "9 (2009) BDRip [1080p,2ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "9",
+        "year": "2009",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "2ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "edge_cases",
+      "description": "Title starting with number (no order)"
+    },
+    {
+      "testname": "order-edge-002",
+      "filename": "9. Movie Title (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": "9",
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "order",
+      "description": "Single digit order with dot"
+    },
+    {
+      "testname": "year-001",
+      "filename": "Movie Title 2020 BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "year_formats",
+      "description": "Year not in parentheses"
+    },
+    {
+      "testname": "year-002",
+      "filename": "Movie Title.2020.BDRip.[1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "year_formats",
+      "description": "Year with dot separators"
+    },
+    {
+      "testname": "year-edge-001",
+      "filename": "2001 A Space Odyssey (1968) [720p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "2001 A Space Odyssey",
+        "year": "1968",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "edge_cases",
+      "description": "Title starting with year-like number"
+    },
+    {
+      "testname": "database-001",
+      "filename": "Movie Title (2020) [tmdbid-12345].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": null,
+        "frame_class": null,
+        "hdr": null,
+        "movie_db": ["tmdb", "12345"],
+        "special_info": null,
+        "audio_langs": "",
+        "extension": "mkv"
+      },
+      "category": "database_id",
+      "description": "Movie with TMDB ID"
+    },
+    {
+      "testname": "database-002",
+      "filename": "Cours Toujours (2010) [720p,und] [tmdbid-993291].mp4",
+      "expected": {
+        "order": null,
+        "title": "Cours Toujours",
+        "year": "2010",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": ["tmdb", "993291"],
+        "special_info": null,
+        "audio_langs": "und",
+        "extension": "mp4"
+      },
+      "category": "database_id",
+      "description": "TMDB ID with resolution"
+    },
+    {
+      "testname": "database-003",
+      "filename": "Грицькові книжки.(1979).[ukr].{imdb-tt9007536}.mpg",
+      "expected": {
+        "order": null,
+        "title": "Грицькові книжки",
+        "year": "1979",
+        "source": null,
+        "frame_class": null,
+        "hdr": null,
+        "movie_db": ["imdb", "tt9007536"],
+        "special_info": null,
+        "audio_langs": "ukr",
+        "extension": "mpg"
+      },
+      "category": "database_id",
+      "description": "IMDB ID with curly braces"
+    },
+    {
+      "testname": "special-edition-001",
+      "filename": "Movie Title (2020) [Director's Cut] BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": ["Director's Cut"],
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "special_edition",
+      "description": "Director's Cut edition"
+    },
+    {
+      "testname": "special-edition-002",
+      "filename": "[01.2] Harry Potter and the Sorcerer's Stone (2001) [Ultimate Extended Edition] BDRip 1080p x265 [4xUKR_ENG] [Hurtom].mkv",
+      "expected": {
+        "order": "01.2",
+        "title": "Harry Potter and the Sorcerer's Stone",
+        "year": "2001",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": ["Ultimate Extended Edition"],
+        "audio_langs": "4ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "special_edition",
+      "description": "Extended edition with order"
+    },
+    {
+      "testname": "special-edition-003",
+      "filename": "The Lord of the Rings 2001 Extended Edition (2001) BDRip 1080p [ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "The Lord of the Rings 2001 Extended Edition",
+        "year": "2001",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "special_edition",
+      "description": "Extended Edition in title"
+    },
+    {
+      "testname": "multi-audio-001",
+      "filename": "A Mighty Heart.(2007).[SD,2ukr,eng].avi",
+      "expected": {
+        "order": null,
+        "title": "A Mighty Heart",
+        "year": "2007",
+        "source": null,
+        "frame_class": "SD",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "2ukr,eng",
+        "extension": "avi"
+      },
+      "category": "multi_audio",
+      "description": "Movie with 2 Ukrainian tracks"
+    },
+    {
+      "testname": "multi-audio-002",
+      "filename": "Lets Be Cops.(2014).[720p,rus,ukr,4eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Lets Be Cops",
+        "year": "2014",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "rus,ukr,4eng",
+        "extension": "mkv"
+      },
+      "category": "multi_audio",
+      "description": "Movie with 4 English tracks"
+    },
+    {
+      "testname": "multi-audio-003",
+      "filename": "The Name of the Rose (1986) [SD,3ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "The Name of the Rose",
+        "year": "1986",
+        "source": null,
+        "frame_class": "SD",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "3ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "multi_audio",
+      "description": "Movie with 3 Ukrainian tracks"
+    },
+    {
+      "testname": "cyrillic-001",
+      "filename": "12 стульев.(1971).[SD,rus].avi",
+      "expected": {
+        "order": null,
+        "title": "12 стульев",
+        "year": "1971",
+        "source": null,
+        "frame_class": "SD",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "rus",
+        "extension": "avi"
+      },
+      "category": "cyrillic",
+      "description": "Cyrillic title with number"
+    },
+    {
+      "testname": "cyrillic-002",
+      "filename": "Фільм Назва (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Фільм Назва",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "cyrillic",
+      "description": "Full Cyrillic title"
+    },
+    {
+      "testname": "cyrillic-003",
+      "filename": "Бриллиантовая рука.(1968).[720p,2rus].mkv",
+      "expected": {
+        "order": null,
+        "title": "Бриллиантовая рука",
+        "year": "1968",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "2rus",
+        "extension": "mkv"
+      },
+      "category": "cyrillic",
+      "description": "Russian classic film"
+    },
+    {
+      "testname": "multilingual-title-001",
+      "filename": "Il racconto dei racconti (Tale of Tales).(2015).[720p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Il racconto dei racconti (Tale of Tales)",
+        "year": "2015",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "multilingual_title",
+      "description": "Italian title with English translation"
+    },
+    {
+      "testname": "multilingual-title-002",
+      "filename": "Гуси-Лебеді.(1949).[ukr,2rus].{imdb-tt1070792}.mkv",
+      "expected": {
+        "order": null,
+        "title": "Гуси-Лебеді",
+        "year": "1949",
+        "source": null,
+        "frame_class": null,
+        "hdr": null,
+        "movie_db": ["imdb", "tt1070792"],
+        "special_info": null,
+        "audio_langs": "ukr,2rus",
+        "extension": "mkv"
+      },
+      "category": "multilingual_title",
+      "description": "Ukrainian title with hyphen"
+    },
+    {
+      "testname": "hdr-001",
+      "filename": "Movie Title (2020) BDRip [2160p,HDR,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "2160p",
+        "hdr": "HDR",
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "hdr",
+      "description": "4K with HDR"
+    },
+    {
+      "testname": "hdr-002",
+      "filename": "Troll 2 (2025) WEB-DL 2160p HDR Ukr Nor [Hurtom].mkv",
+      "expected": {
+        "order": null,
+        "title": "Troll 2",
+        "year": "2025",
+        "source": "WEB-DL",
+        "frame_class": "2160p",
+        "hdr": "HDR",
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,nor",
+        "extension": "mkv"
+      },
+      "category": "hdr",
+      "description": "HDR without brackets"
+    },
+    {
+      "testname": "resolution-001",
+      "filename": "Movie Title (2020) 1080p BDRip [ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "resolution_formats",
+      "description": "Resolution outside brackets"
+    },
+    {
+      "testname": "resolution-002",
+      "filename": "The long title.(2008).[SD 720p,ukr].avi",
+      "expected": {
+        "order": null,
+        "title": "The long title",
+        "year": "2008",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr",
+        "extension": "avi"
+      },
+      "category": "edge_cases",
+      "description": "Multiple resolution indicators"
+    },
+    {
+      "testname": "resolution-003",
+      "filename": "The long title (2008) 8K 4320p ENG.mp4",
+      "expected": {
+        "order": null,
+        "title": "The long title",
+        "year": "2008",
+        "source": null,
+        "frame_class": "4320p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "eng",
+        "extension": "mp4"
+      },
+      "category": "resolution_formats",
+      "description": "8K resolution"
+    },
+    {
+      "testname": "source-001",
+      "filename": "Emma (1996) BDRip [720p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Emma",
+        "year": "1996",
+        "source": "BDRip",
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "sources",
+      "description": "BDRip source"
+    },
+    {
+      "testname": "source-002",
+      "filename": "Rekopis znaleziony w Saragossie (1965) WEB-DL [SD,ukr].mkv",
+      "expected": {
+        "order": null,
+        "title": "Rekopis znaleziony w Saragossie",
+        "year": "1965",
+        "source": "WEB-DL",
+        "frame_class": "SD",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr",
+        "extension": "mkv"
+      },
+      "category": "sources",
+      "description": "WEB-DL source"
+    },
+    {
+      "testname": "source-003",
+      "filename": "Scoop (2024) WEB-DL [720p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Scoop",
+        "year": "2024",
+        "source": "WEB-DL",
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "sources",
+      "description": "Recent WEB-DL release"
+    },
+    {
+      "testname": "source-004",
+      "filename": "One More Kiss (1999) DVDRip [SD,ukr].avi",
+      "expected": {
+        "order": null,
+        "title": "One More Kiss",
+        "year": "1999",
+        "source": "DVDRip",
+        "frame_class": "SD",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr",
+        "extension": "avi"
+      },
+      "category": "sources",
+      "description": "DVDRip source"
+    },
+    {
+      "testname": "complex-001",
+      "filename": "[01.1] Movie: Subtitle (2020) [Director's Cut] BDRip [2160p,HDR,2ukr,eng] [tmdbid-12345].mkv",
+      "expected": {
+        "order": "01.1",
+        "title": "Movie: Subtitle",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "2160p",
+        "hdr": "HDR",
+        "movie_db": ["tmdb", "12345"],
+        "special_info": ["Director's Cut"],
+        "audio_langs": "2ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "complex",
+      "description": "All metadata fields present"
+    },
+    {
+      "testname": "complex-002",
+      "filename": "Moana 2 (2024) MA WEB-DL 2160p SDR Ukr Eng [Hurtom].mkv",
+      "expected": {
+        "order": null,
+        "title": "Moana 2",
+        "year": "2024",
+        "source": "WEB-DL",
+        "frame_class": "2160p",
+        "hdr": "SDR",
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "complex",
+      "description": "Recent release with SDR"
+    },
+    {
+      "testname": "series-001",
+      "filename": "Series Name S01E01 (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Series Name S01E01",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "series",
+      "description": "TV series episode"
+    },
+    {
+      "testname": "series-002",
+      "filename": "The 100 (2014) Season 1 Episode 1 [720p,ukr].mkv",
+      "expected": {
+        "order": null,
+        "title": "The 100",
+        "year": "2014",
+        "source": null,
+        "frame_class": "720p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": ["Season 1 Episode 1"],
+        "audio_langs": "ukr",
+        "extension": "mkv"
+      },
+      "category": "series",
+      "description": "Series with spelled out season/episode"
+    },
+    {
+      "testname": "edge-colon-001",
+      "filename": "Star Wars: Episode IV - A New Hope (1977) [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Star Wars: Episode IV - A New Hope",
+        "year": "1977",
+        "source": null,
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "edge_cases",
+      "description": "Title with colon and dash"
+    },
+    {
+      "testname": "edge-apostrophe-001",
+      "filename": "Harley Quinn. A Very Problematic Valentine's Day Special (2023) WEB-DL [1080p,ukr,eng] [imdbid-tt22525032].mkv",
+      "expected": {
+        "order": null,
+        "title": "Harley Quinn. A Very Problematic Valentine's Day Special",
+        "year": "2023",
+        "source": "WEB-DL",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": ["imdb", "tt22525032"],
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "edge_cases",
+      "description": "Title with apostrophe"
+    },
+    {
+      "testname": "edge-dots-001",
+      "filename": "Movie.Title (2020) BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie.Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "edge_cases",
+      "description": "Title with dots"
+    },
+    {
+      "testname": "edge-no-brackets-001",
+      "filename": "Movie Title (2020) BDRip 1080p ukr eng.mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": "2020",
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "edge_cases",
+      "description": "No brackets around metadata"
+    },
+    {
+      "testname": "edge-no-year-001",
+      "filename": "Movie Title BDRip [1080p,ukr,eng].mkv",
+      "expected": {
+        "order": null,
+        "title": "Movie Title",
+        "year": null,
+        "source": "BDRip",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "category": "edge_cases",
+      "description": "No year present"
+    },
+    {
+      "testname": "edge-multipart-001",
+      "filename": "Золотє теля.pt1.(1968).[SD,ukr].avi",
+      "expected": {
+        "order": "1",
+        "title": "Золотє теля",
+        "year": "1968",
+        "source": null,
+        "frame_class": "SD",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "rus",
+        "extension": "avi"
+      },
+      "category": "edge_cases",
+      "description": "Multi-part film (pt1)"
+    },
+    {
+      "testname": "edge-remastered-001",
+      "filename": "Apple 1984 (1984) [Remastered] [2160p,eng] [imdbid-tt4227346].mkv",
+      "expected": {
+        "order": null,
+        "title": "Apple 1984",
+        "year": "1984",
+        "source": null,
+        "frame_class": "2160p",
+        "hdr": null,
+        "movie_db": ["imdb", "tt4227346"],
+        "special_info": ["Remastered"],
+        "audio_langs": "eng",
+        "extension": "mkv"
+      },
+      "category": "special_edition",
+      "description": "Remastered version"
+    }
+  ],
+  "categories": {
+    "simple": "Basic filename with minimal metadata",
+    "order": "Files with order numbers in various formats",
+    "year_formats": "Different year positioning formats",
+    "database_id": "Contains TMDB/IMDB identifiers",
+    "special_edition": "Director's Cut, Extended, Remastered, etc.",
+    "multi_audio": "Multiple audio track counts",
+    "cyrillic": "Non-Latin character sets (Russian, Ukrainian)",
+    "multilingual_title": "Titles with alternative names or translations",
+    "hdr": "HDR/SDR metadata",
+    "resolution_formats": "Different resolution formats and positions",
+    "sources": "Various source types (BDRip, WEB-DL, DVDRip, etc.)",
+    "series": "TV series episodes",
+    "complex": "Filename with multiple metadata fields",
+    "edge_cases": "Edge cases and unusual formatting"
+  }
+}
