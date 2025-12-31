@@ -2,8 +2,10 @@ from textual.app import App, ComposeResult
 from textual.widgets import Tree, Static, Footer, LoadingIndicator
 from textual.containers import Horizontal, Container, ScrollableContainer, Vertical
 from textual.widget import Widget
+from textual.command import Provider, Hit
 from rich.markup import escape
 from pathlib import Path
+from functools import partial
 import threading
 import time
 import logging
@@ -17,14 +19,42 @@ from .formatters.proposed_name_formatter import ProposedNameFormatter
 from .formatters.text_formatter import TextFormatter
 from .formatters.catalog_formatter import CatalogFormatter
 from .settings import Settings
+from .cache import Cache, CacheManager
 
 
 # Set up logging conditionally
 if os.getenv('FORMATTER_LOG', '0') == '1':
-    logging.basicConfig(filename='formatter.log', level=logging.INFO, 
+    logging.basicConfig(filename='formatter.log', level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s')
 else:
     logging.basicConfig(level=logging.INFO)  # Enable logging for debugging
+
+
+class CacheCommandProvider(Provider):
+    """Command provider for cache management operations."""
+
+    async def search(self, query: str):
+        """Search for cache commands matching the query."""
+        matcher = self.matcher(query)
+
+        commands = [
+            ("cache_stats", "Cache: View Statistics", "View cache statistics (size, entries, etc.)"),
+            ("cache_clear_all", "Cache: Clear All", "Clear all cache entries"),
+            ("cache_clear_extractors", "Cache: Clear Extractors", "Clear extractor cache only"),
+            ("cache_clear_tmdb", "Cache: Clear TMDB", "Clear TMDB API cache only"),
+            ("cache_clear_posters", "Cache: Clear Posters", "Clear poster image cache only"),
+            ("cache_clear_expired", "Cache: Clear Expired", "Remove expired cache entries"),
+            ("cache_compact", "Cache: Compact", "Remove empty cache directories"),
+        ]
+
+        for command_name, display_name, help_text in commands:
+            if (score := matcher.match(display_name)) > 0:
+                yield Hit(
+                    score,
+                    matcher.highlight(display_name),
+                    partial(self.app.action_cache_command, command_name),
+                    help=help_text
+                )
 
 
 class RenamerApp(App):
@@ -51,11 +81,17 @@ class RenamerApp(App):
         ("ctrl+s", "settings", "Settings"),
     ]
 
+    # Command palette - extend built-in commands with cache commands
+    COMMANDS = App.COMMANDS | {CacheCommandProvider}
+
     def __init__(self, scan_dir):
         super().__init__()
         self.scan_dir = Path(scan_dir) if scan_dir else None
         self.tree_expanded = False
         self.settings = Settings()
+        # Initialize cache system
+        self.cache = Cache()
+        self.cache_manager = CacheManager(self.cache)
 
     def compose(self) -> ComposeResult:
         with Horizontal():
@@ -212,6 +248,54 @@ class RenamerApp(App):
 
     async def action_settings(self):
         self.push_screen(SettingsScreen())
+
+    async def action_cache_command(self, command: str):
+        """Execute a cache management command.
+
+        Args:
+            command: The cache command to execute (e.g., 'cache_stats', 'cache_clear_all')
+        """
+        try:
+            if command == "cache_stats":
+                stats = self.cache_manager.get_stats()
+                stats_text = f"""Cache Statistics:
+
+Total Files: {stats['total_files']}
+Total Size: {stats['total_size_mb']:.2f} MB
+Memory Entries: {stats['memory_cache_entries']}
+
+By Category:"""
+                for subdir, info in stats['subdirs'].items():
+                    stats_text += f"\n  {subdir}: {info['file_count']} files, {info['size_mb']:.2f} MB"
+
+                self.notify(stats_text, severity="information", timeout=10)
+
+            elif command == "cache_clear_all":
+                count = self.cache_manager.clear_all()
+                self.notify(f"Cleared all cache: {count} entries removed", severity="information", timeout=3)
+
+            elif command == "cache_clear_extractors":
+                count = self.cache_manager.clear_by_prefix("extractor_")
+                self.notify(f"Cleared extractor cache: {count} entries removed", severity="information", timeout=3)
+
+            elif command == "cache_clear_tmdb":
+                count = self.cache_manager.clear_by_prefix("tmdb_")
+                self.notify(f"Cleared TMDB cache: {count} entries removed", severity="information", timeout=3)
+
+            elif command == "cache_clear_posters":
+                count = self.cache_manager.clear_by_prefix("poster_")
+                self.notify(f"Cleared poster cache: {count} entries removed", severity="information", timeout=3)
+
+            elif command == "cache_clear_expired":
+                count = self.cache_manager.clear_expired()
+                self.notify(f"Cleared {count} expired entries", severity="information", timeout=3)
+
+            elif command == "cache_compact":
+                self.cache_manager.compact_cache()
+                self.notify("Cache compacted successfully", severity="information", timeout=3)
+
+        except Exception as e:
+            self.notify(f"Error executing cache command: {str(e)}", severity="error", timeout=5)
 
     async def action_toggle_mode(self):
         current_mode = self.settings.get("mode")

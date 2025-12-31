@@ -9,8 +9,12 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from renamer.extractors.mediainfo_extractor import MediaInfoExtractor
+from pathlib import Path
 
-test_cases = json.load(open('renamer/test/test_mediainfo_frame_class.json'))
+# Load test cases from JSON file using context manager
+test_cases_file = Path(__file__).parent / 'test_mediainfo_frame_class.json'
+with open(test_cases_file, 'r') as f:
+    test_cases = json.load(f)
 
 @pytest.mark.parametrize("test_case", test_cases, ids=[tc['testname'] for tc in test_cases])
 def test_frame_class_detection(test_case):

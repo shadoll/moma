@@ -60,6 +60,7 @@ ACTIONS:
 • p: Expand/Collapse - Toggle expansion of selected directory
 • m: Toggle Mode - Switch between technical and catalog display modes
 • ctrl+s: Settings - Open settings window
+• ctrl+p: Command Palette - Access cache commands and more
 • h: Help - Show this help screen
 • q: Quit - Exit the application
 
@@ -338,7 +339,7 @@ Configure application settings.
             self.app.settings.set("cache_ttl_extractors", ttl_extractors)  # type: ignore
             self.app.settings.set("cache_ttl_tmdb", ttl_tmdb)  # type: ignore
             self.app.settings.set("cache_ttl_posters", ttl_posters)  # type: ignore
-            
+
             self.app.notify("Settings saved!", severity="information", timeout=2)  # type: ignore
         except ValueError:
             self.app.notify("Invalid TTL values. Please enter numbers only.", severity="error", timeout=3)  # type: ignore

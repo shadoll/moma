@@ -28,7 +28,6 @@ Project: Media File Renamer and Metadata Viewer (Python TUI with Textual)
 23. 🔄 Implement build script to exclude dev commands (bump-version, release) from distributed package
 24. 📋 Implement metadata editing capabilities (future enhancement)
 25. 📋 Add batch rename operations (future enhancement)
-26. 📋 Add plugin system for custom extractors/formatters (future enhancement)
 27. 📋 Add advanced search and filtering capabilities (future enhancement)
 28. 📋 Implement undo/redo functionality for file operations (future enhancement)
 
