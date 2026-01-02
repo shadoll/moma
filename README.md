@@ -1,118 +1,182 @@
 # Renamer - Media File Renamer and Metadata Viewer
 
-A powerful terminal-based (TUI) application for managing media collections. Scan directories, view detailed metadata, browse TMDB catalog information with posters, and intelligently rename files. Built with Python and Textual.
+**Version**: 0.7.0-dev
 
-**Version**: 0.5.10
+A powerful Terminal User Interface (TUI) for managing media collections. View detailed metadata, browse TMDB catalog with posters, and intelligently rename files.
+
+> **📘 For complete documentation, see [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)**
+
+---
 
 ## Features
 
-### Core Capabilities
-- **Dual Display Modes**: Switch between Technical (codec/track details) and Catalog (TMDB metadata with posters)
-- **Recursive Directory Scanning**: Finds all video files in nested directories
-- **Tree View Navigation**: Keyboard and mouse support with expand/collapse
-- **Multi-Source Metadata**: Combines MediaInfo, filename parsing, embedded tags, and TMDB API
-- **Intelligent Renaming**: Proposes standardized names based on extracted metadata
-- **Persistent Settings**: Configurable mode and cache TTLs saved to `~/.config/renamer/`
-- **Advanced Caching**: File-based cache with TTL (6h extractors, 6h TMDB, 30d posters)
-- **Terminal Poster Display**: View movie posters in your terminal using rich-pixels
-- **Color-Coded Display**: Visual highlighting for different data types
-- **Confirmation Dialogs**: Safe file operations with preview and confirmation
-- **Extensible Architecture**: Modular extractor and formatter system for easy extension
+- **Dual Display Modes**: Technical (codecs/tracks) or Catalog (TMDB with posters)
+- **Multi-Source Metadata**: MediaInfo, filename parsing, embedded tags, TMDB API
+- **Intelligent Renaming**: Standardized names from metadata
+- **Advanced Caching**: 6h extractors, 6h TMDB, 30d posters
+- **Terminal Posters**: View movie posters in your terminal
+- **Tree View Navigation**: Keyboard and mouse support
 
-## Installation
+---
 
-### Prerequisites
-- Python 3.11+
-- UV package manager
+## Quick Start
 
-### Install UV (if not already installed)
+### Installation
+
 ```bash
+# Install UV
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
 
-### Install the Application
-```bash
-# Clone or download the project
+# Install Renamer
 cd /path/to/renamer
-
-# Install dependencies and build
 uv sync
-
-# Install as a global tool
 uv tool install .
 ```
 
-## Usage
+See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 
-### Running the App
+### Usage
+
 ```bash
 # Scan current directory
 renamer
 
 # Scan specific directory
-renamer /path/to/media/directory
+renamer /path/to/media
 ```
 
-### Keyboard Commands
-- **q**: Quit the application
-- **o**: Open directory selection dialog
-- **s**: Scan/rescan current directory
-- **f**: Force refresh metadata for selected file (bypass cache)
-- **r**: Rename selected file with proposed name
-- **p**: Toggle tree expansion (expand/collapse all)
-- **h**: Show help screen
-- **^p**: Open command palette (settings, mode toggle)
-- **Settings**: Access via action bar (top-right corner)
+---
 
-### Navigation
-- Use arrow keys to navigate the file tree
-- Right arrow: Expand directory
-- Left arrow: Collapse directory or go to parent
-- Mouse clicks supported
-- Select a video file to view its details in the right panel
+## Keyboard Commands
 
-### File Renaming
-1. Select a media file in the tree
-2. Press **r** to initiate rename
-3. Review the proposed new name in the confirmation dialog
-4. Press **y** to confirm or **n** to cancel
-5. The file will be renamed and the tree updated automatically (cache invalidated)
+| Key | Action |
+|-----|--------|
+| `q` | Quit |
+| `o` | Open directory |
+| `s` | Scan/rescan |
+| `f` | Refresh metadata |
+| `r` | Rename file |
+| `m` | Toggle mode (technical/catalog) |
+| `p` | Toggle tree expansion |
+| `h` | Show help |
+| `Ctrl+S` | Settings |
+| `Ctrl+P` | Command palette |
 
-### Display Modes
-- **Technical Mode**: Shows codec details, bitrates, track information, resolutions
-- **Catalog Mode**: Shows TMDB data including title, year, rating, overview, genres, and poster
-- Toggle between modes via Settings menu or command palette (^p)
+---
+
+## Display Modes
+
+### Technical Mode
+- Video tracks (codec, bitrate, resolution, frame rate)
+- Audio tracks (codec, channels, sample rate, language)
+- Subtitle tracks (format, language)
+- File information (size, modification time, path)
+
+### Catalog Mode
+- TMDB title, year, rating
+- Overview/description
+- Genres
+- Poster image (if terminal supports)
+- Technical metadata
+
+Toggle with `m` key.
+
+---
+
+## File Renaming
+
+**Proposed Format**: `Title (Year) [Resolution Source Edition].ext`
+
+**Example**: `The Matrix (1999) [1080p BluRay].mkv`
+
+1. Press `r` on selected file
+2. Review proposed name
+3. Confirm with `y` or cancel with `n`
+
+---
+
+## Configuration
+
+**Location**: `~/.config/renamer/config.json`
+
+```json
+{
+  "mode": "technical",
+  "cache_ttl_extractors": 21600,
+  "cache_ttl_tmdb": 21600,
+  "cache_ttl_posters": 2592000
+}
+```
+
+Access via `Ctrl+S` or edit file directly.
+
+---
+
+## Requirements
+
+- **Python**: 3.11+
+- **UV**: Package manager
+- **MediaInfo**: System library (for technical metadata)
+- **Internet**: For TMDB catalog mode
+
+---
+
+## Project Structure
+
+```
+renamer/
+├── app.py                  # Main TUI application
+├── services/               # Business logic
+├── extractors/             # Metadata extraction
+├── formatters/             # Display formatting
+├── utils/                  # Shared utilities
+├── cache/                  # Caching subsystem
+└── constants/              # Configuration constants
+```
+
+See [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md) for complete architecture documentation.
+
+---
 
 ## Development
 
-For development setup, architecture details, debugging information, and contribution guidelines, see [DEVELOP.md](DEVELOP.md).
+```bash
+# Setup
+uv sync --extra dev
 
-## Supported Video Formats
-- .mkv
-- .avi
-- .mov
-- .mp4
-- .wmv
-- .flv
-- .webm
-- .m4v
-- .3gp
-- .ogv
+# Run tests
+uv run pytest
 
-## Dependencies
-- **textual** ≥6.11.0: TUI framework
-- **pymediainfo** ≥6.0.0: Detailed media track information
-- **mutagen** ≥1.47.0: Embedded metadata extraction
-- **python-magic** ≥0.4.27: MIME type detection
-- **langcodes** ≥3.5.1: Language code handling
-- **requests** ≥2.31.0: HTTP client for TMDB API
-- **rich-pixels** ≥1.0.0: Terminal image display
-- **pytest** ≥7.0.0: Testing framework
+# Run from source
+uv run renamer [directory]
+```
 
-### System Requirements
-- **Python**: 3.11 or higher
-- **MediaInfo Library**: System dependency for pymediainfo
-  - Ubuntu/Debian: `sudo apt install libmediainfo-dev`
-  - Fedora/CentOS: `sudo dnf install libmediainfo-devel`
-  - Arch Linux: `sudo pacman -S libmediainfo`
-  - macOS/Windows: Automatically handled by pymediainfo
+See [DEVELOP.md](DEVELOP.md) for development documentation.
+
+---
+
+## Documentation
+
+- **[ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)** - Complete technical reference
+- **[INSTALL.md](INSTALL.md)** - Installation instructions
+- **[DEVELOP.md](DEVELOP.md)** - Development guide
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+- **[CLAUDE.md](CLAUDE.md)** - AI assistant reference
+
+---
+
+## License
+
+Not specified
+
+---
+
+## Credits
+
+- Built with [Textual](https://textual.textualize.io/)
+- Metadata from [MediaInfo](https://mediaarea.net/en/MediaInfo)
+- Catalog data from [TMDB](https://www.themoviedb.org/)
+
+---
+
+**For complete documentation, see [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)**

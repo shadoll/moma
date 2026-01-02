@@ -1,1019 +1,408 @@
-# Renamer v0.7.0 Refactoring Progress
+# Renamer - Refactoring Roadmap
 
-**Started**: 2025-12-31
-**Target Version**: 0.7.0 (from 0.6.0)
-**Goal**: Stable version with critical bugs fixed and deep architectural refactoring
+**Version**: 0.7.0-dev
+**Last Updated**: 2026-01-01
 
-**Last Updated**: 2025-12-31 (Phase 1 Complete + Unified Cache Subsystem)
+> **📋 For completed work, see [CHANGELOG.md](CHANGELOG.md)**
 
----
-
-## Phase 1: Critical Bug Fixes ✅ COMPLETED (5/5)
-
-**Test Status**: All 2130 tests passing ✅
-
-### ✅ 1.1 Fix Cache Key Generation Bug
-**Status**: COMPLETED
-**File**: `renamer/cache.py`
-**Changes**:
-- Complete rewrite of `_get_cache_file()` method (lines 20-75 → 47-86)
-- Fixed critical variable scoping bug at line 51 (subkey used before assignment)
-- Simplified cache key logic to single consistent pathway
-- Removed complex pkl/json branching that caused errors
-- Added `_sanitize_key_component()` for filesystem safety
-
-**Testing**: Needs verification
+This document tracks the future refactoring plan for Renamer v0.7.0+.
 
 ---
 
-### ✅ 1.2 Add Thread Safety to Cache
-**Status**: COMPLETED
-**File**: `renamer/cache.py`
-**Changes**:
-- Added `threading.RLock` for thread-safe operations (line 29)
-- Wrapped all cache operations with `with self._lock:` context manager
-- Added thread-safe `clear_expired()` method (lines 342-380)
-- Memory cache now properly synchronized
+## Completed Phases
 
-**Testing**: Needs verification with concurrent access
+✅ **Phase 1**: Critical Bug Fixes (5/5) - [See CHANGELOG.md](CHANGELOG.md)
+✅ **Phase 2**: Architecture Foundation (5/5) - [See CHANGELOG.md](CHANGELOG.md)
+✅ **Phase 3**: Code Quality (5/5) - [See CHANGELOG.md](CHANGELOG.md)
 
 ---
 
-### ✅ 1.3 Fix Resource Leaks in Tests
-**Status**: COMPLETED
-**Files**:
-- `renamer/test/test_mediainfo_frame_class.py` (lines 14-17)
-- `renamer/test/test_mediainfo_extractor.py` (lines 60-72)
+## Pending Phases
 
-**Changes**:
-- Replaced bare `open()` with context managers
-- Fixed test_mediainfo_frame_class.py: Now uses `Path(__file__).parent` and `with open()`
-- Fixed test_mediainfo_extractor.py: Converted to fixture-based approach instead of parametrize with open file
-- Both files now properly close file handles
+### Phase 3.6: Cleanup and Preparation (0/2)
 
-**Testing**: Run `uv run pytest` to verify no resource leaks
+**Goal**: Clean up remaining issues before major refactoring.
 
----
+**Status**: NOT STARTED
+**Priority**: HIGH (Must complete before Phase 4)
 
-### ✅ 1.4 Replace Bare Except Clauses
-**Status**: COMPLETED
-**Files Modified**:
-- `renamer/extractors/filename_extractor.py` (lines 330, 388, 463, 521)
-- `renamer/extractors/mediainfo_extractor.py` (line 171)
+#### 3.6.1 Refactor ProposedNameFormatter to Use Decorator Pattern
+**Status**: NOT STARTED
 
-**Changes**:
-- Replaced 5 bare `except:` clauses with specific exception types
-- Now catches `(LookupError, ValueError, AttributeError)` for language code conversion
-- Added debug logging for all caught exceptions with context
-- Based on langcodes library exception patterns
+**Current Issue**: `ProposedNameFormatter` stores extracted values in `__init__` as instance variables, creating unnecessary coupling.
 
-**Testing**: All 2130 tests passing ✅
+**Goal**: Convert to functional/decorator pattern similar to other formatters.
 
----
+**Current Code**:
+```python
+class ProposedNameFormatter:
+    def __init__(self, extractor):
+        self.__order = extractor.get('order')
+        self.__title = extractor.get('title')
+        # ... more instance variables
 
-### ✅ 1.5 Add Logging to Error Handlers
-**Status**: COMPLETED
-**Files Modified**:
-- `renamer/extractors/mediainfo_extractor.py` - Added warning log for MediaInfo parse failures
-- `renamer/extractors/metadata_extractor.py` - Added debug logs for mutagen and MIME detection
-- `renamer/extractors/tmdb_extractor.py` - Added warning logs for API and poster download failures
-- `renamer/extractors/filename_extractor.py` - Debug logs for language code conversions
-
-**Logging Strategy**:
-- **Warning level**: Network failures, API errors, MediaInfo parse failures
-- **Debug level**: Language code conversions, metadata reads, MIME detection
-- **Formatters**: Already have proper error handling with user-facing messages
-
-**Testing**: All 2130 tests passing ✅
-
----
-
-## BONUS: Unified Cache Subsystem ✅ COMPLETED
-
-**Status**: COMPLETED (Not in original plan, implemented proactively)
-**Test Status**: All 2130 tests passing (18 new cache tests added) ✅
-
-### Overview
-Created a comprehensive, flexible cache subsystem to replace the monolithic cache.py with a modular architecture supporting multiple cache strategies and decorators.
-
-### New Directory Structure
-```
-renamer/cache/
-├── __init__.py          # Module exports and convenience functions
-├── core.py              # Core Cache class (moved from cache.py)
-├── types.py             # Type definitions (CacheEntry, CacheStats)
-├── strategies.py        # Cache key generation strategies
-├── managers.py          # CacheManager for operations
-└── decorators.py        # Enhanced cache decorators
+    def rename_line(self) -> str:
+        return f"{self.__order}{self.__title}..."
 ```
 
-### Cache Key Strategies
-**Created 4 flexible strategies**:
-- `FilepathMethodStrategy`: For extractor methods (`extractor_{hash}_{method}`)
-- `APIRequestStrategy`: For API responses (`api_{service}_{hash}`)
-- `SimpleKeyStrategy`: For simple prefix+id (`{prefix}_{identifier}`)
-- `CustomStrategy`: User-defined key generation
-
-### Cache Decorators
-**Enhanced decorator system**:
-- `@cached(strategy, ttl)`: Generic caching with configurable strategy
-- `@cached_method(ttl)`: Method caching (backward compatible)
-- `@cached_api(service, ttl)`: API response caching
-- `@cached_property(ttl)`: Cached property decorator
-
-### Cache Manager
-**7 management operations**:
-- `clear_all()`: Remove all cache entries
-- `clear_by_prefix(prefix)`: Clear specific cache type
-- `clear_expired()`: Remove expired entries
-- `get_stats()`: Comprehensive statistics
-- `clear_file_cache(file_path)`: Clear cache for specific file
-- `get_cache_age(key)`: Get entry age
-- `compact_cache()`: Remove empty directories
-
-### Command Palette Integration
-**Integrated with Textual's command palette (Ctrl+P)**:
-- Created `CacheCommandProvider` class
-- 7 cache commands accessible via command palette:
-  - Cache: View Statistics
-  - Cache: Clear All
-  - Cache: Clear Extractors
-  - Cache: Clear TMDB
-  - Cache: Clear Posters
-  - Cache: Clear Expired
-  - Cache: Compact
-- Commands appear alongside built-in system commands (theme, keys, etc.)
-- Uses `COMMANDS = App.COMMANDS | {CacheCommandProvider}` pattern
-
-### Backward Compatibility
-- Old import paths still work: `from renamer.decorators import cached_method`
-- Existing extractors continue to work without changes
-- Old `cache.py` deleted, functionality fully migrated
-- `renamer.cache` now resolves to the package, not the file
-
-### Files Created (7)
-- `renamer/cache/__init__.py`
-- `renamer/cache/core.py`
-- `renamer/cache/types.py`
-- `renamer/cache/strategies.py`
-- `renamer/cache/managers.py`
-- `renamer/cache/decorators.py`
-- `renamer/test/test_cache_subsystem.py` (18 tests)
-
-### Files Modified (3)
-- `renamer/app.py`: Added CacheCommandProvider and cache manager
-- `renamer/decorators/__init__.py`: Import from new cache module
-- `renamer/screens.py`: Updated help text for command palette
-
-### Testing
-- 18 new comprehensive cache tests
-- All test basic operations, strategies, decorators, and manager
-- Backward compatibility tests
-- Total: 2130 tests passing ✅
-
----
-
-## Phase 2: Architecture Foundation ✅ COMPLETED (5/5)
-
-### 2.1 Create Base Classes and Protocols ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. Created `renamer/extractors/base.py` with `DataExtractor` Protocol
-   - Defines standard interface for all extractors
-   - 23 methods covering all extraction operations
-   - Comprehensive docstrings with examples
-   - Type hints for all method signatures
-
-2. Created `renamer/formatters/base.py` with Formatter ABCs
-   - `Formatter`: Base ABC with abstract `format()` method
-   - `DataFormatter`: For data transformations (sizes, durations, dates)
-   - `TextFormatter`: For text transformations (case changes)
-   - `MarkupFormatter`: For visual styling (colors, bold, links)
-   - `CompositeFormatter`: For chaining multiple formatters
-
-3. Updated package exports
-   - `renamer/extractors/__init__.py`: Exports DataExtractor + all extractors
-   - `renamer/formatters/__init__.py`: Exports all base classes + formatters
-
-**Benefits**:
-- Provides clear contract for extractor implementations
-- Enables runtime protocol checking
-- Improves IDE autocomplete and type checking
-- Foundation for future refactoring of existing extractors
-
-**Test Status**: All 2130 tests passing ✅
-
-**Files Created (2)**:
-- `renamer/extractors/base.py` (258 lines)
-- `renamer/formatters/base.py` (151 lines)
-
-**Files Modified (2)**:
-- `renamer/extractors/__init__.py` - Added exports for base + all extractors
-- `renamer/formatters/__init__.py` - Added exports for base classes + formatters
-
----
-
-### 2.2 Create Service Layer ✅ COMPLETED (includes 2.3)
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. Created `renamer/services/__init__.py`
-   - Exports FileTreeService, MetadataService, RenameService
-   - Package documentation
-
-2. Created `renamer/services/file_tree_service.py` (267 lines)
-   - Directory scanning and validation
-   - Recursive tree building with filtering
-   - Media file detection based on MEDIA_TYPES
-   - Permission error handling
-   - Tree node searching by path
-   - Directory statistics (file counts, media counts)
-   - Comprehensive docstrings and examples
-
-3. Created `renamer/services/metadata_service.py` (307 lines)
-   - **Thread pool management** (ThreadPoolExecutor with configurable max_workers)
-   - **Thread-safe operations** with Lock
-   - Concurrent metadata extraction with futures
-   - **Active extraction tracking** and cancellation support
-   - Cache integration via MediaExtractor decorators
-   - Synchronous and asynchronous extraction modes
-   - Formatter coordination (technical/catalog modes)
-   - Proposed name generation
-   - Error handling with callbacks
-   - Context manager support
-   - Graceful shutdown with cleanup
-
-4. Created `renamer/services/rename_service.py` (340 lines)
-   - Proposed name generation from metadata
-   - Filename validation and sanitization
-   - Invalid character removal (cross-platform)
-   - Reserved name checking (Windows compatibility)
-   - File conflict detection
-   - Atomic rename operations
-   - Dry-run mode for testing
-   - Callback-based rename with success/error handlers
-   - Markup tag stripping for clean filenames
-
-**Benefits**:
-- **Separation of concerns**: Business logic separated from UI code
-- **Thread safety**: Proper locking and future management prevents race conditions
-- **Concurrent extraction**: Thread pool enables multiple files to be processed simultaneously
-- **Cancellation support**: Can cancel pending extractions when user changes selection
-- **Testability**: Services can be tested independently of UI
-- **Reusability**: Services can be used from different parts of the application
-- **Clean architecture**: Clear interfaces and responsibilities
-
-**Thread Pool Implementation** (Phase 2.3 integrated):
-- ThreadPoolExecutor with 3 workers by default (configurable)
-- Thread-safe future tracking with Lock
-- Automatic cleanup on service shutdown
-- Future cancellation support
-- Active extraction counting
-- Context manager for automatic cleanup
-
-**Test Status**: All 2130 tests passing ✅
-
-**Files Created (4)**:
-- `renamer/services/__init__.py` (21 lines)
-- `renamer/services/file_tree_service.py` (267 lines)
-- `renamer/services/metadata_service.py` (307 lines)
-- `renamer/services/rename_service.py` (340 lines)
-
-**Total Lines**: 935 lines of service layer code
-
----
-
-### 2.3 Add Thread Pool to MetadataService ✅ COMPLETED
-**Status**: COMPLETED (integrated into 2.2)
-**Completed**: 2025-12-31
-
-**Note**: This task was completed as part of creating the MetadataService in Phase 2.2.
-Thread pool functionality is fully implemented with:
-- ThreadPoolExecutor with configurable max_workers
-- Future tracking and cancellation
-- Thread-safe operations with Lock
-- Graceful shutdown
-
----
-
-### 2.4 Extract Utility Modules ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. Created `renamer/utils/__init__.py` (21 lines)
-   - Exports LanguageCodeExtractor, PatternExtractor, FrameClassMatcher
-   - Package documentation
-
-2. Created `renamer/utils/language_utils.py` (312 lines)
-   - **LanguageCodeExtractor** class eliminates ~150+ lines of duplication
-   - Comprehensive KNOWN_CODES set (100+ language codes)
-   - ALLOWED_TITLE_CASE and SKIP_WORDS sets
-   - Methods:
-     - `extract_from_brackets()` - Extract from [UKR_ENG] patterns
-     - `extract_standalone()` - Extract from filename parts
-     - `extract_all()` - Combined extraction
-     - `format_lang_counts()` - Format like "2ukr,eng"
-     - `_convert_to_iso3()` - Convert to ISO 639-3 codes
-     - `is_valid_code()` - Validate language codes
-   - Handles count patterns like [2xUKR_ENG]
-   - Skips quality indicators and file extensions
-   - Full docstrings with examples
-
-3. Created `renamer/utils/pattern_utils.py` (328 lines)
-   - **PatternExtractor** class eliminates pattern duplication
-   - Year validation constants (CURRENT_YEAR, YEAR_FUTURE_BUFFER, MIN_VALID_YEAR)
-   - QUALITY_PATTERNS and SOURCE_PATTERNS sets
-   - Methods:
-     - `extract_movie_db_ids()` - Extract TMDB/IMDB IDs
-     - `extract_year()` - Extract and validate years
-     - `find_year_position()` - Locate year in text
-     - `extract_quality()` - Extract quality indicators
-     - `find_quality_position()` - Locate quality in text
-     - `extract_source()` - Extract source indicators
-     - `find_source_position()` - Locate source in text
-     - `extract_bracketed_content()` - Get all bracket content
-     - `remove_bracketed_content()` - Clean text
-     - `split_on_delimiters()` - Split on dots/spaces/underscores
-   - Full docstrings with examples
-
-4. Created `renamer/utils/frame_utils.py` (292 lines)
-   - **FrameClassMatcher** class eliminates frame matching duplication
-   - Height and width tolerance constants
-   - Methods:
-     - `match_by_dimensions()` - Main matching algorithm
-     - `match_by_height()` - Height-only matching
-     - `_match_by_width_and_aspect()` - Width-based matching
-     - `_match_by_closest_height()` - Find closest match
-     - `get_nominal_height()` - Get standard height
-     - `get_typical_widths()` - Get standard widths
-     - `is_standard_resolution()` - Check if standard
-     - `detect_scan_type()` - Detect progressive/interlaced
-     - `calculate_aspect_ratio()` - Calculate from dimensions
-     - `format_aspect_ratio()` - Format as string (e.g., "16:9")
-   - Multi-step matching algorithm
-   - Full docstrings with examples
-
-**Benefits**:
-- **Eliminates ~200+ lines of code duplication** across extractors
-- **Single source of truth** for language codes, patterns, and frame matching
-- **Easier testing** - utilities can be tested independently
-- **Consistent behavior** across all extractors
-- **Better maintainability** - changes only need to be made once
-- **Comprehensive documentation** with examples for all methods
-
-**Test Status**: All 2130 tests passing ✅
-
-**Files Created (4)**:
-- `renamer/utils/__init__.py` (21 lines)
-- `renamer/utils/language_utils.py` (312 lines)
-- `renamer/utils/pattern_utils.py` (328 lines)
-- `renamer/utils/frame_utils.py` (292 lines)
-
-**Total Lines**: 953 lines of utility code
-
----
-
-### 2.5 Add App Commands to Command Palette ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. Created `AppCommandProvider` class in `renamer/app.py`
-   - Extends Textual's Provider for command palette integration
-   - Implements async `search()` method with fuzzy matching
-   - Provides 8 main app commands:
-     - **Open Directory** - Open a directory to browse (o)
-     - **Scan Directory** - Scan current directory (s)
-     - **Refresh File** - Refresh metadata for selected file (f)
-     - **Rename File** - Rename the selected file (r)
-     - **Toggle Display Mode** - Switch technical/catalog view (m)
-     - **Toggle Tree Expansion** - Expand/collapse tree nodes (p)
-     - **Settings** - Open settings screen (Ctrl+S)
-     - **Help** - Show keyboard shortcuts (h)
-
-2. Updated `COMMANDS` class variable
-   - Changed from: `COMMANDS = App.COMMANDS | {CacheCommandProvider}`
-   - Changed to: `COMMANDS = App.COMMANDS | {CacheCommandProvider, AppCommandProvider}`
-   - Both cache and app commands now available in command palette
-
-3. Command palette now provides:
-   - 7 cache management commands
-   - 8 app operation commands
-   - All built-in Textual commands (theme switcher, etc.)
-   - **Total: 15+ commands accessible via Ctrl+P**
-
-**Benefits**:
-- **Unified interface** - All app operations accessible from one place
-- **Keyboard-first workflow** - No need to remember all shortcuts
-- **Fuzzy search** - Type partial names to find commands
-- **Discoverable** - Users can explore available commands
-- **Consistent UX** - Follows Textual command palette patterns
-
-**Test Status**: All 2130 tests passing ✅
-
-**Files Modified (1)**:
-- `renamer/app.py` - Added AppCommandProvider class and updated COMMANDS
-
----
-
-## Phase 3: Code Quality ✅ COMPLETED (5/5)
-
-### 3.1 Refactor Long Methods ⏳ IN PROGRESS
-**Status**: PARTIALLY COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. **Eliminated hardcoded language lists** (~80 lines removed)
-   - Removed `known_language_codes` sets from `extract_audio_langs()` and `extract_audio_tracks()`
-   - Removed `allowed_title_case` set
-   - Now uses `langcodes.Language.get()` for dynamic validation (following mediainfo_extractor pattern)
-
-2. **Refactored language extraction methods**
-   - `extract_audio_langs()`: Simplified from 533 → 489 lines (-44 lines, 8.2%)
-   - `extract_audio_tracks()`: Also simplified using same approach
-   - Both methods now use `SKIP_WORDS` constant instead of inline lists
-   - Both methods now use `langcodes.Language.get()` instead of hardcoded language validation
-   - Replaced hardcoded quality indicators `['sd', 'hd', 'lq', 'qhd', 'uhd', 'p', 'i', 'hdr', 'sdr']` with `SKIP_WORDS` check
-
-**Benefits**:
-- ~80 lines of hardcoded language data eliminated
-- Dynamic language validation using langcodes library
-- Single source of truth for skip words in constants
-- More maintainable and extensible
-
-**Test Status**: All 368 filename extractor tests passing ✅
-
-**Still TODO**:
-- Refactor `extract_title()` (85 lines) → split into 4 helpers
-- Refactor `extract_frame_class()` (55 lines) → split into 2 helpers
-- Refactor `update_renamed_file()` (39 lines) → split into 2 helpers
-
----
-
-### 3.2 Eliminate Code Duplication ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. **Eliminated Movie DB pattern extraction duplication**
-   - Refactored `extract_movie_db()` in filename_extractor.py
-   - Now uses `PatternExtractor.extract_movie_db_ids()` utility (created in Phase 2.4)
-   - Removed 15 lines of duplicated pattern matching code
-   - File reduced from 486 → 477 lines (-9 lines, 1.9%)
-
-2. **Leveraged existing utilities from Phase 2.4**
-   - `PatternExtractor` utility already created with movie DB, year, and quality extraction
-   - `LanguageCodeExtractor` utility already used (Phase 3.1)
-   - `FrameClassMatcher` utility available for future use
-
-**Benefits**:
-- Eliminated code duplication between filename_extractor and pattern_utils
-- Single source of truth for movie DB ID extraction logic
-- Easier to maintain and test pattern matching
-- Consistent behavior across codebase
-
-**Test Status**: All 559 tests passing ✅
-
-**Files Modified (1)**:
-- `renamer/extractors/filename_extractor.py` - Uses PatternExtractor utility
-
-**Code Reduction**:
-- 15 lines of duplicated regex/pattern matching code removed
-- FilenameExtractor now delegates to utility for movie DB extraction
-
-**Notes**:
-- Frame class matching and year extraction reviewed
-- Year extraction in filename_extractor has additional dot-pattern (`.2020.`) not in utility
-- Frame class utilities available but filename_extractor logic is more specialized
-- Language code duplication already eliminated in Phase 3.1
-
----
-
-### 3.3 Extract Magic Numbers to Constants ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. **Split constants.py into 8 logical modules**
-   - `media_constants.py`: MEDIA_TYPES (video formats)
-   - `source_constants.py`: SOURCE_DICT (WEB-DL, BDRip, etc.)
-   - `frame_constants.py`: FRAME_CLASSES (480p, 720p, 1080p, 4K, 8K)
-   - `moviedb_constants.py`: MOVIE_DB_DICT (TMDB, IMDB, Trakt, TVDB)
-   - `edition_constants.py`: SPECIAL_EDITIONS (Director's Cut, etc.)
-   - `lang_constants.py`: SKIP_WORDS (40+ words to skip)
-   - `year_constants.py`: CURRENT_YEAR, MIN_VALID_YEAR, YEAR_FUTURE_BUFFER, is_valid_year()
-   - `cyrillic_constants.py`: CYRILLIC_TO_ENGLISH (character mappings)
-
-2. **Extracted hardcoded values from filename_extractor.py**
-   - Removed hardcoded year validation (2025, 1900, +10)
-   - Now uses `is_valid_year()` function from year_constants.py
-   - Removed hardcoded Cyrillic character mappings
-   - Now uses `CYRILLIC_TO_ENGLISH` from cyrillic_constants.py
-
-3. **Updated constants/__init__.py**
-   - Exports all constants from logical modules
-   - Organized exports by category with comments
-   - Complete backward compatibility maintained
-
-4. **Deleted old constants.py**
-   - Monolithic file replaced with modular package
-   - All imports automatically work through __init__.py
-
-**Benefits**:
-- Better organization: 8 focused modules instead of 1 monolithic file
-- Dynamic year validation using current date (no manual updates needed)
-- Easier to find and modify specific constants
-- Clear separation of concerns
-- Full backward compatibility
-
-**Test Status**: All 560 tests passing ✅
-
-**Files Created (8)**:
-- `renamer/constants/media_constants.py` (1430 bytes)
-- `renamer/constants/source_constants.py` (635 bytes)
-- `renamer/constants/frame_constants.py` (1932 bytes)
-- `renamer/constants/moviedb_constants.py` (1106 bytes)
-- `renamer/constants/edition_constants.py` (2179 bytes)
-- `renamer/constants/lang_constants.py` (1330 bytes)
-- `renamer/constants/year_constants.py` (655 bytes)
-- `renamer/constants/cyrillic_constants.py` (451 bytes)
-
-**Files Modified (2)**:
-- `renamer/constants/__init__.py` - Updated to export from all modules
-- `renamer/extractors/filename_extractor.py` - Updated imports and usage
-
-**Files Deleted (1)**:
-- `renamer/constants.py` - Replaced by constants/ package
-
----
-
-### 3.4 Add Missing Type Hints ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. **Added type hints to default_extractor.py**
-   - Added `from typing import Optional` import
-   - Added return type hints to all 21 methods
-   - Types: `Optional[str]`, `Optional[int]`, `Optional[float]`, `list[dict]`, `list[str] | None`
-   - All methods now conform to DataExtractor Protocol signatures
-
-2. **Reviewed cache type hints**
-   - Verified all uses of `Any` in cache subsystem
-   - Determined that `Any` is appropriate for:
-     - `CacheEntry.value: Any` - stores any JSON-serializable type
-     - `instance: Any` in decorators - can decorate any class
-     - `Cache.set(value: Any)` - can cache any type
-   - No changes needed - existing type hints are correct
-
-3. **Added mypy as dev dependency**
-   - Added `[project.optional-dependencies]` section to pyproject.toml
-   - Added `mypy>=1.0.0` to dev dependencies
-   - Ran `uv sync --extra dev` to install mypy
-
-4. **Verified with mypy**
-   - Ran mypy on default_extractor.py
-   - Zero type errors found in default_extractor.py
-   - All type hints conform to Protocol signatures from base.py
-
-**Benefits**:
-- Complete type coverage for DefaultExtractor class
-- Improved IDE autocomplete and type checking
-- Protocol conformance verified by mypy
-- Mypy now available for future type checking
-
-**Test Status**: All 559 tests passing ✅
-
-**Files Modified (2)**:
-- `renamer/extractors/default_extractor.py` - Added type hints to all 21 methods
-- `pyproject.toml` - Added mypy to dev dependencies
-
-**Mypy Verification**:
-```
-uv run mypy renamer/extractors/default_extractor.py
-# Result: 0 errors in default_extractor.py
-```
-
----
-
-### 3.5 Add Comprehensive Docstrings ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2026-01-01
-
-**What was done**:
-1. **Added comprehensive docstrings to key extractor modules**
-   - `default_extractor.py`: Module docstring + class docstring + 21 method docstrings
-   - `extractor.py`: Module docstring + enhanced class docstring + method docstrings
-   - `fileinfo_extractor.py`: Module docstring + enhanced class docstring + method docstrings
-   - `metadata_extractor.py`: Module docstring + enhanced class docstring + method docstrings
-
-2. **Added comprehensive docstrings to formatter module**
-   - `formatter.py`: Module docstring + class docstring + method docstrings
-   - Enhanced `FormatterApplier.apply_formatters()` with detailed Args/Returns
-   - Enhanced `FormatterApplier.format_data_item()` with examples
-
-3. **Verified all module-level docstrings**
-   - All services modules have docstrings (file_tree_service, metadata_service, rename_service)
-   - All utils modules have docstrings (language_utils, pattern_utils, frame_utils)
-   - All constants modules have docstrings (8 modules)
-   - Base classes and protocols already documented (Phase 2)
-
-**Docstring Standards Applied**:
-- Module-level docstrings explaining purpose
-- Class docstrings with Attributes and Examples
-- Method docstrings with Args, Returns, and Examples
-- Google-style docstring format
-- Clear, concise descriptions
-
-**Benefits**:
-- Improved code documentation for all major modules
-- Better IDE tooltips and autocomplete information
-- Easier onboarding for new developers
-- Clear API documentation with examples
-- Professional code quality standards
-
-**Test Status**: All 559 tests passing ✅
-
-**Files Modified (5)**:
-- `renamer/extractors/default_extractor.py` - Added module + 22 docstrings
-- `renamer/extractors/extractor.py` - Added module + enhanced docstrings
-- `renamer/extractors/fileinfo_extractor.py` - Added module + enhanced docstrings
-- `renamer/extractors/metadata_extractor.py` - Added module + enhanced docstrings
-- `renamer/formatters/formatter.py` - Added module + enhanced docstrings
-
-**Coverage**:
-- 5 files enhanced with comprehensive docstrings
-- All key extractors documented
-- FormatterApplier fully documented
-- All existing Phase 2 modules already had docstrings
-
----
-
-## Phase 4: Refactor to New Architecture (PENDING)
-
-- Refactor all extractors to use protocol
-- Refactor all formatters to use base class
-- Refactor RenamerApp to use services
-- Update all imports and dependencies
-
----
-
-## Phase 5: Test Coverage ✅ PARTIALLY COMPLETED (4/6)
-
-### Test Files Created (3/6):
-
-#### 5.1 `renamer/test/test_services.py` ✅ COMPLETED
-**Status**: COMPLETED
-**Tests Added**: 30+ tests for service layer
-- TestFileTreeService (9 tests)
-  - Directory validation
-  - Scanning with/without recursion
-  - Media file detection
-  - File counting
-  - Directory statistics
-- TestMetadataService (6 tests)
-  - Synchronous/asynchronous extraction
-  - Thread pool management
-  - Context manager support
-  - Shutdown handling
-- TestRenameService (13 tests)
-  - Filename sanitization
-  - Validation (empty, too long, reserved names, invalid chars)
-  - Conflict detection
-  - Dry-run mode
-  - Actual renaming
-  - Markup stripping
-- TestServiceIntegration (2 tests)
-  - Scan and rename workflow
-
-#### 5.2 `renamer/test/test_utils.py` ✅ COMPLETED
-**Status**: COMPLETED
-**Tests Added**: 70+ tests for utility modules
-- TestLanguageCodeExtractor (16 tests)
-  - Bracket extraction with counts
-  - Standalone extraction
-  - Combined extraction
-  - Language count formatting
-  - ISO-3 conversion
-  - Code validation
-- TestPatternExtractor (20 tests)
-  - Movie database ID extraction (TMDB, IMDB)
-  - Year extraction and validation
-  - Position finding (year, quality, source)
-  - Quality/source indicator detection
-  - Bracket content manipulation
-  - Delimiter splitting
-- TestFrameClassMatcher (16 tests)
-  - Resolution matching (1080p, 720p, 2160p, 4K)
-  - Interlaced/progressive detection
-  - Height-only matching
-  - Standard resolution checking
-  - Aspect ratio calculation and formatting
-  - Scan type detection
-- TestUtilityIntegration (2 tests)
-  - Multi-type metadata extraction
-  - Cross-utility compatibility
-
-#### 5.3 `renamer/test/test_formatters.py` ✅ COMPLETED
-**Status**: COMPLETED
-**Tests Added**: 40+ tests for formatters
-- TestBaseFormatters (1 test)
-  - CompositeFormatter functionality
-- TestTextFormatter (8 tests)
-  - Bold, italic, underline
-  - Uppercase, lowercase, camelcase
-  - Color formatting (green, red, etc.)
-  - Deprecated methods
-- TestDurationFormatter (4 tests)
-  - Seconds, HH:MM:SS, HH:MM formats
-  - Full duration formatting
-- TestSizeFormatter (5 tests)
-  - Bytes, KB, MB, GB formatting
-  - Full size formatting
-- TestDateFormatter (2 tests)
-  - Modification date formatting
-  - Year formatting
-- TestExtensionFormatter (3 tests)
-  - Known extensions (MKV, MP4)
-  - Unknown extensions
-- TestResolutionFormatter (1 test)
-  - Dimension formatting
-- TestTrackFormatter (3 tests)
-  - Video/audio/subtitle track formatting
-- TestSpecialInfoFormatter (5 tests)
-  - Special info list/string formatting
-  - Database info dict/list formatting
-- TestFormatterApplier (8 tests)
-  - Single/multiple formatter application
-  - Formatter ordering
-  - Data item formatting with value/label/display formatters
-  - Error handling
-- TestFormatterIntegration (2 tests)
-  - Complete formatting pipeline
-  - Error handling
-
-### 5.4 Dataset Organization ✅ COMPLETED
-**Status**: COMPLETED
-**Completed**: 2025-12-31
-
-**What was done**:
-1. **Consolidated test data** into organized datasets structure
-   - Removed 4 obsolete files: filenames.txt, test_filenames.txt, test_cases.json, test_mediainfo_frame_class.json
-   - Created filename_patterns.json with 46 comprehensive test cases
-   - Organized into 14 categories (simple, order, cyrillic, edge_cases, etc.)
-   - Moved test_mediainfo_frame_class.json → datasets/mediainfo/frame_class_tests.json
-
-2. **Created sample file generator**
-   - Script: `renamer/test/fill_sample_mediafiles.py`
-   - Generates 46 empty test files from filename_patterns.json
-   - Usage: `uv run python renamer/test/fill_sample_mediafiles.py`
-   - Idempotent and cross-platform compatible
-
-3. **Updated test infrastructure**
-   - Enhanced conftest.py with dataset loading fixtures:
-     - `load_filename_patterns()` - Load filename test cases
-     - `load_frame_class_tests()` - Load frame class tests
-     - `load_dataset(name)` - Generic dataset loader
-     - `get_test_file_path(filename)` - Get path to sample files
-   - Updated 3 test files to use new dataset structure
-   - All tests now load from datasets/ directory
-
-4. **Documentation**
-   - Created comprehensive datasets/README.md (375+ lines)
-   - Added usage examples and code snippets
-   - Documented all dataset formats and categories
-   - Marked expected_results/ as reserved for future use
-
-5. **Git configuration**
-   - Added sample_mediafiles/ to .gitignore
-   - Test files are generated locally, not committed
-   - Reduces repository size
-
-**Dataset Structure**:
-```
-datasets/
-├── README.md                     # Complete documentation
-├── filenames/
-│   ├── filename_patterns.json   # 46 test cases, v2.0
-│   └── sample_files/            # Legacy files (kept for reference)
-├── mediainfo/
-│   └── frame_class_tests.json   # 25 test cases
-├── sample_mediafiles/           # Generated (in .gitignore)
-│   └── 46 .mkv, .mp4, .avi files
-└── expected_results/            # Reserved for future use
+**Target Design**:
+```python
+class ProposedNameFormatter:
+    @staticmethod
+    def format_proposed_name(extractor) -> str:
+        """Generate proposed filename from extractor data"""
+        # Direct formatting without storing state
+        order = format_order(extractor.get('order'))
+        title = format_title(extractor.get('title'))
+        return f"{order}{title}..."
+
+    @staticmethod
+    def format_proposed_name_with_color(file_path, extractor) -> str:
+        """Format proposed name with color highlighting"""
+        proposed = ProposedNameFormatter.format_proposed_name(extractor)
+        # Color logic here
 ```
 
 **Benefits**:
-- **Organization**: All test data in structured location
-- **Discoverability**: Clear categorization with 14 categories
-- **Maintainability**: Easy to add/update test cases
-- **No binary files in git**: Generated locally from JSON
-- **Comprehensive**: 46 test cases covering all edge cases
-- **Well documented**: 375+ line README with examples
+- Stateless, pure functions
+- Easier to test
+- Consistent with other formatters
+- Can use `@cached()` decorator if needed
+- No coupling to extractor instance
 
-**Files Created (4)**:
-- `renamer/test/fill_sample_mediafiles.py` (99 lines)
-- `renamer/test/datasets/README.md` (375 lines)
-- `renamer/test/datasets/filenames/filename_patterns.json` (850+ lines, 46 cases)
-- `renamer/test/conftest.py` - Enhanced with dataset helpers
-
-**Files Removed (4)**:
-- `renamer/test/filenames.txt` (264 lines)
-- `renamer/test/test_filenames.txt` (68 lines)
-- `renamer/test/test_cases.json` (22 cases)
-- `renamer/test/test_mediainfo_frame_class.json` (25 cases)
-
-**Files Modified (7)**:
-- `.gitignore` - Added sample_mediafiles/ directory
-- `renamer/test/conftest.py` - Added dataset loading helpers
-- `renamer/test/test_filename_detection.py` - Updated to use datasets and extract extension
-- `renamer/test/test_filename_extractor.py` - Updated to use datasets
-- `renamer/test/test_mediainfo_frame_class.py` - Updated to use datasets
-- `renamer/test/test_fileinfo_extractor.py` - Updated to use filename_patterns.json
-- `renamer/test/test_metadata_extractor.py` - Rewritten for graceful handling of non-media files
-- `renamer/extractors/filename_extractor.py` - Added extract_extension() method
-
-**Extension Extraction Added**:
-- Added `extract_extension()` method to FilenameExtractor
-- Uses pathlib.Path.suffix for reliable extraction
-- Returns extension without leading dot (e.g., "mkv", "mp4")
-- Integrated into test_filename_detection.py validation
-
-**Test Status**: All 560 tests passing ✅
+**Files to Modify**:
+- `renamer/formatters/proposed_name_formatter.py`
+- Update all usages in `app.py`, `screens.py`, etc.
 
 ---
 
-### Test Files Still Needed (2/6):
-- `renamer/test/test_screens.py` - Testing UI screens
-- `renamer/test/test_app.py` - Testing main app integration
+#### 3.6.2 Clean Up Decorators Directory
+**Status**: NOT STARTED
 
-### Test Statistics:
-**Before Phase 5**: 518 tests
-**After Phase 5.4**: 560 tests
-**New Tests Added**: 42+ tests (services, utils, formatters)
-**All Tests Passing**: ✅ 560/560
+**Current Issue**: `renamer/decorators/` directory contains legacy `caching.py` file that's no longer used. All cache decorators were moved to `renamer/cache/decorators.py` in Phase 1.
+
+**Current Structure**:
+```
+renamer/decorators/
+├── caching.py          # ⚠️ LEGACY - Remove
+└── __init__.py         # Import from renamer.cache
+```
+
+**Actions**:
+1. **Verify no direct imports** of `renamer.decorators.caching`
+2. **Remove `caching.py`** - All functionality now in `renamer/cache/decorators.py`
+3. **Keep `__init__.py`** for backward compatibility (imports from `renamer.cache`)
+4. **Update any direct imports** to use `from renamer.cache import cached_method`
+
+**Verification**:
+```bash
+# Check for direct imports of old caching module
+grep -r "from renamer.decorators.caching" renamer/
+grep -r "import renamer.decorators.caching" renamer/
+
+# Should only find imports from __init__.py that re-export from renamer.cache
+```
+
+**Benefits**:
+- Removes dead code
+- Clarifies that all caching is in `renamer/cache/`
+- Maintains backward compatibility via `__init__.py`
 
 ---
 
-## Phase 6: Documentation and Release (PENDING)
+### Phase 4: Refactor to New Architecture (0/4)
 
-- Update CLAUDE.md
-- Update DEVELOP.md
-- Update AI_AGENT.md
-- Update README.md
-- Bump version to 0.7.0
-- Create CHANGELOG.md
-- Build and test distribution
+**Goal**: Migrate existing code to use the new architecture from Phase 2.
+
+**Status**: NOT STARTED
+
+#### 4.1 Refactor Extractors to Use Protocol
+- Update all extractors to explicitly implement `DataExtractor` Protocol
+- Ensure consistent method signatures
+- Add missing Protocol methods where needed
+- Update type hints to match Protocol
+
+**Files to Update**:
+- `filename_extractor.py`
+- `mediainfo_extractor.py`
+- `metadata_extractor.py`
+- `fileinfo_extractor.py`
+- `tmdb_extractor.py`
+
+#### 4.2 Refactor Formatters to Use Base Classes
+- Update all formatters to inherit from appropriate base classes
+- Move to `DataFormatter`, `TextFormatter`, or `MarkupFormatter`
+- Ensure consistent interface
+- Add missing abstract methods
+
+**Files to Update**:
+- `media_formatter.py`
+- `catalog_formatter.py`
+- `track_formatter.py`
+- `proposed_name_formatter.py`
+- All specialized formatters
+
+#### 4.3 Integrate RenamerApp with Services
+- Refactor `app.py` to use service layer
+- Replace direct extractor calls with `MetadataService`
+- Replace direct file operations with `RenameService`
+- Replace direct tree building with `FileTreeService`
+- Remove business logic from UI layer
+
+**Expected Benefits**:
+- Cleaner separation of concerns
+- Easier testing
+- Better error handling
+- More maintainable code
+
+#### 4.4 Update Imports and Dependencies
+- Update all imports to use new architecture
+- Remove deprecated patterns
+- Verify no circular dependencies
+- Update tests to match new structure
+
+---
+
+### Phase 5: Test Coverage (4/6 - 66% Complete)
+
+**Goal**: Achieve comprehensive test coverage for all components.
+
+**Status**: IN PROGRESS
+
+#### ✅ 5.1 Service Layer Tests (COMPLETED)
+- 30+ tests for FileTreeService, MetadataService, RenameService
+- Integration tests for service workflows
+
+#### ✅ 5.2 Utility Module Tests (COMPLETED)
+- 70+ tests for PatternExtractor, LanguageCodeExtractor, FrameClassMatcher
+- Integration tests for utility interactions
+
+#### ✅ 5.3 Formatter Tests (COMPLETED)
+- 40+ tests for all formatter classes
+- FormatterApplier testing
+
+#### ✅ 5.4 Dataset Organization (COMPLETED)
+- Consolidated test data into `datasets/`
+- 46 filename test cases
+- 25 frame class test cases
+- Sample file generator
+
+#### ⏳ 5.5 Screen Tests (PENDING)
+**Status**: NOT STARTED
+
+**Scope**:
+- Test OpenScreen functionality
+- Test HelpScreen display
+- Test RenameConfirmScreen workflow
+- Test SettingsScreen interactions
+- Mock user input
+- Verify screen transitions
+
+#### ⏳ 5.6 App Integration Tests (PENDING)
+**Status**: NOT STARTED
+
+**Scope**:
+- End-to-end workflow testing
+- Directory scanning → metadata display → rename
+- Mode switching (technical/catalog)
+- Cache integration
+- Error handling flows
+- Command palette integration
+
+**Target Coverage**: >90%
+
+---
+
+### Phase 6: Documentation and Release (0/7)
+
+**Goal**: Finalize documentation and prepare for release.
+
+**Status**: NOT STARTED
+
+#### 6.1 Update Technical Documentation
+- ✅ ENGINEERING_GUIDE.md created
+- [ ] API documentation generation
+- [ ] Architecture diagrams
+- [ ] Component interaction flows
+
+#### 6.2 Update User Documentation
+- ✅ README.md streamlined
+- [ ] User guide with screenshots
+- [ ] Common workflows documentation
+- [ ] Troubleshooting guide
+- [ ] FAQ section
+
+#### 6.3 Update Developer Documentation
+- ✅ DEVELOP.md streamlined
+- [ ] Contributing guidelines
+- [ ] Code review checklist
+- [ ] PR template
+- [ ] Issue templates
+
+#### 6.4 Create CHANGELOG
+- ✅ CHANGELOG.md created
+- [ ] Detailed version history
+- [ ] Migration guides for breaking changes
+- [ ] Deprecation notices
+
+#### 6.5 Version Bump to 0.7.0
+- [ ] Update version in `pyproject.toml`
+- [ ] Update version in all documentation
+- [ ] Tag release in git
+- [ ] Create GitHub release
+
+#### 6.6 Build and Test Distribution
+- [ ] Build wheel and tarball
+- [ ] Test installation from distribution
+- [ ] Verify all commands work
+- [ ] Test on clean environment
+- [ ] Cross-platform testing
+
+#### 6.7 Prepare for PyPI Release (Optional)
+- [ ] Create PyPI account
+- [ ] Configure package metadata
+- [ ] Test upload to TestPyPI
+- [ ] Upload to PyPI
+- [ ] Verify installation from PyPI
 
 ---
 
 ## Testing Status
 
-### Manual Tests Needed
-- [ ] Test cache with concurrent file selections
-- [ ] Test cache expiration
-- [ ] Test cache invalidation on rename
-- [ ] Test resource cleanup (no file handle leaks)
-- [ ] Test with real media files
-- [ ] Performance test (ensure no regression)
+### Current Metrics
+- **Total Tests**: 560
+- **Pass Rate**: 100% (559 passed, 1 skipped)
+- **Coverage**: ~70% (estimated)
+- **Target**: >90%
 
-### Automated Tests
-- [ ] Run `uv run pytest` - verify all tests pass
-- [ ] Run with coverage: `uv run pytest --cov=renamer`
-- [ ] Check for resource warnings
-
----
-
-## Current Status Summary
-
-**Phase 1**: ✅ COMPLETED (5/5 tasks - all critical bugs fixed)
-**Phase 2**: ✅ COMPLETED (5/5 tasks - architecture foundation established)
-  - ✅ 2.1: Base classes and protocols created (409 lines)
-  - ✅ 2.2: Service layer created (935 lines)
-  - ✅ 2.3: Thread pool integrated into MetadataService
-  - ✅ 2.4: Extract utility modules (953 lines)
-  - ✅ 2.5: App commands in command palette (added)
-
-**Phase 3**: ✅ COMPLETED (5/5 tasks - code quality improvements)
-  - ✅ 3.1: Refactor long methods (partially - language extraction simplified)
-  - ✅ 3.2: Eliminate code duplication (movie DB extraction)
-  - ✅ 3.3: Extract magic numbers to constants (8 constant modules created)
-  - ✅ 3.4: Add missing type hints (default_extractor + mypy integration)
-  - ✅ 3.5: Add comprehensive docstrings (5 key modules documented)
-
-**Phase 5**: ✅ PARTIALLY COMPLETED (4/6 test organization tasks - 130+ new tests)
-  - ✅ 5.1: Service layer tests (30+ tests)
-  - ✅ 5.2: Utility module tests (70+ tests)
-  - ✅ 5.3: Formatter tests (40+ tests)
-  - ✅ 5.4: Dataset organization (46 test cases, consolidated structure)
-  - ⏳ 5.5: Screen tests (pending)
-  - ⏳ 5.6: App integration tests (pending)
-
-**Test Status**: All 560 tests passing ✅ (+130 new tests)
-
-**Lines of Code Added**:
-  - Phase 1: ~500 lines (cache subsystem)
-  - Phase 2: ~2297 lines (base classes + services + utilities)
-  - Phase 3: ~200 lines (docstrings)
-  - Phase 5: ~500 lines (new tests)
-  - Total new code: ~3497 lines
-
-**Code Duplication Eliminated**:
-  - ~200+ lines of language extraction code
-  - ~50+ lines of pattern matching code
-  - ~40+ lines of frame class matching code
-  - Total: ~290+ lines removed through consolidation
-
-**Code Quality Improvements** (Phase 3):
-  - ✅ Type hints added to all DefaultExtractor methods
-  - ✅ Mypy integration for type checking
-  - ✅ Comprehensive docstrings added to 5 key modules
-  - ✅ Constants split into 8 logical modules
-  - ✅ Dynamic year validation (no hardcoded dates)
-  - ✅ Code duplication eliminated via utilities
-
-**Architecture Improvements** (Phase 2):
-  - ✅ Protocols and ABCs for consistent interfaces
-  - ✅ Service layer with dependency injection
-  - ✅ Thread pool for concurrent operations
-  - ✅ Utility modules for shared logic
-  - ✅ Command palette for unified access
-  - ✅ Comprehensive test coverage for new code
-
-**Next Steps**:
-1. Begin Phase 4 - Refactor existing code to use new architecture
-2. Complete Phase 5 - Add remaining tests (screens, app integration)
-3. Move to Phase 6 - Documentation and release
+### Manual Testing Checklist
+- [ ] Test with large directories (1000+ files)
+- [ ] Test with various video formats
+- [ ] Test TMDB integration with real API
+- [ ] Test poster download and display
+- [ ] Test cache expiration and cleanup
+- [ ] Test concurrent file operations
+- [ ] Test error recovery
+- [ ] Test resource cleanup (no leaks)
+- [ ] Performance regression testing
 
 ---
 
-## Breaking Changes Introduced
+## Known Limitations
 
-### Cache System
-- **Cache key format changed**: Old cache files will be invalid
-- **Migration**: Users should clear cache: `rm -rf ~/.cache/renamer/`
-- **Impact**: No data loss, just cache miss on first run
+### Current Issues
+- TMDB API requires internet connection
+- Poster display requires image-capable terminal
+- Some special characters need sanitization
+- Large directories may have slow initial scan
 
-### Thread Safety
-- **Cache now thread-safe**: Multiple concurrent accesses properly handled
-- **Impact**: Positive - prevents race conditions
+### Planned Fixes
+- Add offline mode with cached data
+- Graceful degradation for terminal without image support
+- Improve filename sanitization
+- Optimize directory scanning with progress indication
+
+---
+
+## Breaking Changes to Consider
+
+### Potential Breaking Changes in 0.7.0
+- Cache key format (already changed in 0.6.0)
+- Service layer API (internal, shouldn't affect users)
+- Configuration file schema (may need migration)
+
+### Migration Strategy
+- Provide migration scripts where needed
+- Document all breaking changes in CHANGELOG
+- Maintain backward compatibility where possible
+- Deprecation warnings before removal
 
 ---
 
-## Notes
+## Performance Goals
 
-### Cache Rewrite Details
-The cache system was completely rewritten for:
-1. **Bug Fix**: Fixed critical variable scoping issue
-2. **Thread Safety**: Added RLock for concurrent access
-3. **Simplification**: Single code path instead of branching logic
-4. **Logging**: Comprehensive logging for debugging
-5. **Security**: Added key sanitization to prevent filesystem escaping
-6. **Maintenance**: Added `clear_expired()` utility method
+### Current Performance
+- ~2 seconds for 100 files (initial scan)
+- ~50ms per file (metadata extraction with cache)
+- ~200ms per file (TMDB lookup)
 
-### Test Fixes Details
-- Used proper `Path(__file__).parent` for relative paths
-- Converted parametrize with open file to fixture-based approach
-- All file operations now use context managers
+### Target Performance
+- <1 second for 100 files
+- <30ms per file (cached)
+- <100ms per file (TMDB with cache)
+- Background loading for large directories
 
 ---
+
+## Architecture Improvements
+
+### Already Implemented (Phase 2)
+- ✅ Protocol-based extractors
+- ✅ Service layer
+- ✅ Utility modules
+- ✅ Unified cache subsystem
+- ✅ Thread pool for concurrent operations
+
+### Future Improvements
+- [ ] Plugin system for custom extractors/formatters
+- [ ] Event-driven architecture for UI updates
+- [ ] Dependency injection container
+- [ ] Configuration validation schema
+- [ ] API versioning
+
+---
+
+## Success Criteria
+
+### Phase 4 Complete When:
+- [ ] All extractors implement Protocol
+- [ ] All formatters use base classes
+- [ ] RenamerApp uses services exclusively
+- [ ] No direct business logic in UI
+- [ ] All tests passing
+- [ ] No performance regression
+
+### Phase 5 Complete When:
+- [ ] >90% code coverage
+- [ ] All screens tested
+- [ ] Integration tests complete
+- [ ] Manual testing checklist done
+- [ ] Performance goals met
+
+### Phase 6 Complete When:
+- [ ] All documentation updated
+- [ ] Version bumped to 0.7.0
+- [ ] Distribution built and tested
+- [ ] Release notes published
+- [ ] Migration guide available
+
+---
+
+## Next Steps
+
+1. **Start Phase 4**: Refactor to new architecture
+   - Begin with extractor Protocol implementation
+   - Update one extractor at a time
+   - Run tests after each change
+   - Document any issues encountered
+
+2. **Complete Phase 5**: Finish test coverage
+   - Add screen tests
+   - Add integration tests
+   - Run coverage analysis
+   - Fix any gaps
+
+3. **Execute Phase 6**: Documentation and release
+   - Update all docs
+   - Build distribution
+   - Test thoroughly
+   - Release v0.7.0
+
+---
+
+**See Also**:
+- [CHANGELOG.md](CHANGELOG.md) - Completed work
+- [ToDo.md](ToDo.md) - Future feature requests
+- [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md) - Technical documentation
 
 **Last Updated**: 2026-01-01
-
-## Final Status Summary
-
-**Completed Phases**:
-- ✅ Phase 1 (5/5) - Critical Bug Fixes
-- ✅ Phase 2 (5/5) - Architecture Foundation
-- ✅ Phase 3 (5/5) - Code Quality Improvements
-
-**Pending Phases**:
-- ⏳ Phase 4 (0/4) - Refactor to New Architecture
-- ⏳ Phase 5 (4/6) - Test Coverage (66% complete)
-- ⏳ Phase 6 (0/7) - Documentation and Release
-
-**Overall Progress**: 3/6 phases completed (50%)
-
-### Major Achievements
-✅ All critical bugs fixed (Phase 1)
-✅ Thread-safe cache with RLock
-✅ Proper exception handling (no bare except)
-✅ Comprehensive logging throughout
-✅ Unified cache subsystem with strategies
-✅ Command palette integration (cache + app commands)
-✅ Service layer architecture (935 lines)
-✅ Utility modules for shared logic (953 lines)
-✅ Protocols and base classes (409 lines)
-✅ Constants reorganized into 8 modules
-✅ Type hints and mypy integration
-✅ Comprehensive docstrings (5 key modules)
-✅ 560 tests passing (+130 new tests)
-✅ Zero regressions
-
-### Ready for Phase 4
-The codebase now has a solid foundation with clean architecture, comprehensive testing,
-and excellent code quality. Ready to refactor existing code to use the new architecture.

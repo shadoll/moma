@@ -235,18 +235,21 @@ class TestCacheManager:
         manager.compact_cache()
 
 
-class TestBackwardCompatibility:
-    """Test backward compatibility with old import paths."""
-
-    def test_import_from_decorators(self):
-        """Test importing from renamer.decorators still works."""
-        from renamer.decorators import cached_method
-        assert cached_method is not None
+class TestCachePackageImports:
+    """Test cache package import paths."""
 
     def test_import_cache_from_package(self):
         """Test importing Cache from renamer.cache package."""
         from renamer.cache import Cache as PackageCache
         assert PackageCache is not None
+
+    def test_import_decorators_from_cache(self):
+        """Test importing decorators from renamer.cache."""
+        from renamer.cache import cached_method, cached, cached_api, cached_property
+        assert cached_method is not None
+        assert cached is not None
+        assert cached_api is not None
+        assert cached_property is not None
 
     def test_create_cache_convenience_function(self):
         """Test the create_cache convenience function."""
