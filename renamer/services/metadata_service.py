@@ -16,9 +16,8 @@ from threading import Lock
 from renamer.cache import Cache
 from renamer.settings import Settings
 from renamer.extractors.extractor import MediaExtractor
-from renamer.formatters.media_formatter import MediaFormatter
+from renamer.views import MediaPanelView, ProposedFilenameView
 from renamer.formatters.catalog_formatter import CatalogFormatter
-from renamer.formatters.proposed_name_formatter import ProposedNameFormatter
 from renamer.formatters.text_formatter import TextFormatter
 
 
@@ -171,14 +170,14 @@ class MetadataService:
 
             # Format based on mode
             if mode == "technical":
-                formatter = MediaFormatter(extractor)
+                formatter = MediaPanelView(extractor)
                 formatted_info = formatter.file_info_panel()
             else:  # catalog
                 formatter = CatalogFormatter(extractor)
                 formatted_info = formatter.format_catalog_info()
 
             # Generate proposed name
-            proposed_formatter = ProposedNameFormatter(extractor)
+            proposed_formatter = ProposedFilenameView(extractor)
             proposed_name = proposed_formatter.rename_line_formatted(file_path)
 
             return {

@@ -1,12 +1,12 @@
-"""Tests for ProposedNameFormatter with decorator pattern."""
+"""Tests for ProposedFilenameView with decorator pattern."""
 
 import pytest
 from pathlib import Path
-from renamer.formatters.proposed_name_formatter import ProposedNameFormatter
+from renamer.views import ProposedFilenameView
 
 
-class TestProposedNameFormatter:
-    """Test ProposedNameFormatter with decorator pattern."""
+class TestProposedFilenameView:
+    """Test ProposedFilenameView with decorator pattern."""
 
     def test_basic_formatting(self):
         """Test basic filename formatting with all fields."""
@@ -23,7 +23,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         assert '[01]' in result
@@ -45,7 +45,7 @@ class TestProposedNameFormatter:
             'extension': 'mp4'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         assert 'Simple Movie' in result
@@ -61,7 +61,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         assert 'Movie-Title-Test' in result
@@ -76,7 +76,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         # Since title is None, it won't appear (unless extractor provides default)
@@ -90,7 +90,7 @@ class TestProposedNameFormatter:
             'extension': None
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         # Extension handling depends on extractor default
@@ -105,7 +105,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         assert 'Extended Edition, Remastered' in result
@@ -119,7 +119,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         assert 'imdbid-tt1234567' in result
@@ -132,7 +132,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         assert str(formatter) == formatter.rename_line
 
     def test_formatted_display_matching_name(self):
@@ -143,7 +143,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         proposed = str(formatter)
         file_path = Path(proposed)
 
@@ -160,7 +160,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         file_path = Path('different_name.mkv')
 
         result = formatter.rename_line_formatted(file_path)
@@ -175,7 +175,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         assert '(2020)' in result
@@ -188,7 +188,7 @@ class TestProposedNameFormatter:
             'extension': 'mkv'
         }
 
-        formatter = ProposedNameFormatter(extractor)
+        formatter = ProposedFilenameView(extractor)
         result = formatter.rename_line
 
         # Should not have empty parentheses

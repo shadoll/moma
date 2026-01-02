@@ -1,18 +1,22 @@
 from pathlib import Path
 from rich.markup import escape
-from .size_formatter import SizeFormatter
-from .date_formatter import DateFormatter
-from .extension_formatter import ExtensionFormatter
-from .text_formatter import TextFormatter
-from .track_formatter import TrackFormatter
-from .resolution_formatter import ResolutionFormatter
-from .duration_formatter import DurationFormatter
-from .special_info_formatter import SpecialInfoFormatter
-from .formatter import FormatterApplier
+from ..formatters.size_formatter import SizeFormatter
+from ..formatters.date_formatter import DateFormatter
+from ..formatters.extension_formatter import ExtensionFormatter
+from ..formatters.text_formatter import TextFormatter
+from ..formatters.track_formatter import TrackFormatter
+from ..formatters.resolution_formatter import ResolutionFormatter
+from ..formatters.duration_formatter import DurationFormatter
+from ..formatters.special_info_formatter import SpecialInfoFormatter
+from ..formatters.formatter import FormatterApplier
 
 
-class MediaFormatter:
-    """Class to format media data for display"""
+class MediaPanelView:
+    """View for assembling media data panels for display.
+
+    This view aggregates multiple formatters to create comprehensive
+    display panels for technical and catalog modes.
+    """
 
     def __init__(self, extractor):
         self.extractor = extractor

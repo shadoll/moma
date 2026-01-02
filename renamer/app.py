@@ -14,8 +14,7 @@ import os
 from .constants import MEDIA_TYPES
 from .screens import OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen
 from .extractors.extractor import MediaExtractor
-from .formatters.media_formatter import MediaFormatter
-from .formatters.proposed_name_formatter import ProposedNameFormatter
+from .views import MediaPanelView, ProposedFilenameView
 from .formatters.text_formatter import TextFormatter
 from .formatters.catalog_formatter import CatalogFormatter
 from .settings import Settings
@@ -216,7 +215,7 @@ class RenamerApp(App):
             
             mode = self.settings.get("mode")
             if mode == "technical":
-                formatter = MediaFormatter(extractor)
+                formatter = MediaPanelView(extractor)
                 full_info = formatter.file_info_panel()
             else:  # catalog
                 formatter = CatalogFormatter(extractor)
@@ -226,7 +225,7 @@ class RenamerApp(App):
             self.call_later(
                 self._update_details,
                 full_info,
-                ProposedNameFormatter(extractor).rename_line_formatted(file_path),
+                ProposedFilenameView(extractor).rename_line_formatted(file_path),
             )
         except Exception as e:
             self.call_later(
@@ -345,7 +344,7 @@ By Category:"""
         if node and node.data and isinstance(node.data, Path) and node.data.is_file():
             # Get the proposed name from the extractor
             extractor = MediaExtractor(node.data)
-            proposed_formatter = ProposedNameFormatter(extractor)
+            proposed_formatter = ProposedFilenameView(extractor)
             new_name = str(proposed_formatter)
             logging.info(f"Proposed new name: {new_name!r} for file: {node.data}")
             if new_name and new_name != node.data.name:

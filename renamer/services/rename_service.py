@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Optional, Callable
 
 from renamer.extractors.extractor import MediaExtractor
-from renamer.formatters.proposed_name_formatter import ProposedNameFormatter
+from renamer.views import ProposedFilenameView
 
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ class RenameService:
             if extractor is None:
                 extractor = MediaExtractor(file_path)
 
-            formatter = ProposedNameFormatter(extractor)
+            formatter = ProposedFilenameView(extractor)
             # Get the formatted rename line
             rename_line = formatter.rename_line_formatted(file_path)
 

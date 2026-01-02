@@ -2,6 +2,6 @@
 
 from .app import RenamerApp
 from .extractors.extractor import MediaExtractor
-from .formatters.media_formatter import MediaFormatter
+from .views import MediaPanelView, ProposedFilenameView
 
-__all__ = ['RenamerApp', 'MediaExtractor', 'MediaFormatter']
+__all__ = ['RenamerApp', 'MediaExtractor', 'MediaPanelView', 'ProposedFilenameView']

@@ -1,11 +1,15 @@
 from rich.markup import escape
-from .special_info_decorators import special_info_decorators
-from .conditional_decorators import conditional_decorators
-from .text_decorators import text_decorators
+from ..formatters.special_info_decorators import special_info_decorators
+from ..formatters.conditional_decorators import conditional_decorators
+from ..formatters.text_decorators import text_decorators
 
 
-class ProposedNameFormatter:
-    """Class for formatting proposed filenames using decorator pattern with properties."""
+class ProposedFilenameView:
+    """View for generating proposed filenames using decorator pattern with properties.
+
+    This view composes formatter decorators to generate clean, standardized filenames
+    from extracted metadata. It uses property decorators for declarative formatting.
+    """
 
     def __init__(self, extractor):
         """Initialize with media extractor data"""
@@ -87,12 +91,14 @@ class ProposedNameFormatter:
         return self.rename_line_different
 
     @property
+    @conditional_decorators.wrap(">> ", " <<")
     @text_decorators.green()
     def rename_line_similar(self) -> str:
         """Generate a simplified proposed filename for similarity checks."""
         return escape(str(self))
-    
+
     @property
+    @conditional_decorators.wrap(">> ", " <<")
     @text_decorators.orange()
     def rename_line_different(self) -> str:
         """Generate a detailed proposed filename for difference checks."""
