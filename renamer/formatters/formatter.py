@@ -1,3 +1,10 @@
+"""Formatter coordinator and application system.
+
+This module provides the FormatterApplier class which coordinates the application
+of multiple formatters in the correct order (data → text → markup). It ensures
+formatters are applied sequentially based on their type.
+"""
+
 from .text_formatter import TextFormatter
 from .duration_formatter import DurationFormatter
 from .size_formatter import SizeFormatter
@@ -13,14 +20,32 @@ import os
 
 # Set up logging conditionally
 if os.getenv('FORMATTER_LOG', '0') == '1':
-    logging.basicConfig(filename='formatter.log', level=logging.INFO, 
+    logging.basicConfig(filename='formatter.log', level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s')
 else:
     logging.basicConfig(level=logging.CRITICAL)  # Disable logging
 
 
 class FormatterApplier:
-    """Class to apply multiple formatters in correct order"""
+    """Coordinator for applying multiple formatters in the correct order.
+
+    This class manages the application of formatters to data values, ensuring they
+    are applied in the proper sequence:
+    1. Data formatters (transform raw data: size, duration, etc.)
+    2. Text formatters (transform text: uppercase, lowercase, etc.)
+    3. Markup formatters (add visual styling: bold, colors, etc.)
+
+    The ordering prevents conflicts and ensures consistent output formatting.
+
+    Example:
+        >>> from renamer.formatters.formatter import FormatterApplier
+        >>> from renamer.formatters.size_formatter import SizeFormatter
+        >>> from renamer.formatters.text_formatter import TextFormatter
+        >>> value = 1073741824
+        >>> formatters = [SizeFormatter.format_size, TextFormatter.bold]
+        >>> result = FormatterApplier.apply_formatters(value, formatters)
+        >>> # Result: bold("1.00 GB")
+    """
 
     # Define the global order of all formatters
     FORMATTER_ORDER = [
@@ -67,13 +92,29 @@ class FormatterApplier:
 
     @staticmethod
     def apply_formatters(value, formatters):
-        """Apply multiple formatters to value in the global order"""
+        """Apply multiple formatters to a value in the correct global order.
+
+        Formatters are automatically sorted based on FORMATTER_ORDER to ensure
+        proper sequencing (data → text → markup). If a formatter fails, the
+        value is set to "Unknown" and processing continues.
+
+        Args:
+            value: The value to format (can be any type)
+            formatters: Single formatter or list of formatter functions
+
+        Returns:
+            The formatted value after all formatters have been applied
+
+        Example:
+            >>> formatters = [SizeFormatter.format_size, TextFormatter.bold]
+            >>> result = FormatterApplier.apply_formatters(1024, formatters)
+        """
         if not isinstance(formatters, list):
             formatters = [formatters] if formatters else []
-        
+
         # Sort formatters according to the global order
         ordered_formatters = sorted(formatters, key=lambda f: FormatterApplier.FORMATTER_ORDER.index(f) if f in FormatterApplier.FORMATTER_ORDER else len(FormatterApplier.FORMATTER_ORDER))
-        
+
         # Apply in the ordered sequence
         for formatter in ordered_formatters:
             try:
@@ -83,12 +124,36 @@ class FormatterApplier:
             except Exception as e:
                 logging.error(f"Error applying {formatter.__name__ if hasattr(formatter, '__name__') else str(formatter)}: {e}")
                 value = "Unknown"
-        
+
         return value
-        
+
     @staticmethod
     def format_data_item(item: dict) -> str | None:
-        """Apply all formatting to a data item and return the formatted string"""
+        """Apply all formatting to a data item and return the formatted string.
+
+        Processes a data item dictionary containing value, label, and formatters,
+        applying them in the correct order to produce a formatted display string.
+
+        Args:
+            item: Dictionary containing:
+                - value: The raw value to format
+                - label: Label text for the item
+                - value_formatters: List of formatters to apply to the value
+                - label_formatters: List of formatters to apply to the label
+                - display_formatters: List of formatters for the final display
+
+        Returns:
+            Formatted string combining label and value, or None if value is None
+
+        Example:
+            >>> item = {
+            ...     "value": 1024,
+            ...     "label": "Size",
+            ...     "value_formatters": [SizeFormatter.format_size],
+            ...     "label_formatters": [TextFormatter.bold]
+            ... }
+            >>> result = FormatterApplier.format_data_item(item)
+        """
         # Handle value formatting first (e.g., size formatting)
         value = item.get("value")
         if value is not None and value != "Not extracted":

@@ -1,3 +1,11 @@
+"""Media metadata extraction coordinator.
+
+This module provides the MediaExtractor class which coordinates multiple
+specialized extractors to gather comprehensive metadata about media files.
+It implements a priority-based extraction system where data is retrieved
+from the most appropriate source.
+"""
+
 from pathlib import Path
 from .filename_extractor import FilenameExtractor
 from .metadata_extractor import MetadataExtractor
@@ -8,7 +16,34 @@ from .default_extractor import DefaultExtractor
 
 
 class MediaExtractor:
-    """Class to extract various metadata from media files using specialized extractors"""
+    """Coordinator for extracting metadata from media files using multiple specialized extractors.
+
+    This class manages a collection of specialized extractors and provides a unified
+    interface for retrieving metadata. It implements a priority-based system where
+    each type of data is retrieved from the most appropriate source.
+
+    The extraction priority order varies by data type:
+    - Title: TMDB → Metadata → Filename → Default
+    - Year: Filename → Default
+    - Technical info: MediaInfo → Default
+    - File info: FileInfo → Default
+
+    Attributes:
+        file_path: Path to the media file
+        filename_extractor: Extracts metadata from filename patterns
+        metadata_extractor: Extracts embedded metadata tags
+        mediainfo_extractor: Extracts technical media information
+        fileinfo_extractor: Extracts basic file system information
+        tmdb_extractor: Fetches metadata from The Movie Database API
+        default_extractor: Provides fallback default values
+
+    Example:
+        >>> from pathlib import Path
+        >>> extractor = MediaExtractor(Path("Movie (2020) [1080p].mkv"))
+        >>> title = extractor.get("title")
+        >>> year = extractor.get("year")
+        >>> tracks = extractor.get("video_tracks")
+    """
 
     def __init__(self, file_path: Path):
         self.file_path = file_path
@@ -168,7 +203,24 @@ class MediaExtractor:
         }
 
     def get(self, key: str, source: str | None = None):
-        """Get extracted data by key, optionally from specific source"""
+        """Get metadata value by key, optionally from a specific source.
+
+        Retrieves metadata using a priority-based system. If a source is specified,
+        only that extractor is used. Otherwise, extractors are tried in priority
+        order until a non-None value is found.
+
+        Args:
+            key: The metadata key to retrieve (e.g., "title", "year", "resolution")
+            source: Optional specific extractor to use ("TMDB", "MediaInfo", "Filename", etc.)
+
+        Returns:
+            The extracted metadata value, or None if not found
+
+        Example:
+            >>> extractor = MediaExtractor(Path("movie.mkv"))
+            >>> title = extractor.get("title")  # Try all sources in priority order
+            >>> year = extractor.get("year", source="Filename")  # Use only filename
+        """
         if source:
             # Specific source requested - find the extractor and call the method directly
             for extractor_name, extractor in self._extractors.items():

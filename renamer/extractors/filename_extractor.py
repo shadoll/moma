@@ -9,6 +9,7 @@ from ..constants import (
     CYRILLIC_TO_ENGLISH
 )
 from ..decorators import cached_method
+from ..utils.pattern_utils import PatternExtractor
 import langcodes
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,9 @@ class FilenameExtractor:
         else:
             self.file_path = file_path
             self.file_name = file_path.name
+
+        # Initialize utility helper
+        self._pattern_extractor = PatternExtractor()
 
     def _normalize_cyrillic(self, text: str) -> str:
         """Normalize Cyrillic characters to English equivalents for parsing"""
@@ -222,23 +226,10 @@ class FilenameExtractor:
     @cached_method()
     def extract_movie_db(self) -> list[str] | None:
         """Extract movie database identifier from filename"""
-        # Look for patterns at the end of filename in brackets or braces
-        # Patterns: [tmdbid-123] {imdb-tt123} [imdbid-tt123] etc.
-        
-        # Match patterns like [tmdbid-123456] or {imdb-tt1234567}
-        pattern = r'[\[\{]([a-zA-Z]+(?:id)?)[-\s]*([a-zA-Z0-9]+)[\]\}]'
-        matches = re.findall(pattern, self.file_name)
-        
-        if matches:
-            # Take the last match (closest to end of filename)
-            db_type, db_id = matches[-1]
-            
-            # Normalize database type
-            db_type_lower = db_type.lower()
-            for db_key, db_info in MOVIE_DB_DICT.items():
-                if any(db_type_lower.startswith(pattern.rstrip('-')) for pattern in db_info['patterns']):
-                    return [db_key, db_id]
-        
+        # Use PatternExtractor utility to avoid code duplication
+        db_info = self._pattern_extractor.extract_movie_db_ids(self.file_name)
+        if db_info:
+            return [db_info['type'], db_info['id']]
         return None
 
     @cached_method()
