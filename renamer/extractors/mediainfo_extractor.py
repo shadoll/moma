@@ -90,10 +90,11 @@ class MediaInfoExtractor:
             effective_height = height
         
         # First, try to match width to typical widths
+        # Use a larger tolerance (10 pixels) to handle cinema/ultrawide aspect ratios
         width_matches = []
         for frame_class, info in FRAME_CLASSES.items():
             for tw in info['typical_widths']:
-                if abs(width - tw) <= 5 and frame_class.endswith(scan_type):
+                if abs(width - tw) <= 10 and frame_class.endswith(scan_type):
                     diff = abs(height - info['nominal_height'])
                     width_matches.append((frame_class, diff))
         
