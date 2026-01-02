@@ -8,7 +8,7 @@ from ..constants import (
     is_valid_year,
     CYRILLIC_TO_ENGLISH
 )
-from ..decorators import cached_method
+from ..cache import cached_method
 from ..utils.pattern_utils import PatternExtractor
 import langcodes
 

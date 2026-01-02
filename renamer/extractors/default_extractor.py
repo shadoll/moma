@@ -102,7 +102,7 @@ class DefaultExtractor:
 
     def extract_extension(self) -> Optional[str]:
         """Return file extension. Returns None as no extension is available."""
-        return None
+        return "ext"
 
     def extract_tmdb_url(self) -> Optional[str]:
         """Return TMDB URL. Returns None as no TMDB URL is available."""

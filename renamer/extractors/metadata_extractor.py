@@ -8,7 +8,7 @@ import mutagen
 import logging
 from pathlib import Path
 from ..constants import MEDIA_TYPES
-from ..decorators import cached_method
+from ..cache import cached_method
 
 logger = logging.getLogger(__name__)
 

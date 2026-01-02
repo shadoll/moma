@@ -1,37 +1,99 @@
 from rich.markup import escape
-from .text_formatter import TextFormatter
-from .date_formatter import DateFormatter
-from .special_info_formatter import SpecialInfoFormatter
+from .special_info_decorators import special_info_decorators
+from .conditional_decorators import conditional_decorators
+from .text_decorators import text_decorators
 
 
 class ProposedNameFormatter:
-    """Class for formatting proposed filenames"""
+    """Class for formatting proposed filenames using decorator pattern with properties."""
 
     def __init__(self, extractor):
         """Initialize with media extractor data"""
-
-        self.__order = f"[{extractor.get('order')}] " if extractor.get("order") else ""
-        self.__title = (extractor.get("title") or "Unknown Title").replace("/", "-").replace("\\", "-")
-        self.__year = DateFormatter.format_year(extractor.get("year"))
-        self.__source = f" {extractor.get('source')}" if extractor.get("source") else ""
-        self.__frame_class = extractor.get("frame_class") or None
-        self.__hdr = f",{extractor.get('hdr')}" if extractor.get("hdr") else ""
-        self.__audio_langs = extractor.get("audio_langs") or None
-        self.__special_info = f" [{SpecialInfoFormatter.format_special_info(extractor.get('special_info'))}]" if extractor.get("special_info") else ""
-        self.__db_info = f" [{SpecialInfoFormatter.format_database_info(extractor.get('movie_db'))}]" if extractor.get("movie_db") else ""
-        self.__extension = extractor.get("extension") or "ext"
+        self._extractor = extractor
 
     def __str__(self) -> str:
         """Convert the proposed name to string"""
-        return self.rename_line()
+        return self.rename_line
 
+    @property
+    @conditional_decorators.wrap("[", "] ")
+    def _order(self) -> str:
+        """Get the order number formatted as [XX] """
+        return self._extractor.get("order")
+
+    @property
+    @conditional_decorators.replace_slashes()
+    def _title(self) -> str:
+        """Get the title with slashes replaced"""
+        return self._extractor.get("title")
+
+    @property
+    @conditional_decorators.wrap(" (", ")")
+    def _year(self) -> str:
+        """Get the year formatted as (YYYY)"""
+        return self._extractor.get("year")
+
+    @property
+    @conditional_decorators.wrap(" ")
+    def _source(self) -> str:
+        """Get the source"""
+        return self._extractor.get("source")
+
+    @property
+    def _frame_class(self) -> str:
+        """Get the frame class"""
+        return self._extractor.get("frame_class") or ""
+
+    @property
+    @conditional_decorators.wrap(",")
+    def _hdr(self) -> str:
+        """Get the HDR info formatted with a trailing comma if present"""
+        return self._extractor.get("hdr")
+
+    @property
+    def _audio_langs(self) -> str:
+        """Get the audio languages formatted with a trailing comma if present"""
+        return self._extractor.get("audio_langs") or ""
+
+    @property
+    @conditional_decorators.wrap(" [", "]")
+    @special_info_decorators.special_info()
+    def _special_info(self) -> str:
+        """Get the special info formatted within brackets"""
+        return self._extractor.get("special_info")
+
+    @property
+    @conditional_decorators.wrap(" [", "]")
+    @special_info_decorators.database_info()
+    def _db_info(self) -> str:
+        """Get the database info formatted within brackets"""
+        return self._extractor.get("movie_db")
+
+    @property
+    def _extension(self) -> str:
+        """Get the file extension"""
+        return self._extractor.get("extension")
+
+    @property
     def rename_line(self) -> str:
-        result = f"{self.__order}{self.__title} {self.__year}{self.__special_info}{self.__source} [{self.__frame_class}{self.__hdr},{self.__audio_langs}]{self.__db_info}.{self.__extension}"
+        """Generate the proposed filename."""
+        result = f"{self._order}{self._title}{self._year}{self._special_info}{self._source} [{self._frame_class}{self._hdr},{self._audio_langs}]{self._db_info}.{self._extension}"
         return result.replace("/", "-").replace("\\", "-")
 
     def rename_line_formatted(self, file_path) -> str:
         """Format the proposed name for display with color"""
-        proposed = escape(str(self))
         if file_path.name == str(self):
-            return f">> {TextFormatter.green(proposed)} <<"
-        return f">> {TextFormatter.bold_yellow(proposed)} <<"
+            return self.rename_line_similar
+        return self.rename_line_different
+
+    @property
+    @text_decorators.green()
+    def rename_line_similar(self) -> str:
+        """Generate a simplified proposed filename for similarity checks."""
+        return escape(str(self))
+    
+    @property
+    @text_decorators.orange()
+    def rename_line_different(self) -> str:
+        """Generate a detailed proposed filename for difference checks."""
+        return escape(str(self))

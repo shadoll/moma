@@ -79,6 +79,10 @@ class TextFormatter:
         return f"[yellow]{text}[/yellow]"
 
     @staticmethod
+    def orange(text: str) -> str:
+        return f"[orange]{text}[/orange]"
+
+    @staticmethod
     def magenta(text: str) -> str:
         return f"[magenta]{text}[/magenta]"
 

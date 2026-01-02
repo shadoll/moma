@@ -2,7 +2,7 @@ from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
 from ..constants import FRAME_CLASSES, MEDIA_TYPES
-from ..decorators import cached_method
+from ..cache import cached_method
 import langcodes
 import logging
 

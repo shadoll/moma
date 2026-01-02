@@ -23,6 +23,12 @@ from .track_formatter import TrackFormatter
 from .special_info_formatter import SpecialInfoFormatter
 from .formatter import FormatterApplier
 
+# Decorator instances
+from .date_decorators import date_decorators, DateDecorators
+from .special_info_decorators import special_info_decorators, SpecialInfoDecorators
+from .text_decorators import text_decorators, TextDecorators
+from .conditional_decorators import conditional_decorators, ConditionalDecorators
+
 __all__ = [
     # Base classes
     'Formatter',
@@ -41,4 +47,14 @@ __all__ = [
     'TrackFormatter',
     'SpecialInfoFormatter',
     'FormatterApplier',
+
+    # Decorator instances and classes
+    'date_decorators',
+    'DateDecorators',
+    'special_info_decorators',
+    'SpecialInfoDecorators',
+    'text_decorators',
+    'TextDecorators',
+    'conditional_decorators',
+    'ConditionalDecorators',
 ]

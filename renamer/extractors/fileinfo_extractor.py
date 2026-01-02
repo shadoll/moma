@@ -7,7 +7,7 @@ file system metadata such as size, timestamps, paths, and extensions.
 from pathlib import Path
 import logging
 import os
-from ..decorators import cached_method
+from ..cache import cached_method
 
 # Set up logging conditionally
 if os.getenv('FORMATTER_LOG', '0') == '1':
