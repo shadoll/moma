@@ -206,6 +206,11 @@ class MediaExtractor:
                     ("Default", "extract_genres"),
                 ],
             },
+            "production_countries": {
+                "sources": [
+                    ("TMDB", "extract_production_countries"),
+                ],
+            },
         }
 
     def get(self, key: str, source: str | None = None):

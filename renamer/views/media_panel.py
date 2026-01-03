@@ -71,6 +71,7 @@ class MediaPanelView:
                 self._props.tmdb_title,
                 self._props.tmdb_original_title,
                 self._props.tmdb_year,
+                self._props.tmdb_countries,
                 self._props.tmdb_genres,
                 self._props.tmdb_database_info,
                 self._props.tmdb_url,

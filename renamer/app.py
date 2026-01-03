@@ -175,12 +175,14 @@ class RenamerApp(App):
         icons = {
             'mkv': '📹',   # Video camera for MKV
             'mk3d': '🎬',  # Clapper board for 3D
-            'avi': '🎞️',   # Film frames for AVI
+            'avi': '💿',   # Film frames for AVI
             'mp4': '📹',   # Video camera
             'mov': '📹',   # Video camera
-            'wmv': '📹',   # Video camera
+            'wmv': '📀',   # Video camera
             'webm': '📹',  # Video camera
             'm4v': '📹',   # Video camera
+            'mpg': '📼',   # Video camera
+            'mpeg': '📼',  # Video camera
         }
 
         return icons.get(ext, '📄')  # Default to document icon

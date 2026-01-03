@@ -49,6 +49,11 @@ class CatalogFormatter:
         if genres:
             lines.append(f"{TextFormatter.bold('Genres:')} {genres}")
 
+        # Countries
+        countries = self.extractor.get("production_countries", "TMDB")
+        if countries:
+            lines.append(f"{TextFormatter.bold('Countries:')} {countries}")
+
         # Poster
         poster_image_path = self.extractor.tmdb_extractor.extract_poster_image_path()
         if poster_image_path:

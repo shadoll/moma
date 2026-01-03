@@ -293,18 +293,24 @@ class ConversionService:
             result = subprocess.run(
                 cmd,
                 capture_output=True,
-                text=True,
-                check=True
+                check=False  # Don't raise on non-zero exit, check file instead
             )
 
-            success_msg = f"Converted successfully: {avi_path.name} → {output_path.name}"
-            logger.info(success_msg)
-            return True, success_msg
+            # Check if conversion succeeded by verifying output file exists
+            if output_path.exists() and output_path.stat().st_size > 0:
+                success_msg = f"Converted successfully: {avi_path.name} → {output_path.name}"
+                logger.info(success_msg)
+                return True, success_msg
+            else:
+                # Try to decode stderr for error message
+                try:
+                    error_output = result.stderr.decode('utf-8', errors='replace')
+                except Exception:
+                    error_output = "Unknown error (could not decode ffmpeg output)"
 
-        except subprocess.CalledProcessError as e:
-            error_msg = f"ffmpeg error: {e.stderr}"
-            logger.error(error_msg)
-            return False, error_msg
+                error_msg = f"ffmpeg conversion failed: {error_output[-500:]}"  # Last 500 chars
+                logger.error(error_msg)
+                return False, error_msg
 
         except FileNotFoundError:
             error_msg = "ffmpeg not found. Please install ffmpeg."

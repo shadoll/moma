@@ -163,12 +163,16 @@ class TMDBExtractor:
         filename_extractor = FilenameExtractor(self.file_path)
         title = filename_extractor.extract_title()
         year = filename_extractor.extract_year()
-        
+
         if title:
-            movie_data = self._search_movie_by_title_year(title, year)
-            if movie_data:
-                self._movie_db_info = movie_data
-                return movie_data
+            search_result = self._search_movie_by_title_year(title, year)
+            if search_result and search_result.get('id'):
+                # Fetch full movie details using the ID from search results
+                movie_id = search_result['id']
+                movie_data = self._get_movie_details(movie_id)
+                if movie_data:
+                    self._movie_db_info = movie_data
+                    return movie_data
 
         self._movie_db_info = None
         return None
@@ -248,6 +252,13 @@ class TMDBExtractor:
         movie_info = self._get_movie_info()
         if movie_info and movie_info.get('genres'):
             return ', '.join(genre['name'] for genre in movie_info['genres'])
+        return None
+
+    def extract_production_countries(self) -> Optional[str]:
+        """Extract TMDB production countries"""
+        movie_info = self._get_movie_info()
+        if movie_info and movie_info.get('production_countries'):
+            return ', '.join(country['name'] for country in movie_info['production_countries'])
         return None
 
     def extract_poster_path(self) -> Optional[str]:

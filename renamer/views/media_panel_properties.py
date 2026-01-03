@@ -125,6 +125,15 @@ class MediaPanelProperties:
     
     @property
     @text_decorators.blue()
+    @conditional_decorators.wrap("Countries: ")
+    @text_decorators.yellow()
+    @conditional_decorators.default("<None>")
+    def tmdb_countries(self) -> str:
+        """Get TMDB production countries formatted with label."""
+        return self._extractor.get("production_countries", "TMDB")
+    
+    @property
+    @text_decorators.blue()
     @conditional_decorators.wrap("Genres: ")
     @text_decorators.yellow()
     @conditional_decorators.default("<None>")
