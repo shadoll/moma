@@ -77,7 +77,6 @@ class CatalogFormatter:
         text_content = "\n\n".join(lines) if lines else "No catalog information available"
 
         from rich.console import Console
-        from rich.markup import escape
         from io import StringIO
 
         console = Console(file=StringIO(), width=120, legacy_windows=False)
@@ -85,13 +84,9 @@ class CatalogFormatter:
         rendered_text = console.file.getvalue()
 
         # Append poster output if available
-        # Escape ASCII art to prevent Rich from interpreting characters as markup
+        # Don't process ASCII art through console - just append it directly
         if poster_output:
-            # Escape special characters that Rich uses for markup
-            escaped_poster = escape(poster_output)
-            console2 = Console(file=StringIO(), width=120, legacy_windows=False)
-            console2.print(escaped_poster, markup=False)
-            return rendered_text + "\n" + console2.file.getvalue()
+            return rendered_text + "\n" + poster_output
         else:
             return rendered_text
 

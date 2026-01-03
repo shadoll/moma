@@ -137,7 +137,7 @@ class RenamerApp(App):
                             "Select a file to view details", id="details_technical", markup=True
                         )
                         yield Static(
-                            "", id="details_catalog", markup=True
+                            "", id="details_catalog", markup=False
                         )
                     yield Static("", id="proposed", markup=True)
         yield Footer()
