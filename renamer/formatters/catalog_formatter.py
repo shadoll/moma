@@ -11,6 +11,7 @@ class CatalogFormatter:
     def format_catalog_info(self) -> str:
         """Format catalog information for display"""
         lines = []
+        poster_output = None
 
         # Title
         title = self.extractor.get("title", "TMDB")
@@ -54,24 +55,30 @@ class CatalogFormatter:
         if countries:
             lines.append(f"{TextFormatter.bold('Countries:')} {countries}")
 
-        # Poster
+        # Poster - handle separately to avoid Rich markup processing
         poster_image_path = self.extractor.tmdb_extractor.extract_poster_image_path()
         if poster_image_path:
             lines.append(f"{TextFormatter.bold('Poster:')}")
-            lines.append(self._display_poster(poster_image_path))
+            poster_output = self._display_poster(poster_image_path)
         else:
             poster_path = self.extractor.get("poster_path", "TMDB")
             if poster_path:
                 lines.append(f"{TextFormatter.bold('Poster:')} {poster_path} (not cached yet)")
 
-        full_text = "\n\n".join(lines) if lines else "No catalog information available"
-        
-        # Render markup to ANSI
+        # Render text content with Rich markup
+        text_content = "\n\n".join(lines) if lines else "No catalog information available"
+
         from rich.console import Console
         from io import StringIO
         console = Console(file=StringIO(), width=120, legacy_windows=False)
-        console.print(full_text, markup=True)
-        return console.file.getvalue()
+        console.print(text_content, markup=True)
+        rendered_text = console.file.getvalue()
+
+        # Append poster output directly (already contains ANSI codes from viu)
+        if poster_output:
+            return rendered_text + "\n" + poster_output
+        else:
+            return rendered_text
 
     def _display_poster(self, image_path: str) -> str:
         """Display poster image in terminal using viu"""
