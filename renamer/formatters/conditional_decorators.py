@@ -19,6 +19,7 @@ class ConditionalDecorators:
         """Decorator to wrap value with delimiters if it exists.
 
         Can be used for prefix-only (right=""), suffix-only (left=""), or both.
+        Supports format string placeholders that will be filled from function arguments.
 
         Usage:
             @conditional_decorators.wrap("[", "]")
@@ -34,12 +35,40 @@ class ConditionalDecorators:
             @conditional_decorators.wrap("", ",")
             def get_hdr(self):
                 return self.extractor.get('hdr')
+
+            # With placeholders
+            @conditional_decorators.wrap("Track {index}: ")
+            def get_track(self, data, index):
+                return data
         """
         def decorator(func: Callable) -> Callable:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
-                return f"{left}{result}{right}" if result else ""
+                if not result:
+                    return ""
+
+                # Extract format arguments from function signature
+                # Skip 'self' (args[0]) and the main data argument
+                format_kwargs = {}
+                if len(args) > 2:  # self, data, index, ...
+                    # Try to detect named parameters from function signature
+                    import inspect
+                    sig = inspect.signature(func)
+                    param_names = list(sig.parameters.keys())
+                    # Skip first two params (self, data/track/value)
+                    for i, param_name in enumerate(param_names[2:], start=2):
+                        if i < len(args):
+                            format_kwargs[param_name] = args[i]
+
+                # Also add explicit kwargs
+                format_kwargs.update(kwargs)
+
+                # Format left and right with available arguments
+                formatted_left = left.format(**format_kwargs) if format_kwargs else left
+                formatted_right = right.format(**format_kwargs) if format_kwargs else right
+
+                return f"{formatted_left}{result}{formatted_right}"
             return wrapper
         return decorator
 

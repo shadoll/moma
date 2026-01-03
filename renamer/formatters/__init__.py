@@ -28,6 +28,11 @@ from .date_decorators import date_decorators, DateDecorators
 from .special_info_decorators import special_info_decorators, SpecialInfoDecorators
 from .text_decorators import text_decorators, TextDecorators
 from .conditional_decorators import conditional_decorators, ConditionalDecorators
+from .size_decorators import size_decorators, SizeDecorators
+from .extension_decorators import extension_decorators, ExtensionDecorators
+from .duration_decorators import duration_decorators, DurationDecorators
+from .resolution_decorators import resolution_decorators, ResolutionDecorators
+from .track_decorators import track_decorators, TrackDecorators
 
 __all__ = [
     # Base classes
@@ -57,4 +62,14 @@ __all__ = [
     'TextDecorators',
     'conditional_decorators',
     'ConditionalDecorators',
+    'size_decorators',
+    'SizeDecorators',
+    'extension_decorators',
+    'ExtensionDecorators',
+    'duration_decorators',
+    'DurationDecorators',
+    'resolution_decorators',
+    'ResolutionDecorators',
+    'track_decorators',
+    'TrackDecorators',
 ]

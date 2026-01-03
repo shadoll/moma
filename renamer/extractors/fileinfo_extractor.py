@@ -45,13 +45,9 @@ class FileInfoExtractor:
         Args:
             file_path: Path object pointing to the file to extract info from
         """
-        self.file_path = file_path
-        self._size = file_path.stat().st_size
-        self._modification_time = file_path.stat().st_mtime
-        self._file_name = file_path.name
-        self._file_path = str(file_path)
+        self._file_path = file_path
+        self._stat = file_path.stat()
         self._cache: dict[str, any] = {}  # Internal cache for method results
-        logging.info(f"FileInfoExtractor: file_name={self._file_name!r}, file_path={self._file_path!r}")
 
     @cached_method()
     def extract_size(self) -> int:
@@ -60,7 +56,7 @@ class FileInfoExtractor:
         Returns:
             File size in bytes as an integer
         """
-        return self._size
+        return self._stat.st_size
 
     @cached_method()
     def extract_modification_time(self) -> float:
@@ -69,7 +65,7 @@ class FileInfoExtractor:
         Returns:
             Unix timestamp (seconds since epoch) as a float
         """
-        return self._modification_time
+        return self._stat.st_mtime
 
     @cached_method()
     def extract_file_name(self) -> str:
@@ -78,7 +74,7 @@ class FileInfoExtractor:
         Returns:
             File name including extension (e.g., "movie.mkv")
         """
-        return self._file_name
+        return self._file_path.name
 
     @cached_method()
     def extract_file_path(self) -> str:
@@ -87,7 +83,7 @@ class FileInfoExtractor:
         Returns:
             Absolute file path as a string
         """
-        return self._file_path
+        return str(self._file_path)
 
     @cached_method()
     def extract_extension(self) -> str:
@@ -96,4 +92,4 @@ class FileInfoExtractor:
         Returns:
             File extension in lowercase without leading dot (e.g., "mkv", "mp4")
         """
-        return self.file_path.suffix.lower().lstrip('.')
+        return self._file_path.suffix.lower().lstrip('.')

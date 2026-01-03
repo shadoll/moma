@@ -22,6 +22,8 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if result == "":
+                    return ""
                 return TextFormatter.bold(str(result))
             return wrapper
         return decorator
@@ -33,6 +35,8 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if result == "":
+                    return ""
                 return TextFormatter.italic(str(result))
             return wrapper
         return decorator
@@ -44,6 +48,8 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if result == "":
+                    return ""
                 return TextFormatter.green(str(result))
             return wrapper
         return decorator
@@ -55,6 +61,8 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if not result:
+                    return ""
                 return TextFormatter.yellow(str(result))
             return wrapper
         return decorator
@@ -66,6 +74,8 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if not result:
+                    return ""
                 return TextFormatter.cyan(str(result))
             return wrapper
         return decorator
@@ -77,6 +87,8 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if not result:
+                    return ""
                 return TextFormatter.magenta(str(result))
             return wrapper
         return decorator
@@ -88,10 +100,12 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if not result:
+                    return ""
                 return TextFormatter.red(str(result))
             return wrapper
         return decorator
-    
+
     @staticmethod
     def orange() -> Callable:
         """Decorator to color text orange."""
@@ -99,7 +113,35 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if not result:
+                    return ""
                 return TextFormatter.orange(str(result))
+            return wrapper
+        return decorator
+
+    @staticmethod
+    def blue() -> Callable:
+        """Decorator to color text blue."""
+        def decorator(func: Callable) -> Callable:
+            @wraps(func)
+            def wrapper(*args, **kwargs) -> str:
+                result = func(*args, **kwargs)
+                if not result:
+                    return ""
+                return TextFormatter.blue(str(result))
+            return wrapper
+        return decorator
+
+    @staticmethod
+    def grey() -> Callable:
+        """Decorator to color text grey."""
+        def decorator(func: Callable) -> Callable:
+            @wraps(func)
+            def wrapper(*args, **kwargs) -> str:
+                result = func(*args, **kwargs)
+                if not result:
+                    return ""
+                return TextFormatter.grey(str(result))
             return wrapper
         return decorator
 
@@ -110,6 +152,8 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if not result:
+                    return ""
                 return TextFormatter.uppercase(str(result))
             return wrapper
         return decorator
@@ -121,7 +165,36 @@ class TextDecorators:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
+                if not result:
+                    return ""
                 return TextFormatter.lowercase(str(result))
+            return wrapper
+        return decorator
+
+    @staticmethod
+    def url() -> Callable:
+        """Decorator to format text as a clickable URL."""
+        def decorator(func: Callable) -> Callable:
+            @wraps(func)
+            def wrapper(*args, **kwargs) -> str:
+                result = func(*args, **kwargs)
+                if not result:
+                    return ""
+                return TextFormatter.format_url(str(result))
+            return wrapper
+        return decorator
+
+    @staticmethod
+    def escape() -> Callable:
+        """Decorator to escape rich markup in text."""
+        def decorator(func: Callable) -> Callable:
+            @wraps(func)
+            def wrapper(*args, **kwargs) -> str:
+                from rich.markup import escape
+                result = func(*args, **kwargs)
+                if not result:
+                    return ""
+                return escape(str(result))
             return wrapper
         return decorator
 
