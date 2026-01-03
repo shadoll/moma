@@ -35,6 +35,7 @@ class MediaPanelView:
                 self._props.title("Media Info Summary"),
                 self._props.media_title,
                 self._props.media_year,
+                self._props.media_genres,
                 self._props.media_duration,
                 self._props.media_file_size,
                 self._props.media_file_extension,
@@ -70,6 +71,7 @@ class MediaPanelView:
                 self._props.tmdb_title,
                 self._props.tmdb_original_title,
                 self._props.tmdb_year,
+                self._props.tmdb_genres,
                 self._props.tmdb_database_info,
                 self._props.tmdb_url,
             ]

@@ -200,6 +200,12 @@ class MediaExtractor:
                     ("Default", "extract_subtitle_tracks"),
                 ],
             },
+            "genres": {
+                "sources": [
+                    ("TMDB", "extract_genres"),
+                    ("Default", "extract_genres"),
+                ],
+            },
         }
 
     def get(self, key: str, source: str | None = None):

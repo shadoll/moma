@@ -122,6 +122,15 @@ class MediaPanelProperties:
     def tmdb_year(self) -> str:
         """Get TMDB year formatted with label."""
         return self._extractor.get("year", "TMDB")
+    
+    @property
+    @text_decorators.blue()
+    @conditional_decorators.wrap("Genres: ")
+    @text_decorators.yellow()
+    @conditional_decorators.default("<None>")
+    def tmdb_genres(self) -> str:
+        """Get TMDB genres formatted with label."""
+        return self._extractor.get("genres", "TMDB")
 
     @property
     @text_decorators.blue()
@@ -328,7 +337,7 @@ class MediaPanelProperties:
         return self._extractor.get("movie_db", "Filename")
 
     # ============================================================
-    # Joined Data Properties
+    # Media Data Properties
     # ============================================================
 
     @property
@@ -366,6 +375,15 @@ class MediaPanelProperties:
     def media_year(self) -> str:
         """Get selected year formatted with label."""
         return self._extractor.get("year")
+
+    @property
+    @text_decorators.blue()
+    @conditional_decorators.wrap("Genres: ")
+    @text_decorators.cyan()
+    @conditional_decorators.default("<None>")
+    def media_genres(self) -> str:
+        """Get TMDB genres formatted with label."""
+        return self._extractor.get("genres")
 
     @property
     @text_decorators.blue()

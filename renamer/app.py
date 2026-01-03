@@ -160,6 +160,31 @@ class RenamerApp(App):
         self.tree_expanded = False  # Sub-levels are collapsed
         self.set_focus(tree)
 
+    def _get_file_icon(self, file_path: Path) -> str:
+        """Get icon for file based on extension.
+
+        Args:
+            file_path: Path to the file
+
+        Returns:
+            Icon character for the file type
+        """
+        ext = file_path.suffix.lower().lstrip('.')
+
+        # File type icons
+        icons = {
+            'mkv': '📹',   # Video camera for MKV
+            'mk3d': '🎬',  # Clapper board for 3D
+            'avi': '🎞️',   # Film frames for AVI
+            'mp4': '📹',   # Video camera
+            'mov': '📹',   # Video camera
+            'wmv': '📹',   # Video camera
+            'webm': '📹',  # Video camera
+            'm4v': '📹',   # Video camera
+        }
+
+        return icons.get(ext, '📄')  # Default to document icon
+
     def build_tree(self, path: Path, node):
         try:
             for item in sorted(path.iterdir()):
@@ -167,13 +192,18 @@ class RenamerApp(App):
                     if item.is_dir():
                         if item.name.startswith(".") or item.name == "lost+found":
                             continue
-                        subnode = node.add(escape(item.name), data=item)
+                        # Add folder icon before directory name
+                        label = f"📁 {escape(item.name)}"
+                        subnode = node.add(label, data=item)
                         self.build_tree(item, subnode)
                     elif item.is_file() and item.suffix.lower() in {
                         f".{ext}" for ext in MEDIA_TYPES
                     }:
                         logging.info(f"Adding file to tree: {item.name!r} (full path: {item})")
-                        node.add(escape(item.name), data=item)
+                        # Add file type icon before filename
+                        icon = self._get_file_icon(item)
+                        label = f"{icon} {escape(item.name)}"
+                        node.add(label, data=item)
                 except PermissionError:
                     pass
         except PermissionError:
@@ -452,7 +482,9 @@ By Category:"""
         node = find_node(tree.root)
         if node:
             logging.info(f"Found node for {old_path}, updating to {new_path.name}")
-            node.label = escape(new_path.name)
+            # Update label with icon
+            icon = self._get_file_icon(new_path)
+            node.label = f"{icon} {escape(new_path.name)}"
             node.data = new_path
             logging.info(f"After update: node.data = {node.data}, node.label = {node.label}")
             # Ensure cursor stays on the renamed file
@@ -513,6 +545,10 @@ By Category:"""
         if parent_node:
             logging.info(f"Found parent node for {parent_dir}, adding file {file_path.name}")
 
+            # Get icon for the file
+            icon = self._get_file_icon(file_path)
+            label = f"{icon} {escape(file_path.name)}"
+
             # Add the new file node in alphabetically sorted position
             new_node = None
             inserted = False
@@ -522,14 +558,14 @@ By Category:"""
                     # Compare filenames for sorting
                     if child.data.name > file_path.name:
                         # Insert before this child
-                        new_node = parent_node.add(escape(file_path.name), data=file_path, before=i)
+                        new_node = parent_node.add(label, data=file_path, before=i)
                         inserted = True
                         logging.info(f"Inserted file before {child.data.name}")
                         break
 
             # If not inserted, add at the end
             if not inserted:
-                new_node = parent_node.add(escape(file_path.name), data=file_path)
+                new_node = parent_node.add(label, data=file_path)
                 logging.info(f"Added file at end of directory")
 
             # Select the new node and show its details
