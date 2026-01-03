@@ -70,6 +70,7 @@ class AppCommandProvider(Provider):
             ("refresh", "Refresh File", "Refresh metadata for selected file (f)"),
             ("rename", "Rename File", "Rename the selected file (r)"),
             ("convert", "Convert AVI to MKV", "Convert AVI file to MKV container with metadata (c)"),
+            ("delete", "Delete File", "Delete the selected file (d)"),
             ("toggle_mode", "Toggle Display Mode", "Switch between technical and catalog view (m)"),
             ("expand", "Toggle Tree Expansion", "Expand or collapse all tree nodes (p)"),
             ("settings", "Settings", "Open settings screen (Ctrl+S)"),
@@ -105,6 +106,7 @@ class RenamerApp(App):
         ("f", "refresh", "Refresh"),
         ("r", "rename", "Rename"),
         ("c", "convert", "Convert AVI→MKV"),
+        ("d", "delete", "Delete"),
         ("p", "expand", "Toggle Tree"),
         ("m", "toggle_mode", "Toggle Mode"),
         ("h", "help", "Help"),
@@ -394,6 +396,22 @@ By Category:"""
             ConvertConfirmScreen(file_path, mkv_path, audio_languages, subtitle_files, extractor)
         )
 
+    async def action_delete(self):
+        """Delete a file with confirmation."""
+        from .screens import DeleteConfirmScreen
+
+        tree = self.query_one("#file_tree", Tree)
+        node = tree.cursor_node
+
+        if not (node and node.data and isinstance(node.data, Path) and node.data.is_file()):
+            self.notify("Please select a file first", severity="warning", timeout=3)
+            return
+
+        file_path = node.data
+
+        # Show confirmation screen
+        self.push_screen(DeleteConfirmScreen(file_path))
+
     async def action_expand(self):
         tree = self.query_one("#file_tree", Tree)
         if self.tree_expanded:
@@ -527,8 +545,112 @@ By Category:"""
         else:
             logging.warning(f"No parent node found for {parent_dir}")
             logging.warning(f"Rescanning entire tree instead")
-            # If we can't find the parent node, just rescan the whole tree
+            # If we can't find the parent node, rescan the tree and try to select the new file
+            tree = self.query_one("#file_tree", Tree)
+            current_selection = tree.cursor_node.data if tree.cursor_node else None
+
             self.scan_files()
+
+            # Try to restore selection to the new file, or the old selection, or parent dir
+            def find_and_select(node, target_path):
+                if node.data and isinstance(node.data, Path):
+                    if node.data.resolve() == target_path.resolve():
+                        tree.select_node(node)
+                        return True
+                for child in node.children:
+                    if find_and_select(child, target_path):
+                        return True
+                return False
+
+            # Try to select the new file first
+            if not find_and_select(tree.root, file_path):
+                # If that fails, try to restore previous selection
+                if current_selection:
+                    find_and_select(tree.root, current_selection)
+
+            # Refresh details panel for selected node
+            if tree.cursor_node and tree.cursor_node.data:
+                self._start_loading_animation()
+                threading.Thread(
+                    target=self._extract_and_show_details, args=(tree.cursor_node.data,)
+                ).start()
+
+    def remove_file_from_tree(self, file_path: Path):
+        """Remove a file from the tree.
+
+        Args:
+            file_path: Path to the file to remove
+        """
+        logging.info(f"remove_file_from_tree called with file_path={file_path}")
+
+        tree = self.query_one("#file_tree", Tree)
+
+        # Find the node to remove
+        def find_node(node):
+            if node.data and isinstance(node.data, Path):
+                if node.data.resolve() == file_path.resolve():
+                    return node
+            for child in node.children:
+                found = find_node(child)
+                if found:
+                    return found
+            return None
+
+        node_to_remove = find_node(tree.root)
+
+        if node_to_remove:
+            logging.info(f"Found node to remove: {node_to_remove.data}")
+
+            # Find the parent node to select after deletion
+            parent_node = node_to_remove.parent
+            next_node = None
+
+            # Try to select next sibling, or previous sibling, or parent
+            if parent_node:
+                siblings = list(parent_node.children)
+                try:
+                    current_index = siblings.index(node_to_remove)
+                    # Try next sibling first
+                    if current_index + 1 < len(siblings):
+                        next_node = siblings[current_index + 1]
+                    # Try previous sibling
+                    elif current_index > 0:
+                        next_node = siblings[current_index - 1]
+                    # Fall back to parent
+                    else:
+                        next_node = parent_node if parent_node != tree.root else None
+                except ValueError:
+                    pass
+
+            # Remove the node
+            node_to_remove.remove()
+            logging.info(f"Removed node from tree")
+
+            # Select the next appropriate node
+            if next_node:
+                tree.select_node(next_node)
+                logging.info(f"Selected next node: {next_node.data}")
+
+                # Refresh details if it's a file
+                if next_node.data and isinstance(next_node.data, Path) and next_node.data.is_file():
+                    self._start_loading_animation()
+                    threading.Thread(
+                        target=self._extract_and_show_details, args=(next_node.data,)
+                    ).start()
+                else:
+                    # Clear details panel
+                    details = self.query_one("#details_technical", Static)
+                    details.update("Select a file to view details")
+                    proposed = self.query_one("#proposed", Static)
+                    proposed.update("")
+            else:
+                # No node to select, clear details
+                details = self.query_one("#details_technical", Static)
+                details.update("No files in directory")
+                proposed = self.query_one("#proposed", Static)
+                proposed.update("")
+        else:
+            logging.warning(f"Node not found for {file_path}")
 
     def on_key(self, event):
         if event.key == "right":
