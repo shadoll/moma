@@ -137,7 +137,7 @@ class RenamerApp(App):
                             "Select a file to view details", id="details_technical", markup=True
                         )
                         yield Static(
-                            "", id="details_catalog", markup=False
+                            "", id="details_catalog", markup=True
                         )
                     yield Static("", id="proposed", markup=True)
         yield Footer()
@@ -255,7 +255,7 @@ class RenamerApp(App):
                 formatter = MediaPanelView(extractor)
                 full_info = formatter.file_info_panel()
             else:  # catalog
-                formatter = CatalogFormatter(extractor)
+                formatter = CatalogFormatter(extractor, self.settings)
                 full_info = formatter.format_catalog_info()
             
             # Update UI

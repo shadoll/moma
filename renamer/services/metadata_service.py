@@ -173,7 +173,7 @@ class MetadataService:
                 formatter = MediaPanelView(extractor)
                 formatted_info = formatter.file_info_panel()
             else:  # catalog
-                formatter = CatalogFormatter(extractor)
+                formatter = CatalogFormatter(extractor, self.settings)
                 formatted_info = formatter.format_catalog_info()
 
             # Generate proposed name

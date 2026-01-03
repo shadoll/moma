@@ -9,6 +9,7 @@ class Settings:
 
     DEFAULTS = {
         "mode": "technical",  # "technical" or "catalog"
+        "poster": "no",  # "no", "pseudo", "viu"
         "cache_ttl_extractors": 21600,  # 6 hours in seconds
         "cache_ttl_tmdb": 21600,  # 6 hours in seconds
         "cache_ttl_posters": 2592000,  # 30 days in seconds

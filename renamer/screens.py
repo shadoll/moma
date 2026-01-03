@@ -300,7 +300,14 @@ Configure application settings.
                 with Horizontal():
                     yield Button("Technical", id="mode_technical", variant="primary" if settings.get("mode") == "technical" else "default")
                     yield Button("Catalog", id="mode_catalog", variant="primary" if settings.get("mode") == "catalog" else "default")
-                
+
+                # Poster selection
+                yield Static("Poster Display (Catalog Mode):", classes="label")
+                with Horizontal():
+                    yield Button("No", id="poster_no", variant="primary" if settings.get("poster") == "no" else "default")
+                    yield Button("Pseudo", id="poster_pseudo", variant="primary" if settings.get("poster") == "pseudo" else "default")
+                    yield Button("Viu", id="poster_viu", variant="primary" if settings.get("poster") == "viu" else "default")
+
                 # TTL inputs
                 yield Static("Cache TTL - Extractors (hours):", classes="label")
                 yield Input(value=str(settings.get("cache_ttl_extractors") // 3600), id="ttl_extractors", classes="input_field")
@@ -330,6 +337,17 @@ Configure application settings.
             cat_btn = self.query_one("#mode_catalog", Button)
             tech_btn.variant = "primary" if mode == "technical" else "default"
             cat_btn.variant = "primary" if mode == "catalog" else "default"
+        elif event.button.id.startswith("poster_"):
+            # Toggle poster buttons
+            poster_mode = event.button.id.split("_")[1]
+            self.app.settings.set("poster", poster_mode)  # type: ignore
+            # Update button variants
+            no_btn = self.query_one("#poster_no", Button)
+            pseudo_btn = self.query_one("#poster_pseudo", Button)
+            viu_btn = self.query_one("#poster_viu", Button)
+            no_btn.variant = "primary" if poster_mode == "no" else "default"
+            pseudo_btn.variant = "primary" if poster_mode == "pseudo" else "default"
+            viu_btn.variant = "primary" if poster_mode == "viu" else "default"
 
     def save_settings(self):
         try:
