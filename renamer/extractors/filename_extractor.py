@@ -125,7 +125,14 @@ class FilenameExtractor:
         
         # Clean up title: remove leading/trailing brackets and dots
         title = title.strip('[](). ')
-        
+
+        # Replace dots with spaces if they appear to be word separators
+        # Only replace dots that are surrounded by letters/digits (not at edges)
+        title = re.sub(r'(?<=[a-zA-Z0-9À-ÿ])\.(?=[a-zA-Z0-9À-ÿ])', ' ', title)
+
+        # Clean up multiple spaces
+        title = re.sub(r'\s+', ' ', title).strip()
+
         return title if title else None
 
     @cached_method()
