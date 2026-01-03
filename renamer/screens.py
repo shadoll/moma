@@ -437,32 +437,11 @@ Do you want to proceed with conversion?
     def on_mount(self):
         self.set_focus(self.query_one("#convert"))
 
-    def _handle_conversion_success(self, mkv_path, message):
-        """Handle successful conversion - called on main thread."""
-        import logging
-        try:
-            logging.info(f"_handle_conversion_success called: {mkv_path}")
-            self.app.notify(f"✓ {message}", severity="information", timeout=5)  # type: ignore
-            logging.info(f"Adding file to tree: {mkv_path}")
-            self.app.add_file_to_tree(mkv_path)  # type: ignore
-            logging.info("Conversion success handler completed")
-        except Exception as e:
-            logging.error(f"Error in _handle_conversion_success: {e}", exc_info=True)
-
-    def _handle_conversion_error(self, message):
-        """Handle conversion error - called on main thread."""
-        import logging
-        try:
-            logging.info(f"_handle_conversion_error called: {message}")
-            self.app.notify(f"✗ {message}", severity="error", timeout=10)  # type: ignore
-            logging.info("Conversion error handler completed")
-        except Exception as e:
-            logging.error(f"Error in _handle_conversion_error: {e}", exc_info=True)
-
     def on_button_pressed(self, event):
         if event.button.id == "convert":
             # Start conversion
-            self.app.notify("Starting conversion...", severity="information", timeout=2)  # type: ignore
+            app = self.app  # type: ignore
+            app.notify("Starting conversion...", severity="information", timeout=2)
 
             def do_conversion():
                 from .services.conversion_service import ConversionService
@@ -479,23 +458,27 @@ Do you want to proceed with conversion?
 
                 logging.info(f"Conversion result: success={success}, message={message}")
 
-                # Schedule UI updates on the main thread using set_timer
+                # Schedule UI updates on the main thread
                 mkv_path = self.avi_path.with_suffix('.mkv')
+
+                def handle_success():
+                    logging.info(f"handle_success called: {mkv_path}")
+                    app.notify(f"✓ {message}", severity="information", timeout=5)
+                    logging.info(f"Adding file to tree: {mkv_path}")
+                    app.add_file_to_tree(mkv_path)
+                    logging.info("Conversion success handler completed")
+
+                def handle_error():
+                    logging.info(f"handle_error called: {message}")
+                    app.notify(f"✗ {message}", severity="error", timeout=10)
+                    logging.info("Conversion error handler completed")
 
                 if success:
                     logging.info(f"Conversion successful, scheduling UI update for {mkv_path}")
-
-                    # Use app.set_timer to schedule callback on main thread
-                    self.app.set_timer(
-                        0.1,  # Small delay to ensure main thread processes it
-                        lambda: self._handle_conversion_success(mkv_path, message)
-                    )  # type: ignore
+                    app.call_later(handle_success)
                 else:
                     logging.error(f"Conversion failed: {message}")
-                    self.app.set_timer(
-                        0.1,
-                        lambda: self._handle_conversion_error(message)
-                    )  # type: ignore
+                    app.call_later(handle_error)
 
             # Run conversion in background thread
             import threading

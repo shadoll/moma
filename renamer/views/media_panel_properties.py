@@ -375,6 +375,15 @@ class MediaPanelProperties:
     def media_file_size(self) -> str:
         """Get media file size formatted with label."""
         return self._extractor.get("file_size")
+    
+    @property
+    @text_decorators.blue()
+    @conditional_decorators.wrap("Extension: ")
+    @text_decorators.green()
+    @extension_decorators.extension_info()
+    def media_file_extension(self) -> str:
+        """Get media file extension formatted with label."""
+        return self._extractor.get("extension")
 
     @property
     @text_decorators.blue()

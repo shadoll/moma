@@ -465,18 +465,33 @@ By Category:"""
 
         tree = self.query_one("#file_tree", Tree)
         parent_dir = file_path.parent
+        logging.info(f"Looking for parent directory node: {parent_dir}")
+        logging.info(f"Scan directory: {self.scan_dir}")
 
-        # Find the parent directory node
-        def find_node(node):
-            if node.data == parent_dir:
-                return node
-            for child in node.children:
-                found = find_node(child)
-                if found:
-                    return found
-            return None
+        # Check if parent directory is the scan directory (root level)
+        # If so, the parent node is the tree root itself
+        parent_node = None
 
-        parent_node = find_node(tree.root)
+        if self.scan_dir and parent_dir.resolve() == self.scan_dir.resolve():
+            logging.info("File is in root scan directory, using tree.root as parent")
+            parent_node = tree.root
+        else:
+            # Find the parent directory node in the tree
+            def find_node(node, depth=0):
+                if node.data and isinstance(node.data, Path):
+                    logging.info(f"{'  ' * depth}Checking node: data={node.data}")
+                    # Resolve both paths to absolute for comparison
+                    if node.data.resolve() == parent_dir.resolve():
+                        logging.info(f"{'  ' * depth}Found match! node.data={node.data}")
+                        return node
+                for child in node.children:
+                    found = find_node(child, depth + 1)
+                    if found:
+                        return found
+                return None
+
+            parent_node = find_node(tree.root)
+
         if parent_node:
             logging.info(f"Found parent node for {parent_dir}, adding file {file_path.name}")
 
@@ -511,6 +526,9 @@ By Category:"""
                 ).start()
         else:
             logging.warning(f"No parent node found for {parent_dir}")
+            logging.warning(f"Rescanning entire tree instead")
+            # If we can't find the parent node, just rescan the whole tree
+            self.scan_files()
 
     def on_key(self, event):
         if event.key == "right":
