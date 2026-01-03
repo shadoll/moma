@@ -6,7 +6,7 @@ This module defines video source types (WEB-DL, BDRip, etc.) and their aliases.
 SOURCE_DICT = {
     "WEB-DL": ["WEB-DL", "WEBRip", "WEB-Rip", "WEB", "WEB-DLRip"],
     "BDRip": ["BDRip", "BD-Rip", "BDRIP"],
-    "BDRemux": ["BDRemux", "BD-Remux", "BDREMUX"],
+    "BDRemux": ["BDRemux", "BD-Remux", "BDREMUX", "REMUX"],
     "DVDRip": ["DVDRip", "DVD-Rip", "DVDRIP"],
     "HDTVRip": ["HDTVRip", "HDTV"],
     "BluRay": ["BluRay", "BLURAY", "Blu-ray"],

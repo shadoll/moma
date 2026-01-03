@@ -3,6 +3,24 @@
   "version": "2.0",
   "test_cases": [
     {
+      "filename": "Dumbo.1941.BluRay.1080p.DD5.1.AVC.REMUX.mkv",
+      "expected": {
+        "order": null,
+        "title": "Dumbo",
+        "year": "1941",
+        "source": "BDRemux",
+        "frame_class": "1080p",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "",
+        "extension": "mkv"
+      },
+      "testname": "edge-source-001",
+      "category": "edge_cases",
+      "description": "Source indicated as BDRemux"
+    },
+    {
       "filename": "Angelo.dans.la.forêt.mystérieuse.2024.1080p.BluRay.DD.5.1.x265.mkv",
       "expected": {
         "order": null,
