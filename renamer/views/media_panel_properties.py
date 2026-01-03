@@ -328,8 +328,17 @@ class MediaPanelProperties:
         return self._extractor.get("movie_db", "Filename")
 
     # ============================================================
-    # Selected Data Properties
+    # Joined Data Properties
     # ============================================================
+
+    @property
+    @text_decorators.blue()
+    @conditional_decorators.wrap("Duration: ")
+    @text_decorators.yellow()
+    @duration_decorators.duration_full()
+    def media_duration(self) -> str:
+        """Get media duration from best available source."""
+        return self._extractor.get("duration")
 
     @property
     @text_decorators.blue()
@@ -345,7 +354,7 @@ class MediaPanelProperties:
     @conditional_decorators.wrap("Title: ")
     @text_decorators.yellow()
     @conditional_decorators.default("<None>")
-    def selected_title(self) -> str:
+    def media_title(self) -> str:
         """Get selected title formatted with label."""
         return self._extractor.get("title")
 
@@ -354,9 +363,18 @@ class MediaPanelProperties:
     @conditional_decorators.wrap("Year: ")
     @text_decorators.yellow()
     @conditional_decorators.default("<None>")
-    def selected_year(self) -> str:
+    def media_year(self) -> str:
         """Get selected year formatted with label."""
         return self._extractor.get("year")
+
+    @property
+    @text_decorators.blue()
+    @conditional_decorators.wrap("File size: ")
+    @text_decorators.green()
+    @size_decorators.size_full()
+    def media_file_size(self) -> str:
+        """Get media file size formatted with label."""
+        return self._extractor.get("file_size")
 
     @property
     @text_decorators.blue()

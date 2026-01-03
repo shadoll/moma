@@ -12,13 +12,14 @@ import logging
 import os
 
 from .constants import MEDIA_TYPES
-from .screens import OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen
+from .screens import OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen, ConvertConfirmScreen
 from .extractors.extractor import MediaExtractor
 from .views import MediaPanelView, ProposedFilenameView
 from .formatters.text_formatter import TextFormatter
 from .formatters.catalog_formatter import CatalogFormatter
 from .settings import Settings
 from .cache import Cache, CacheManager
+from .services.conversion_service import ConversionService
 
 
 # Set up logging conditionally
@@ -68,6 +69,7 @@ class AppCommandProvider(Provider):
             ("scan", "Scan Directory", "Scan current directory for media files (s)"),
             ("refresh", "Refresh File", "Refresh metadata for selected file (f)"),
             ("rename", "Rename File", "Rename the selected file (r)"),
+            ("convert", "Convert AVI to MKV", "Convert AVI file to MKV container with metadata (c)"),
             ("toggle_mode", "Toggle Display Mode", "Switch between technical and catalog view (m)"),
             ("expand", "Toggle Tree Expansion", "Expand or collapse all tree nodes (p)"),
             ("settings", "Settings", "Open settings screen (Ctrl+S)"),
@@ -102,6 +104,7 @@ class RenamerApp(App):
         ("s", "scan", "Scan"),
         ("f", "refresh", "Refresh"),
         ("r", "rename", "Rename"),
+        ("c", "convert", "Convert AVI→MKV"),
         ("p", "expand", "Toggle Tree"),
         ("m", "toggle_mode", "Toggle Mode"),
         ("h", "help", "Help"),
@@ -352,6 +355,45 @@ By Category:"""
             else:
                 self.notify("Proposed name is the same as current name; no rename needed.", severity="information", timeout=3)
 
+    async def action_convert(self):
+        """Convert AVI file to MKV with metadata preservation."""
+        tree = self.query_one("#file_tree", Tree)
+        node = tree.cursor_node
+
+        if not (node and node.data and isinstance(node.data, Path) and node.data.is_file()):
+            self.notify("Please select a file first", severity="warning", timeout=3)
+            return
+
+        file_path = node.data
+        conversion_service = ConversionService()
+
+        # Check if file can be converted
+        if not conversion_service.can_convert(file_path):
+            self.notify("Only AVI files can be converted to MKV", severity="error", timeout=3)
+            return
+
+        # Create extractor for metadata
+        try:
+            extractor = MediaExtractor(file_path)
+        except Exception as e:
+            self.notify(f"Failed to read file metadata: {e}", severity="error", timeout=5)
+            return
+
+        # Get audio track count and map languages
+        audio_tracks = extractor.get('audio_tracks', 'MediaInfo') or []
+        if not audio_tracks:
+            self.notify("No audio tracks found in file", severity="error", timeout=3)
+            return
+
+        audio_languages = conversion_service.map_audio_languages(extractor, len(audio_tracks))
+        subtitle_files = conversion_service.find_subtitle_files(file_path)
+        mkv_path = file_path.with_suffix('.mkv')
+
+        # Show confirmation screen (conversion happens in screen's on_button_pressed)
+        self.push_screen(
+            ConvertConfirmScreen(file_path, mkv_path, audio_languages, subtitle_files, extractor)
+        )
+
     async def action_expand(self):
         tree = self.query_one("#file_tree", Tree)
         if self.tree_expanded:
@@ -412,6 +454,63 @@ By Category:"""
             ).start()
         else:
             logging.info("Not refreshing details, cursor not on renamed file")
+
+    def add_file_to_tree(self, file_path: Path):
+        """Add a new file to the tree in the correct position.
+
+        Args:
+            file_path: Path to the new file to add
+        """
+        logging.info(f"add_file_to_tree called with file_path={file_path}")
+
+        tree = self.query_one("#file_tree", Tree)
+        parent_dir = file_path.parent
+
+        # Find the parent directory node
+        def find_node(node):
+            if node.data == parent_dir:
+                return node
+            for child in node.children:
+                found = find_node(child)
+                if found:
+                    return found
+            return None
+
+        parent_node = find_node(tree.root)
+        if parent_node:
+            logging.info(f"Found parent node for {parent_dir}, adding file {file_path.name}")
+
+            # Add the new file node in alphabetically sorted position
+            new_node = None
+            inserted = False
+
+            for i, child in enumerate(parent_node.children):
+                if child.data and isinstance(child.data, Path):
+                    # Compare filenames for sorting
+                    if child.data.name > file_path.name:
+                        # Insert before this child
+                        new_node = parent_node.add(escape(file_path.name), data=file_path, before=i)
+                        inserted = True
+                        logging.info(f"Inserted file before {child.data.name}")
+                        break
+
+            # If not inserted, add at the end
+            if not inserted:
+                new_node = parent_node.add(escape(file_path.name), data=file_path)
+                logging.info(f"Added file at end of directory")
+
+            # Select the new node and show its details
+            if new_node:
+                tree.select_node(new_node)
+                logging.info(f"Selected new node: {new_node.data}")
+
+                # Refresh the details panel for the new file
+                self._start_loading_animation()
+                threading.Thread(
+                    target=self._extract_and_show_details, args=(file_path,)
+                ).start()
+        else:
+            logging.warning(f"No parent node found for {parent_dir}")
 
     def on_key(self, event):
         if event.key == "right":

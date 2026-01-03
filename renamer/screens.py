@@ -343,3 +343,174 @@ Configure application settings.
             self.app.notify("Settings saved!", severity="information", timeout=2)  # type: ignore
         except ValueError:
             self.app.notify("Invalid TTL values. Please enter numbers only.", severity="error", timeout=3)  # type: ignore
+
+
+class ConvertConfirmScreen(Screen):
+    """Confirmation screen for AVI to MKV conversion."""
+
+    CSS = """
+    #convert_content {
+        text-align: center;
+    }
+    Button:focus {
+        background: $primary;
+    }
+    #buttons {
+        align: center middle;
+    }
+    #conversion_details {
+        text-align: left;
+        margin: 1 2;
+        padding: 1 2;
+        border: solid $primary;
+    }
+    #warning_content {
+        text-align: center;
+        margin-bottom: 1;
+        margin-top: 1;
+    }
+    """
+
+    def __init__(
+        self,
+        avi_path: Path,
+        mkv_path: Path,
+        audio_languages: list,
+        subtitle_files: list,
+        extractor
+    ):
+        super().__init__()
+        self.avi_path = avi_path
+        self.mkv_path = mkv_path
+        self.audio_languages = audio_languages
+        self.subtitle_files = subtitle_files
+        self.extractor = extractor
+
+    def compose(self):
+        from .formatters.text_formatter import TextFormatter
+
+        title_text = f"{TextFormatter.bold(TextFormatter.yellow('AVI → MKV CONVERSION'))}"
+
+        # Build details
+        details_lines = [
+            f"{TextFormatter.bold('Source:')} {TextFormatter.cyan(escape(self.avi_path.name))}",
+            f"{TextFormatter.bold('Output:')} {TextFormatter.green(escape(self.mkv_path.name))}",
+            "",
+            f"{TextFormatter.bold('Audio Languages:')}",
+        ]
+
+        # Add audio language mapping
+        for i, lang in enumerate(self.audio_languages):
+            if lang:
+                details_lines.append(f"  Track {i+1}: {TextFormatter.green(lang)}")
+            else:
+                details_lines.append(f"  Track {i+1}: {TextFormatter.grey('(no language)')}")
+
+        # Add subtitle info
+        if self.subtitle_files:
+            details_lines.append("")
+            details_lines.append(f"{TextFormatter.bold('Subtitles to include:')}")
+            for sub_file in self.subtitle_files:
+                details_lines.append(f"  • {TextFormatter.blue(escape(sub_file.name))}")
+        else:
+            details_lines.append("")
+            details_lines.append(f"{TextFormatter.grey('No subtitle files found')}")
+
+        details_text = "\n".join(details_lines)
+
+        warning_text = f"""
+{TextFormatter.bold(TextFormatter.red("Fast remux - streams will be copied without re-encoding"))}
+{TextFormatter.yellow("This operation may take a few seconds to minutes depending on file size")}
+
+Do you want to proceed with conversion?
+        """.strip()
+
+        with Center():
+            with Vertical():
+                yield Static(title_text, id="convert_content", markup=True)
+                yield Static(details_text, id="conversion_details", markup=True)
+                yield Static(warning_text, id="warning_content", markup=True)
+                with Horizontal(id="buttons"):
+                    yield Button("Convert (y)", id="convert", variant="success")
+                    yield Button("Cancel (n)", id="cancel", variant="error")
+
+    def on_mount(self):
+        self.set_focus(self.query_one("#convert"))
+
+    def _handle_conversion_success(self, mkv_path, message):
+        """Handle successful conversion - called on main thread."""
+        import logging
+        try:
+            logging.info(f"_handle_conversion_success called: {mkv_path}")
+            self.app.notify(f"✓ {message}", severity="information", timeout=5)  # type: ignore
+            logging.info(f"Adding file to tree: {mkv_path}")
+            self.app.add_file_to_tree(mkv_path)  # type: ignore
+            logging.info("Conversion success handler completed")
+        except Exception as e:
+            logging.error(f"Error in _handle_conversion_success: {e}", exc_info=True)
+
+    def _handle_conversion_error(self, message):
+        """Handle conversion error - called on main thread."""
+        import logging
+        try:
+            logging.info(f"_handle_conversion_error called: {message}")
+            self.app.notify(f"✗ {message}", severity="error", timeout=10)  # type: ignore
+            logging.info("Conversion error handler completed")
+        except Exception as e:
+            logging.error(f"Error in _handle_conversion_error: {e}", exc_info=True)
+
+    def on_button_pressed(self, event):
+        if event.button.id == "convert":
+            # Start conversion
+            self.app.notify("Starting conversion...", severity="information", timeout=2)  # type: ignore
+
+            def do_conversion():
+                from .services.conversion_service import ConversionService
+                import threading
+                import logging
+
+                conversion_service = ConversionService()
+                logging.info(f"Starting conversion of {self.avi_path}")
+
+                success, message = conversion_service.convert_avi_to_mkv(
+                    self.avi_path,
+                    extractor=self.extractor
+                )
+
+                logging.info(f"Conversion result: success={success}, message={message}")
+
+                # Schedule UI updates on the main thread using set_timer
+                mkv_path = self.avi_path.with_suffix('.mkv')
+
+                if success:
+                    logging.info(f"Conversion successful, scheduling UI update for {mkv_path}")
+
+                    # Use app.set_timer to schedule callback on main thread
+                    self.app.set_timer(
+                        0.1,  # Small delay to ensure main thread processes it
+                        lambda: self._handle_conversion_success(mkv_path, message)
+                    )  # type: ignore
+                else:
+                    logging.error(f"Conversion failed: {message}")
+                    self.app.set_timer(
+                        0.1,
+                        lambda: self._handle_conversion_error(message)
+                    )  # type: ignore
+
+            # Run conversion in background thread
+            import threading
+            threading.Thread(target=do_conversion, daemon=True).start()
+
+            # Close the screen
+            self.app.pop_screen()  # type: ignore
+        else:
+            # Cancel
+            self.app.pop_screen()  # type: ignore
+
+    def on_key(self, event):
+        if event.key == "y":
+            # Simulate convert button press
+            convert_button = self.query_one("#convert")
+            self.on_button_pressed(type('Event', (), {'button': convert_button})())
+        elif event.key == "n" or event.key == "escape":
+            self.app.pop_screen()  # type: ignore

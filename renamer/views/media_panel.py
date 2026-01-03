@@ -17,13 +17,32 @@ class MediaPanelView:
         """Return formatted file info panel string"""
         return "\n".join(
             [
-                self.fileinfo_section(),
                 self.selected_section(),
+                self.fileinfo_section(),
                 self.tmdb_section(),
                 self.tracksinfo_section(),
                 self.filename_section(),
                 self.metadata_section(),
                 self.mediainfo_section(),
+            ]
+        )
+
+    @conditional_decorators.wrap("", "\n")
+    def selected_section(self) -> str:
+        """Return formatted selected data"""
+        return "\n".join(
+            [
+                self._props.title("Media Info Summary"),
+                self._props.media_title,
+                self._props.media_year,
+                self._props.media_duration,
+                self._props.media_file_size,
+                self._props.selected_frame_class,
+                self._props.selected_source,
+                self._props.selected_special_info,
+                self._props.selected_audio_langs,
+                self._props.selected_database_info,
+                self._props.selected_order,
             ]
         )
 
@@ -38,24 +57,6 @@ class MediaPanelView:
                 self._props.file_name,
                 self._props.modification_time,
                 self._props.extension_fileinfo,
-            ]
-        )
-
-    @conditional_decorators.wrap("", "\n")
-    def selected_section(self) -> str:
-        """Return formatted selected data"""
-        return "\n".join(
-            [
-                self._props.title("Selected Data"),
-                self._props.selected_order,
-                self._props.selected_title,
-                self._props.selected_year,
-                self._props.selected_special_info,
-                self._props.selected_source,
-                self._props.selected_frame_class,
-                self._props.selected_hdr,
-                self._props.selected_audio_langs,
-                self._props.selected_database_info,
             ]
         )
 
