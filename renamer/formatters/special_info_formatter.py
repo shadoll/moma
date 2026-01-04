@@ -31,5 +31,5 @@ class SpecialInfoFormatter:
                 logging.info(f"Formatted tuple/list to: {result!r}")
             return result
         if os.getenv("FORMATTER_LOG"):
-            logging.info("Returning 'Unknown'")
-        return "Unknown"
+            logging.info("Returning None")
+        return None

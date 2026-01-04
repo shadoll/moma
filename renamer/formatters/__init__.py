@@ -21,7 +21,6 @@ from .extension_formatter import ExtensionFormatter
 from .resolution_formatter import ResolutionFormatter
 from .track_formatter import TrackFormatter
 from .special_info_formatter import SpecialInfoFormatter
-from .formatter import FormatterApplier
 
 # Decorator instances
 from .date_decorators import date_decorators, DateDecorators
@@ -51,7 +50,6 @@ __all__ = [
     'ResolutionFormatter',
     'TrackFormatter',
     'SpecialInfoFormatter',
-    'FormatterApplier',
 
     # Decorator instances and classes
     'date_decorators',

@@ -16,8 +16,7 @@ from renamer.formatters import (
     ExtensionFormatter,
     ResolutionFormatter,
     TrackFormatter,
-    SpecialInfoFormatter,
-    FormatterApplier
+    SpecialInfoFormatter
 )
 
 
@@ -270,124 +269,22 @@ class TestSpecialInfoFormatter:
 
     def test_format_database_info_dict(self):
         """Test formatting database info from dict."""
-        info = {'type': 'tmdb', 'id': '12345'}
+        info = {'name': 'tmdb', 'id': '12345'}
         result = SpecialInfoFormatter.format_database_info(info)
-        # Just check it returns a string
-        assert isinstance(result, str)
+        # Should format as "tmdbid-12345"
+        assert result == "tmdbid-12345"
 
     def test_format_database_info_list(self):
         """Test formatting database info from list."""
         info = ['tmdb', '12345']
         result = SpecialInfoFormatter.format_database_info(info)
-        # Just check it returns a string
-        assert isinstance(result, str)
+        # Should format as "tmdbid-12345"
+        assert result == "tmdbid-12345"
 
     def test_format_database_info_none(self):
         """Test formatting None database info."""
         result = SpecialInfoFormatter.format_database_info(None)
-        # Should return empty or some string
-        assert isinstance(result, str)
+        # Should return None when no valid database info
+        assert result is None
 
 
-class TestFormatterApplier:
-    """Test FormatterApplier functionality."""
-
-    def test_apply_formatters_single(self):
-        """Test applying single formatter."""
-        result = FormatterApplier.apply_formatters("test", TextFormatter.uppercase)
-        assert result == "TEST"
-
-    def test_apply_formatters_list(self):
-        """Test applying multiple formatters."""
-        formatters = [TextFormatter.uppercase, TextFormatter.bold]
-        result = FormatterApplier.apply_formatters("test", formatters)
-        assert "TEST" in result
-        assert "[bold]" in result
-
-    def test_apply_formatters_ordered(self):
-        """Test that formatters are applied in correct order."""
-        # Text formatters before markup formatters
-        formatters = [TextFormatter.bold, TextFormatter.uppercase]
-        result = FormatterApplier.apply_formatters("test", formatters)
-        # uppercase should be applied first, then bold
-        assert "[bold]TEST[/bold]" in result
-
-    def test_format_data_item_with_value(self):
-        """Test formatting data item with value."""
-        item = {
-            "label": "Size",
-            "value": 1024,
-            "value_formatters": [SizeFormatter.format_size]
-        }
-        result = FormatterApplier.format_data_item(item)
-        assert "Size:" in result
-        assert "KB" in result
-
-    def test_format_data_item_with_label_formatters(self):
-        """Test formatting data item with label formatters."""
-        item = {
-            "label": "title",
-            "value": "Movie",
-            "label_formatters": [TextFormatter.uppercase]
-        }
-        result = FormatterApplier.format_data_item(item)
-        assert "TITLE:" in result
-
-    def test_format_data_item_with_display_formatters(self):
-        """Test formatting data item with display formatters."""
-        item = {
-            "label": "Error",
-            "value": "Failed",
-            "display_formatters": [TextFormatter.red]
-        }
-        result = FormatterApplier.format_data_item(item)
-        assert "[red]" in result
-
-    def test_format_data_items_list(self):
-        """Test formatting list of data items."""
-        items = [
-            {"label": "Title", "value": "Movie"},
-            {"label": "Year", "value": "2024"}
-        ]
-        results = FormatterApplier.format_data_items(items)
-        assert len(results) == 2
-        assert "Title: Movie" in results[0]
-        assert "Year: 2024" in results[1]
-
-
-class TestFormatterIntegration:
-    """Integration tests for formatters working together."""
-
-    def test_complete_formatting_pipeline(self):
-        """Test complete formatting pipeline with multiple formatters."""
-        # Create a data item with all formatter types
-        item = {
-            "label": "file size",
-            "value": 1024 * 1024 * 100,  # 100 MB
-            "label_formatters": [TextFormatter.uppercase],
-            "value_formatters": [SizeFormatter.format_size],
-            "display_formatters": [TextFormatter.green]
-        }
-
-        result = FormatterApplier.format_data_item(item)
-
-        # Check all formatters were applied
-        assert "FILE SIZE:" in result  # Label uppercase
-        assert "MB" in result           # Size formatted
-        assert "[green]" in result      # Display color
-
-    def test_error_handling_in_formatter(self):
-        """Test error handling when formatter fails."""
-        # Create a formatter that will fail
-        def bad_formatter(value):
-            raise ValueError("Test error")
-
-        item = {
-            "label": "Test",
-            "value": "data",
-            "value_formatters": [bad_formatter]
-        }
-
-        # Should return "Unknown" instead of crashing
-        result = FormatterApplier.format_data_item(item)
-        assert "Unknown" in result
