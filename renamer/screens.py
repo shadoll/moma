@@ -505,10 +505,13 @@ class ConvertConfirmScreen(Screen):
     def on_button_pressed(self, event):
         if event.button.id == "convert_copy":
             self._do_conversion(encode_hevc=False)
+            event.stop()  # Prevent key event from also triggering
         elif event.button.id == "convert_hevc":
             self._do_conversion(encode_hevc=True)
+            event.stop()  # Prevent key event from also triggering
         elif event.button.id == "cancel":
             self.app.pop_screen()  # type: ignore
+            event.stop()  # Prevent key event from also triggering
 
     def _do_conversion(self, encode_hevc: bool):
         """Start conversion with the specified encoding mode."""

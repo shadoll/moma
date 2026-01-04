@@ -1,6 +1,6 @@
 """Conversion service for video to MKV remux with metadata preservation.
 
-This service manages the process of converting AVI/MPG/MPEG/WebM files to MKV container:
+This service manages the process of converting AVI/MPG/MPEG/WebM/MP4 files to MKV container:
 - Fast stream copy (no re-encoding)
 - Audio language detection and mapping from filename
 - Subtitle file detection and inclusion
@@ -24,7 +24,7 @@ class ConversionService:
     """Service for converting video files to MKV with metadata preservation.
 
     This service handles:
-    - Validating video files for conversion (AVI, MPG, MPEG, WebM)
+    - Validating video files for conversion (AVI, MPG, MPEG, WebM, MP4)
     - Detecting nearby subtitle files
     - Mapping audio languages from filename to tracks
     - Building ffmpeg command for fast remux or HEVC encoding
@@ -168,18 +168,18 @@ class ConversionService:
         return ':'.join(base_params + cpu_params)
 
     def can_convert(self, file_path: Path) -> bool:
-        """Check if a file can be converted (is AVI, MPG, MPEG, or WebM).
+        """Check if a file can be converted (is AVI, MPG, MPEG, WebM, or MP4).
 
         Args:
             file_path: Path to the file to check
 
         Returns:
-            True if file is AVI, MPG, MPEG, or WebM and can be converted
+            True if file is AVI, MPG, MPEG, WebM, or MP4 and can be converted
         """
         if not file_path.exists() or not file_path.is_file():
             return False
 
-        return file_path.suffix.lower() in {'.avi', '.mpg', '.mpeg', '.webm'}
+        return file_path.suffix.lower() in {'.avi', '.mpg', '.mpeg', '.webm', '.mp4', '.m4v'}
 
     def find_subtitle_files(self, video_path: Path) -> List[Path]:
         """Find subtitle files near the video file.
@@ -280,7 +280,7 @@ class ConversionService:
         - Sets MKV title from filename
 
         Args:
-            source_path: Source video file (AVI, MPG, MPEG, or WebM)
+            source_path: Source video file (AVI, MPG, MPEG, WebM, or MP4)
             mkv_path: Destination MKV file
             audio_languages: Language codes for each audio track
             subtitle_files: List of subtitle files to include
@@ -361,7 +361,7 @@ class ConversionService:
         """Convert video file to MKV with metadata preservation.
 
         Args:
-            avi_path: Source video file path (AVI, MPG, MPEG, or WebM)
+            avi_path: Source video file path (AVI, MPG, MPEG, WebM, or MP4)
             extractor: Optional MediaExtractor (creates new if None)
             output_path: Optional output path (defaults to same name with .mkv)
             dry_run: If True, build command but don't execute
@@ -382,7 +382,7 @@ class ConversionService:
         """
         # Validate input
         if not self.can_convert(avi_path):
-            error_msg = f"File is not a supported format (AVI/MPG/MPEG/WebM) or doesn't exist: {avi_path}"
+            error_msg = f"File is not a supported format (AVI/MPG/MPEG/WebM/MP4) or doesn't exist: {avi_path}"
             logger.error(error_msg)
             return False, error_msg
 
