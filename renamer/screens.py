@@ -180,6 +180,12 @@ Do you want to proceed with renaming?
 
     def on_button_pressed(self, event):
         if event.button.id == "rename":
+            # Check if new name is the same as old name
+            if self.new_name == self.old_path.name:
+                self.app.notify("Proposed name is the same as current name; no rename needed.", severity="information", timeout=3)
+                self.app.pop_screen()
+                return
+
             try:
                 logging.info(f"Starting rename: old_path={self.old_path}, new_path={self.new_path}")
                 logging.info(f"Old file name: {self.old_path.name}")
@@ -495,7 +501,7 @@ class ConvertConfirmScreen(Screen):
                 yield Static(details_text, id="conversion_details", markup=True)
                 yield Static(info_text, id="info_text", markup=True)
                 with Horizontal(id="buttons"):
-                    yield Button("Convert Copy (c)", id="convert_copy", variant="success")
+                    yield Button("Convert Copy (y)", id="convert_copy", variant="success")
                     yield Button("Convert HEVC (e)", id="convert_hevc", variant="primary")
                     yield Button("Cancel (n)", id="cancel", variant="error")
 
@@ -574,7 +580,7 @@ class ConvertConfirmScreen(Screen):
         self.app.pop_screen()  # type: ignore
 
     def on_key(self, event):
-        if event.key == "c":
+        if event.key == "y":
             # Copy mode
             self._do_conversion(encode_hevc=False)
         elif event.key == "e":

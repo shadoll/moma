@@ -66,14 +66,15 @@ class AppCommandProvider(Provider):
 
         commands = [
             ("open", "Open Directory", "Open a directory to browse media files (o)"),
-            ("scan", "Scan Directory", "Scan current directory for media files (s)"),
+            ("scan_local", "Scan Node", "Scan current node's directory only (s)"),
+            ("scan", "Scan Tree", "Scan entire directory tree (Ctrl+S)"),
             ("refresh", "Refresh File", "Refresh metadata for selected file (f)"),
             ("rename", "Rename File", "Rename the selected file (r)"),
             ("convert", "Convert to MKV", "Convert AVI/MPG/MPEG/WebM/MP4 file to MKV container with metadata (c)"),
             ("delete", "Delete File", "Delete the selected file (d)"),
             ("toggle_mode", "Toggle Display Mode", "Switch between technical and catalog view (m)"),
-            ("expand", "Toggle Tree Expansion", "Expand or collapse all tree nodes (p)"),
-            ("settings", "Settings", "Open settings screen (Ctrl+S)"),
+            ("expand", "Toggle Tree Expansion", "Expand or collapse all tree nodes (t)"),
+            ("settings", "Settings", "Open settings screen (p)"),
             ("help", "Help", "Show keyboard shortcuts and help (h)"),
         ]
 
@@ -102,15 +103,16 @@ class RenamerApp(App):
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("o", "open", "Open directory"),
-        ("s", "scan", "Scan"),
+        ("s", "scan_local", "Scan Node"),
+        ("ctrl+s", "scan", "Scan Tree"),
         ("f", "refresh", "Refresh"),
         ("r", "rename", "Rename"),
         ("c", "convert", "Convert to MKV"),
         ("d", "delete", "Delete"),
-        ("p", "expand", "Toggle Tree"),
+        ("t", "expand", "Toggle Tree"),
         ("m", "toggle_mode", "Toggle Mode"),
         ("h", "help", "Help"),
-        ("ctrl+s", "settings", "Settings"),
+        ("p", "settings", "Settings"),
     ]
 
     # Command palette - extend built-in commands with cache and app commands
@@ -298,6 +300,36 @@ class RenamerApp(App):
         if self.scan_dir:
             self.scan_files()
 
+    async def action_scan_local(self):
+        """Scan only the current node's directory (refresh node)."""
+        tree = self.query_one("#file_tree", Tree)
+        node = tree.cursor_node
+
+        if not node or not node.data:
+            self.notify("Please select a node first", severity="warning", timeout=3)
+            return
+
+        # Get the directory to scan
+        path = node.data
+        if path.is_file():
+            # If it's a file, scan its parent directory
+            path = path.parent
+            # Find the parent node in the tree
+            if node.parent:
+                node = node.parent
+            else:
+                self.notify("Cannot scan root level file", severity="warning", timeout=3)
+                return
+
+        # Clear the node and rescan
+        node.remove_children()
+        self.build_tree(path, node)
+
+        # Expand the node to show new content
+        node.expand()
+
+        self.notify(f"Rescanned: {path.name}", severity="information", timeout=2)
+
     async def action_refresh(self):
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node
@@ -384,10 +416,9 @@ By Category:"""
             proposed_formatter = ProposedFilenameView(extractor)
             new_name = str(proposed_formatter)
             logging.info(f"Proposed new name: {new_name!r} for file: {node.data}")
-            if new_name and new_name != node.data.name:
+            # Always open rename dialog, even if names are the same (user might want to manually edit)
+            if new_name:
                 self.push_screen(RenameConfirmScreen(node.data, new_name))
-            else:
-                self.notify("Proposed name is the same as current name; no rename needed.", severity="information", timeout=3)
 
     async def action_convert(self):
         """Convert AVI/MPG/MPEG/WebM/MP4 file to MKV with metadata preservation."""
