@@ -9,6 +9,7 @@ SPECIAL_EDITIONS = {
     "Director's Cut": ["Director's Cut", "Director Cut"],
     "Extended Cut": ["Extended Cut", "Ultimate Extended Cut", "Extended Edition", "Ultimate Extended Edition"],
     "Special Edition": ["Special Edition"],
+    "Open Matte": ["Open Matte"],
     "Collector's Edition": ["Collector's Edition"],
     "Criterion Collection": ["Criterion Collection"],
     "Anniversary Edition": ["Anniversary Edition"],
@@ -56,4 +57,5 @@ SPECIAL_EDITIONS = {
     "Amazon Edition": ["Amazon Edition", "Amazon", "Amazon Prime Edition", "Amazon Prime"],
     "Netflix Edition": ["Netflix Edition"],
     "HBO Edition": ["HBO Edition"],
+    "VHS Source": ["VHSRecord", "VHS Record", "VHS Rip", "VHS", "VHS-Rip"],
 }
