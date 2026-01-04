@@ -8,7 +8,7 @@ class TrackFormatter:
         width = track.get('width', '?')
         height = track.get('height', '?')
         bitrate = track.get('bitrate') # in bps
-        bitrate_kbps = bitrate / 1024 if bitrate else None
+        bitrate_kbps = int(round(bitrate / 1024)) if bitrate else None
         fps = track.get('fps')
         profile = track.get('profile')
 
@@ -29,7 +29,7 @@ class TrackFormatter:
         channels = track.get('channels', '?')
         lang = track.get('language', 'und')
         bitrate = track.get('bitrate') # in bps
-        bitrate_kbps = bitrate / 1024 if bitrate else None
+        bitrate_kbps = int(round(bitrate / 1024)) if bitrate else None
 
         audio_str = f"{codec} {channels}ch {lang}"
         if bitrate_kbps:
