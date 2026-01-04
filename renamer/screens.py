@@ -308,6 +308,21 @@ Configure application settings.
                     yield Button("Pseudo", id="poster_pseudo", variant="primary" if settings.get("poster") == "pseudo" else "default")
                     yield Button("Viu", id="poster_viu", variant="primary" if settings.get("poster") == "viu" else "default")
 
+                # HEVC quality selection
+                yield Static("HEVC Encoding Quality (for conversions):", classes="label")
+                with Horizontal():
+                    yield Button("CRF 18 (Visually Lossless)", id="hevc_crf_18", variant="primary" if settings.get("hevc_crf") == 18 else "default")
+                    yield Button("CRF 23 (High Quality)", id="hevc_crf_23", variant="primary" if settings.get("hevc_crf") == 23 else "default")
+                    yield Button("CRF 28 (Balanced)", id="hevc_crf_28", variant="primary" if settings.get("hevc_crf") == 28 else "default")
+
+                # HEVC preset selection
+                yield Static("HEVC Encoding Speed (faster = lower quality/smaller file):", classes="label")
+                with Horizontal():
+                    yield Button("Ultrafast", id="hevc_preset_ultrafast", variant="primary" if settings.get("hevc_preset") == "ultrafast" else "default")
+                    yield Button("Veryfast", id="hevc_preset_veryfast", variant="primary" if settings.get("hevc_preset") == "veryfast" else "default")
+                    yield Button("Fast", id="hevc_preset_fast", variant="primary" if settings.get("hevc_preset") == "fast" else "default")
+                    yield Button("Medium", id="hevc_preset_medium", variant="primary" if settings.get("hevc_preset") == "medium" else "default")
+
                 # TTL inputs
                 yield Static("Cache TTL - Extractors (hours):", classes="label")
                 yield Input(value=str(settings.get("cache_ttl_extractors") // 3600), id="ttl_extractors", classes="input_field")
@@ -348,6 +363,30 @@ Configure application settings.
             no_btn.variant = "primary" if poster_mode == "no" else "default"
             pseudo_btn.variant = "primary" if poster_mode == "pseudo" else "default"
             viu_btn.variant = "primary" if poster_mode == "viu" else "default"
+        elif event.button.id.startswith("hevc_crf_"):
+            # Toggle HEVC CRF buttons
+            crf_value = int(event.button.id.split("_")[-1])
+            self.app.settings.set("hevc_crf", crf_value)  # type: ignore
+            # Update button variants
+            crf18_btn = self.query_one("#hevc_crf_18", Button)
+            crf23_btn = self.query_one("#hevc_crf_23", Button)
+            crf28_btn = self.query_one("#hevc_crf_28", Button)
+            crf18_btn.variant = "primary" if crf_value == 18 else "default"
+            crf23_btn.variant = "primary" if crf_value == 23 else "default"
+            crf28_btn.variant = "primary" if crf_value == 28 else "default"
+        elif event.button.id.startswith("hevc_preset_"):
+            # Toggle HEVC preset buttons
+            preset_value = event.button.id.split("_")[-1]
+            self.app.settings.set("hevc_preset", preset_value)  # type: ignore
+            # Update button variants
+            ultrafast_btn = self.query_one("#hevc_preset_ultrafast", Button)
+            veryfast_btn = self.query_one("#hevc_preset_veryfast", Button)
+            fast_btn = self.query_one("#hevc_preset_fast", Button)
+            medium_btn = self.query_one("#hevc_preset_medium", Button)
+            ultrafast_btn.variant = "primary" if preset_value == "ultrafast" else "default"
+            veryfast_btn.variant = "primary" if preset_value == "veryfast" else "default"
+            fast_btn.variant = "primary" if preset_value == "fast" else "default"
+            medium_btn.variant = "primary" if preset_value == "medium" else "default"
 
     def save_settings(self):
         try:
@@ -409,7 +448,7 @@ class ConvertConfirmScreen(Screen):
     def compose(self):
         from .formatters.text_formatter import TextFormatter
 
-        title_text = f"{TextFormatter.bold(TextFormatter.yellow('AVI → MKV CONVERSION'))}"
+        title_text = f"{TextFormatter.bold(TextFormatter.yellow('MKV CONVERSION'))}"
 
         # Build details
         details_lines = [
@@ -438,83 +477,106 @@ class ConvertConfirmScreen(Screen):
 
         details_text = "\n".join(details_lines)
 
-        warning_text = f"""
-{TextFormatter.bold(TextFormatter.red("Fast remux - streams will be copied without re-encoding"))}
-{TextFormatter.yellow("This operation may take a few seconds to minutes depending on file size")}
+        # Get HEVC CRF from settings
+        settings = self.app.settings  # type: ignore
+        hevc_crf = settings.get("hevc_crf", 23)
 
-Do you want to proceed with conversion?
+        info_text = f"""
+{TextFormatter.bold('Choose conversion mode:')}
+
+{TextFormatter.green('Copy Mode')} - Fast remux, no re-encoding (seconds to minutes)
+{TextFormatter.yellow(f'HEVC Mode')} - Re-encode to H.265, CRF {hevc_crf} quality (minutes to hours)
+  {TextFormatter.grey('(Change quality in Settings with Ctrl+S)')}
         """.strip()
 
         with Center():
             with Vertical():
                 yield Static(title_text, id="convert_content", markup=True)
                 yield Static(details_text, id="conversion_details", markup=True)
-                yield Static(warning_text, id="warning_content", markup=True)
+                yield Static(info_text, id="info_text", markup=True)
                 with Horizontal(id="buttons"):
-                    yield Button("Convert (y)", id="convert", variant="success")
+                    yield Button("Convert Copy (c)", id="convert_copy", variant="success")
+                    yield Button("Convert HEVC (e)", id="convert_hevc", variant="primary")
                     yield Button("Cancel (n)", id="cancel", variant="error")
 
     def on_mount(self):
-        self.set_focus(self.query_one("#convert"))
+        self.set_focus(self.query_one("#convert_copy"))
 
     def on_button_pressed(self, event):
-        if event.button.id == "convert":
-            # Start conversion
-            app = self.app  # type: ignore
-            app.notify("Starting conversion...", severity="information", timeout=2)
+        if event.button.id == "convert_copy":
+            self._do_conversion(encode_hevc=False)
+        elif event.button.id == "convert_hevc":
+            self._do_conversion(encode_hevc=True)
+        elif event.button.id == "cancel":
+            self.app.pop_screen()  # type: ignore
 
-            def do_conversion():
-                from .services.conversion_service import ConversionService
-                import threading
-                import logging
+    def _do_conversion(self, encode_hevc: bool):
+        """Start conversion with the specified encoding mode."""
+        app = self.app  # type: ignore
+        settings = app.settings
 
-                conversion_service = ConversionService()
-                logging.info(f"Starting conversion of {self.avi_path}")
+        # Get CRF and preset from settings if using HEVC
+        crf = settings.get("hevc_crf", 23) if encode_hevc else 18
+        preset = settings.get("hevc_preset", "fast") if encode_hevc else "medium"
 
-                success, message = conversion_service.convert_avi_to_mkv(
-                    self.avi_path,
-                    extractor=self.extractor
-                )
+        mode_str = f"HEVC CRF {crf} ({preset})" if encode_hevc else "Copy"
+        app.notify(f"Starting conversion ({mode_str})...", severity="information", timeout=2)
 
-                logging.info(f"Conversion result: success={success}, message={message}")
-
-                # Schedule UI updates on the main thread
-                mkv_path = self.avi_path.with_suffix('.mkv')
-
-                def handle_success():
-                    logging.info(f"handle_success called: {mkv_path}")
-                    app.notify(f"✓ {message}", severity="information", timeout=5)
-                    logging.info(f"Adding file to tree: {mkv_path}")
-                    app.add_file_to_tree(mkv_path)
-                    logging.info("Conversion success handler completed")
-
-                def handle_error():
-                    logging.info(f"handle_error called: {message}")
-                    app.notify(f"✗ {message}", severity="error", timeout=10)
-                    logging.info("Conversion error handler completed")
-
-                if success:
-                    logging.info(f"Conversion successful, scheduling UI update for {mkv_path}")
-                    app.call_later(handle_success)
-                else:
-                    logging.error(f"Conversion failed: {message}")
-                    app.call_later(handle_error)
-
-            # Run conversion in background thread
+        def do_conversion():
+            from .services.conversion_service import ConversionService
             import threading
-            threading.Thread(target=do_conversion, daemon=True).start()
+            import logging
 
-            # Close the screen
-            self.app.pop_screen()  # type: ignore
-        else:
-            # Cancel
-            self.app.pop_screen()  # type: ignore
+            conversion_service = ConversionService()
+            logging.info(f"Starting conversion of {self.avi_path} with encode_hevc={encode_hevc}, crf={crf}, preset={preset}")
+            logging.info(f"CPU architecture: {conversion_service.cpu_arch}")
+
+            success, message = conversion_service.convert_avi_to_mkv(
+                self.avi_path,
+                extractor=self.extractor,
+                encode_hevc=encode_hevc,
+                crf=crf,
+                preset=preset
+            )
+
+            logging.info(f"Conversion result: success={success}, message={message}")
+
+            # Schedule UI updates on the main thread
+            mkv_path = self.avi_path.with_suffix('.mkv')
+
+            def handle_success():
+                logging.info(f"handle_success called: {mkv_path}")
+                app.notify(f"✓ {message}", severity="information", timeout=5)
+                logging.info(f"Adding file to tree: {mkv_path}")
+                app.add_file_to_tree(mkv_path)
+                logging.info("Conversion success handler completed")
+
+            def handle_error():
+                logging.info(f"handle_error called: {message}")
+                app.notify(f"✗ {message}", severity="error", timeout=10)
+                logging.info("Conversion error handler completed")
+
+            if success:
+                logging.info(f"Conversion successful, scheduling UI update for {mkv_path}")
+                app.call_later(handle_success)
+            else:
+                logging.error(f"Conversion failed: {message}")
+                app.call_later(handle_error)
+
+        # Run conversion in background thread
+        import threading
+        threading.Thread(target=do_conversion, daemon=True).start()
+
+        # Close the screen
+        self.app.pop_screen()  # type: ignore
 
     def on_key(self, event):
-        if event.key == "y":
-            # Simulate convert button press
-            convert_button = self.query_one("#convert")
-            self.on_button_pressed(type('Event', (), {'button': convert_button})())
+        if event.key == "c":
+            # Copy mode
+            self._do_conversion(encode_hevc=False)
+        elif event.key == "e":
+            # HEVC mode
+            self._do_conversion(encode_hevc=True)
         elif event.key == "n" or event.key == "escape":
             self.app.pop_screen()  # type: ignore
 

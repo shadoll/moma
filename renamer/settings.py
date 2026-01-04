@@ -10,6 +10,8 @@ class Settings:
     DEFAULTS = {
         "mode": "technical",  # "technical" or "catalog"
         "poster": "no",  # "no", "pseudo", "viu"
+        "hevc_crf": 23,  # HEVC quality: 18=visually lossless, 23=high quality, 28=balanced
+        "hevc_preset": "fast",  # HEVC speed: ultrafast, veryfast, faster, fast, medium, slow
         "cache_ttl_extractors": 21600,  # 6 hours in seconds
         "cache_ttl_tmdb": 21600,  # 6 hours in seconds
         "cache_ttl_posters": 2592000,  # 30 days in seconds

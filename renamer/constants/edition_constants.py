@@ -7,7 +7,7 @@ and their aliases for detection in filenames.
 SPECIAL_EDITIONS = {
     "Theatrical Cut": ["Theatrical Cut"],
     "Director's Cut": ["Director's Cut", "Director Cut"],
-    "Extended Edition": ["Extended Edition", "Ultimate Extended Edition"],
+    "Extended Cut": ["Extended Cut", "Ultimate Extended Cut", "Extended Edition", "Ultimate Extended Edition"],
     "Special Edition": ["Special Edition"],
     "Collector's Edition": ["Collector's Edition"],
     "Criterion Collection": ["Criterion Collection"],

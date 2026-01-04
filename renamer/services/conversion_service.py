@@ -10,6 +10,7 @@ This service manages the process of converting AVI files to MKV container:
 
 import logging
 import subprocess
+import platform
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 
@@ -45,29 +46,148 @@ class ConversionService:
 
     def __init__(self):
         """Initialize the conversion service."""
-        logger.debug("ConversionService initialized")
+        self.cpu_arch = self._detect_cpu_architecture()
+        logger.debug(f"ConversionService initialized with CPU architecture: {self.cpu_arch}")
+
+    def _detect_cpu_architecture(self) -> str:
+        """Detect CPU architecture for optimization.
+
+        Returns:
+            Architecture string: 'x86_64', 'arm64', 'aarch64', or 'unknown'
+        """
+        machine = platform.machine().lower()
+
+        # Try to get more specific CPU info
+        try:
+            if machine in ['x86_64', 'amd64']:
+                # Check for Intel vs AMD
+                with open('/proc/cpuinfo', 'r') as f:
+                    cpuinfo = f.read().lower()
+                    if 'intel' in cpuinfo or 'xeon' in cpuinfo:
+                        return 'intel_x86_64'
+                    elif 'amd' in cpuinfo:
+                        return 'amd_x86_64'
+                    else:
+                        return 'x86_64'
+            elif machine in ['arm64', 'aarch64']:
+                # Check for specific ARM chips
+                with open('/proc/cpuinfo', 'r') as f:
+                    cpuinfo = f.read().lower()
+                    if 'rk3588' in cpuinfo or 'rockchip' in cpuinfo:
+                        return 'arm64_rk3588'
+                    else:
+                        return 'arm64'
+        except Exception as e:
+            logger.debug(f"Could not read /proc/cpuinfo: {e}")
+
+        return machine
+
+    def _get_x265_params(self, preset: str = 'medium') -> str:
+        """Get optimized x265 parameters based on CPU architecture.
+
+        Args:
+            preset: Encoding preset (ultrafast, superfast, veryfast, faster, fast, medium, slow)
+
+        Returns:
+            x265 parameter string optimized for the detected CPU
+        """
+        # Base parameters for quality
+        base_params = [
+            'profile=main10',
+            'level=4.1',
+        ]
+
+        # CPU-specific optimizations
+        if self.cpu_arch in ['intel_x86_64', 'amd_x86_64', 'x86_64']:
+            # Intel Xeon / AMD optimization
+            # Enable assembly optimizations and threading
+            cpu_params = [
+                'pools=+',  # Enable thread pools
+                'frame-threads=4',  # Parallel frame encoding (adjust based on cores)
+                'lookahead-threads=2',  # Lookahead threads
+                'asm=auto',  # Enable CPU-specific assembly optimizations
+            ]
+
+            # For faster encoding on servers
+            if preset in ['ultrafast', 'superfast', 'veryfast', 'faster', 'fast']:
+                cpu_params.extend([
+                    'ref=2',  # Fewer reference frames for speed
+                    'bframes=3',  # Fewer B-frames
+                    'me=1',  # Faster motion estimation (DIA)
+                    'subme=1',  # Faster subpixel refinement
+                    'rd=2',  # Faster RD refinement
+                ])
+            else:  # medium or slow
+                cpu_params.extend([
+                    'ref=3',
+                    'bframes=4',
+                    'me=2',  # HEX motion estimation
+                    'subme=2',
+                    'rd=3',
+                ])
+
+        elif self.cpu_arch in ['arm64_rk3588', 'arm64', 'aarch64']:
+            # ARM64 / RK3588 optimization
+            # RK3588 has 4x Cortex-A76 + 4x Cortex-A55
+            cpu_params = [
+                'pools=+',
+                'frame-threads=4',  # Use big cores
+                'lookahead-threads=1',  # Lighter lookahead for ARM
+                'asm=auto',  # Enable NEON optimizations
+            ]
+
+            # ARM is slower, so optimize more aggressively for speed
+            if preset in ['ultrafast', 'superfast', 'veryfast', 'faster', 'fast']:
+                cpu_params.extend([
+                    'ref=1',  # Minimal reference frames
+                    'bframes=2',
+                    'me=0',  # Full search (faster on ARM)
+                    'subme=0',
+                    'rd=1',
+                    'weightp=0',  # Disable weighted prediction for speed
+                    'weightb=0',
+                ])
+            else:  # medium
+                cpu_params.extend([
+                    'ref=2',
+                    'bframes=3',
+                    'me=1',
+                    'subme=1',
+                    'rd=2',
+                ])
+
+        else:
+            # Generic/unknown architecture - conservative settings
+            cpu_params = [
+                'pools=+',
+                'frame-threads=2',
+                'ref=2',
+                'bframes=3',
+            ]
+
+        return ':'.join(base_params + cpu_params)
 
     def can_convert(self, file_path: Path) -> bool:
-        """Check if a file can be converted (is AVI).
+        """Check if a file can be converted (is AVI, MPG, or MPEG).
 
         Args:
             file_path: Path to the file to check
 
         Returns:
-            True if file is AVI and can be converted
+            True if file is AVI, MPG, or MPEG and can be converted
         """
         if not file_path.exists() or not file_path.is_file():
             return False
 
-        return file_path.suffix.lower() == '.avi'
+        return file_path.suffix.lower() in {'.avi', '.mpg', '.mpeg'}
 
-    def find_subtitle_files(self, avi_path: Path) -> List[Path]:
-        """Find subtitle files near the AVI file.
+    def find_subtitle_files(self, video_path: Path) -> List[Path]:
+        """Find subtitle files near the video file.
 
         Looks for subtitle files with the same basename in the same directory.
 
         Args:
-            avi_path: Path to the AVI file
+            video_path: Path to the video file
 
         Returns:
             List of Path objects for found subtitle files
@@ -77,8 +197,8 @@ class ConversionService:
             [Path("/media/movie.srt"), Path("/media/movie.eng.srt")]
         """
         subtitle_files = []
-        base_name = avi_path.stem  # filename without extension
-        directory = avi_path.parent
+        base_name = video_path.stem  # filename without extension
+        directory = video_path.parent
 
         # Look for files with same base name and subtitle extensions
         for sub_ext in self.SUBTITLE_EXTENSIONS:
@@ -93,7 +213,7 @@ class ConversionService:
                 if sub_file not in subtitle_files:
                     subtitle_files.append(sub_file)
 
-        logger.debug(f"Found {len(subtitle_files)} subtitle files for {avi_path.name}")
+        logger.debug(f"Found {len(subtitle_files)} subtitle files for {video_path.name}")
         return subtitle_files
 
     def map_audio_languages(
@@ -142,35 +262,41 @@ class ConversionService:
 
     def build_ffmpeg_command(
         self,
-        avi_path: Path,
+        source_path: Path,
         mkv_path: Path,
         audio_languages: List[Optional[str]],
-        subtitle_files: List[Path]
+        subtitle_files: List[Path],
+        encode_hevc: bool = False,
+        crf: int = 18,
+        preset: str = 'medium'
     ) -> List[str]:
-        """Build ffmpeg command for AVI to MKV conversion.
+        """Build ffmpeg command for video to MKV conversion.
 
         Creates a command that:
-        - Copies video and audio streams (no re-encoding)
+        - Copies video and audio streams (no re-encoding) OR
+        - Encodes video to HEVC with high quality settings
         - Sets audio language metadata
         - Includes external subtitle files
         - Sets MKV title from filename
 
         Args:
-            avi_path: Source AVI file
+            source_path: Source video file (AVI, MPG, or MPEG)
             mkv_path: Destination MKV file
             audio_languages: Language codes for each audio track
             subtitle_files: List of subtitle files to include
+            encode_hevc: If True, encode video to HEVC instead of copying
+            crf: Constant Rate Factor for HEVC (18=visually lossless, 23=high quality default)
 
         Returns:
             List of command arguments for subprocess
         """
         cmd = ['ffmpeg']
 
-        # Add flags to fix timestamp issues in AVI files
+        # Add flags to fix timestamp issues (particularly for AVI files)
         cmd.extend(['-fflags', '+genpts'])
 
         # Input file
-        cmd.extend(['-i', str(avi_path)])
+        cmd.extend(['-i', str(source_path)])
 
         # Add subtitle files as inputs
         for sub_file in subtitle_files:
@@ -186,8 +312,25 @@ class ConversionService:
         for i in range(len(subtitle_files)):
             cmd.extend(['-map', f'{i+1}:s:0'])
 
-        # Copy codecs (no re-encoding)
-        cmd.extend(['-c', 'copy'])
+        # Video codec settings
+        if encode_hevc:
+            # HEVC encoding with CPU-optimized parameters
+            cmd.extend(['-c:v', 'libx265'])
+            cmd.extend(['-crf', str(crf)])
+            # Use specified preset
+            cmd.extend(['-preset', preset])
+            # 10-bit encoding for better quality (if source supports it)
+            cmd.extend(['-pix_fmt', 'yuv420p10le'])
+            # CPU-optimized x265 parameters
+            x265_params = self._get_x265_params(preset)
+            cmd.extend(['-x265-params', x265_params])
+            # Copy audio streams (no audio re-encoding)
+            cmd.extend(['-c:a', 'copy'])
+            # Copy subtitle streams
+            cmd.extend(['-c:s', 'copy'])
+        else:
+            # Copy all streams (no re-encoding)
+            cmd.extend(['-c', 'copy'])
 
         # Set audio language metadata
         for i, lang in enumerate(audio_languages):
@@ -195,7 +338,7 @@ class ConversionService:
                 cmd.extend([f'-metadata:s:a:{i}', f'language={lang}'])
 
         # Set title metadata from filename
-        title = avi_path.stem
+        title = source_path.stem
         cmd.extend(['-metadata', f'title={title}'])
 
         # Output file
@@ -209,28 +352,36 @@ class ConversionService:
         avi_path: Path,
         extractor: Optional[MediaExtractor] = None,
         output_path: Optional[Path] = None,
-        dry_run: bool = False
+        dry_run: bool = False,
+        encode_hevc: bool = False,
+        crf: int = 18,
+        preset: str = 'medium'
     ) -> Tuple[bool, str]:
-        """Convert AVI file to MKV with metadata preservation.
+        """Convert AVI/MPG/MPEG file to MKV with metadata preservation.
 
         Args:
-            avi_path: Source AVI file path
+            avi_path: Source video file path (AVI, MPG, or MPEG)
             extractor: Optional MediaExtractor (creates new if None)
             output_path: Optional output path (defaults to same name with .mkv)
             dry_run: If True, build command but don't execute
+            encode_hevc: If True, encode video to HEVC instead of copying
+            crf: Constant Rate Factor for HEVC (18=visually lossless, 23=high quality)
+            preset: x265 preset (ultrafast, veryfast, faster, fast, medium, slow)
 
         Returns:
             Tuple of (success, message)
 
         Example:
             >>> success, msg = service.convert_avi_to_mkv(
-            ...     Path("/media/movie.avi")
+            ...     Path("/media/movie.avi"),
+            ...     encode_hevc=True,
+            ...     crf=18
             ... )
             >>> print(msg)
         """
         # Validate input
         if not self.can_convert(avi_path):
-            error_msg = f"File is not AVI or doesn't exist: {avi_path}"
+            error_msg = f"File is not a supported format (AVI/MPG/MPEG) or doesn't exist: {avi_path}"
             logger.error(error_msg)
             return False, error_msg
 
@@ -273,7 +424,10 @@ class ConversionService:
             avi_path,
             output_path,
             audio_languages,
-            subtitle_files
+            subtitle_files,
+            encode_hevc,
+            crf,
+            preset
         )
 
         # Dry run mode

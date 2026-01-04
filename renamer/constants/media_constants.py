@@ -43,4 +43,14 @@ MEDIA_TYPES = {
     "m4v": {"description": "MPEG-4 video", "meta_type": "MP4", "mime": "video/mp4"},
     "3gp": {"description": "3GPP multimedia", "meta_type": "MP4", "mime": "video/3gpp"},
     "ogv": {"description": "Ogg Video", "meta_type": "Ogg", "mime": "video/ogg"},
+    "mpg": {
+        "description": "MPEG video",
+        "meta_type": "MPEG-PS",
+        "mime": "video/mpeg",
+    },
+    "mpeg": {
+        "description": "MPEG video",
+        "meta_type": "MPEG-PS",
+        "mime": "video/mpeg",
+    },
 }

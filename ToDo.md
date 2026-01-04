@@ -60,6 +60,14 @@ This file tracks future feature enhancements and improvements.
   - Support for fanart/backdrops
   - Poster cache management UI
 
+- [ ] **Dedicated Poster Window with Real Image Support**
+  - Create separate panel/window for poster display in catalog mode
+  - Display actual poster images (not ASCII art) using terminal graphics protocols
+  - Support for Kitty graphics protocol, iTerm2 inline images, or Sixel
+  - Configurable poster size with smaller font rendering
+  - Side-by-side layout: metadata (60%) + poster (40%)
+  - Higher resolution ASCII art as fallback (100+ chars with extended gradient)
+
 - [ ] **Progress Indicators**
   - Show scan progress
   - Batch operation progress bars
