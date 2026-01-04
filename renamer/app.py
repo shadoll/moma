@@ -218,13 +218,13 @@ class RenamerApp(App):
 
         # File type icons
         icons = {
-            'mkv': '📹',   # Video camera for MKV
-            'mk3d': '🎬',  # Clapper board for 3D
+            'mkv': '󰈫',   # Video camera for MKV
+            'mk3d': '󰟽',  # Clapper board for 3D
+            'mp4': '󰎁',   # Video camera
+            'mov': '󰎁',   # Video camera
+            'webm': '',  # Video camera
             'avi': '💿',   # Film frames for AVI
-            'mp4': '📹',   # Video camera
-            'mov': '📹',   # Video camera
             'wmv': '📀',   # Video camera
-            'webm': '📹',  # Video camera
             'm4v': '📹',   # Video camera
             'mpg': '📼',   # Video camera
             'mpeg': '📼',  # Video camera
@@ -240,7 +240,7 @@ class RenamerApp(App):
                         if item.name.startswith(".") or item.name == "lost+found":
                             continue
                         # Add folder icon before directory name
-                        label = f"📁 {escape(item.name)}"
+                        label = f"󰉋 {escape(item.name)}"
                         subnode = node.add(label, data=item)
                         self.build_tree(item, subnode)
                     elif item.is_file() and item.suffix.lower() in {
@@ -634,10 +634,10 @@ By Category:"""
     def update_renamed_file(self, old_path: Path, new_path: Path):
         """Update the tree node for a renamed file."""
         logging.info(f"update_renamed_file called with old_path={old_path}, new_path={new_path}")
-        
+
         tree = self.query_one("#file_tree", Tree)
         logging.info(f"Before update: cursor_node.data = {tree.cursor_node.data if tree.cursor_node else None}")
-        
+
         # Update only the specific node
         def find_node(node):
             if node.data == old_path:
@@ -647,7 +647,7 @@ By Category:"""
                 if found:
                     return found
             return None
-        
+
         node = find_node(tree.root)
         if node:
             logging.info(f"Found node for {old_path}, updating to {new_path.name}")
@@ -661,9 +661,9 @@ By Category:"""
             logging.info(f"Selected node: {tree.cursor_node.data if tree.cursor_node else None}")
         else:
             logging.info(f"No node found for {old_path}")
-        
+
         logging.info(f"After update: cursor_node.data = {tree.cursor_node.data if tree.cursor_node else None}")
-        
+
         # Refresh the details if the node is currently selected
         if tree.cursor_node and tree.cursor_node.data == new_path:
             logging.info("Refreshing details for renamed file")
