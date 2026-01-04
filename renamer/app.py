@@ -232,20 +232,43 @@ class RenamerApp(App):
     def on_tree_node_highlighted(self, event):
         node = event.node
         if node.data and isinstance(node.data, Path):
-            if node.data.is_dir():
+            # Check if path still exists
+            if not node.data.exists():
                 self._stop_loading_animation()
                 details = self.query_one("#details_technical", Static)
                 details.display = True
                 details_catalog = self.query_one("#details_catalog", Static)
                 details_catalog.display = False
-                details.update("Directory")
+                details.update(f"[red]Path no longer exists: {node.data.name}[/red]")
                 proposed = self.query_one("#proposed", Static)
                 proposed.update("")
-            elif node.data.is_file():
-                self._start_loading_animation()
-                threading.Thread(
-                    target=self._extract_and_show_details, args=(node.data,)
-                ).start()
+                return
+
+            try:
+                if node.data.is_dir():
+                    self._stop_loading_animation()
+                    details = self.query_one("#details_technical", Static)
+                    details.display = True
+                    details_catalog = self.query_one("#details_catalog", Static)
+                    details_catalog.display = False
+                    details.update("Directory")
+                    proposed = self.query_one("#proposed", Static)
+                    proposed.update("")
+                elif node.data.is_file():
+                    self._start_loading_animation()
+                    threading.Thread(
+                        target=self._extract_and_show_details, args=(node.data,)
+                    ).start()
+            except (FileNotFoundError, OSError):
+                # Handle race condition where file was deleted between exists() check and is_file() call
+                self._stop_loading_animation()
+                details = self.query_one("#details_technical", Static)
+                details.display = True
+                details_catalog = self.query_one("#details_catalog", Static)
+                details_catalog.display = False
+                details.update(f"[red]Error accessing path: {node.data.name}[/red]")
+                proposed = self.query_one("#proposed", Static)
+                proposed.update("")
 
     def _extract_and_show_details(self, file_path: Path):
         try:
@@ -311,15 +334,30 @@ class RenamerApp(App):
 
         # Get the directory to scan
         path = node.data
-        if path.is_file():
-            # If it's a file, scan its parent directory
-            path = path.parent
-            # Find the parent node in the tree
+
+        # Check if the path still exists
+        if not path.exists():
+            self.notify(f"Path no longer exists: {path.name}", severity="error", timeout=3)
+            # Remove the node from the tree since the file/dir is gone
             if node.parent:
-                node = node.parent
-            else:
-                self.notify("Cannot scan root level file", severity="warning", timeout=3)
-                return
+                node.remove()
+            return
+
+        try:
+            if path.is_file():
+                # If it's a file, scan its parent directory
+                path = path.parent
+                # Find the parent node in the tree
+                if node.parent:
+                    node = node.parent
+                else:
+                    self.notify("Cannot scan root level file", severity="warning", timeout=3)
+                    return
+        except (FileNotFoundError, OSError) as e:
+            self.notify(f"Error accessing path: {e}", severity="error", timeout=3)
+            if node.parent:
+                node.remove()
+            return
 
         # Clear the node and rescan
         node.remove_children()
@@ -333,11 +371,20 @@ class RenamerApp(App):
     async def action_refresh(self):
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node
-        if node and node.data and isinstance(node.data, Path) and node.data.is_file():
-            self._start_loading_animation()
-            threading.Thread(
-                target=self._extract_and_show_details, args=(node.data,)
-            ).start()
+        if node and node.data and isinstance(node.data, Path):
+            # Check if path still exists
+            if not node.data.exists():
+                self.notify(f"Path no longer exists: {node.data.name}", severity="error", timeout=3)
+                return
+
+            try:
+                if node.data.is_file():
+                    self._start_loading_animation()
+                    threading.Thread(
+                        target=self._extract_and_show_details, args=(node.data,)
+                    ).start()
+            except (FileNotFoundError, OSError) as e:
+                self.notify(f"Error accessing file: {e}", severity="error", timeout=3)
 
     async def action_help(self):
         self.push_screen(HelpScreen())
@@ -410,23 +457,45 @@ By Category:"""
     async def action_rename(self):
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node
-        if node and node.data and isinstance(node.data, Path) and node.data.is_file():
-            # Get the proposed name from the extractor
-            extractor = MediaExtractor(node.data)
-            proposed_formatter = ProposedFilenameView(extractor)
-            new_name = str(proposed_formatter)
-            logging.info(f"Proposed new name: {new_name!r} for file: {node.data}")
-            # Always open rename dialog, even if names are the same (user might want to manually edit)
-            if new_name:
-                self.push_screen(RenameConfirmScreen(node.data, new_name))
+        if node and node.data and isinstance(node.data, Path):
+            # Check if file exists
+            if not node.data.exists():
+                self.notify(f"File no longer exists: {node.data.name}", severity="error", timeout=3)
+                return
+
+            try:
+                if node.data.is_file():
+                    # Get the proposed name from the extractor
+                    extractor = MediaExtractor(node.data)
+                    proposed_formatter = ProposedFilenameView(extractor)
+                    new_name = str(proposed_formatter)
+                    logging.info(f"Proposed new name: {new_name!r} for file: {node.data}")
+                    # Always open rename dialog, even if names are the same (user might want to manually edit)
+                    if new_name:
+                        self.push_screen(RenameConfirmScreen(node.data, new_name))
+            except (FileNotFoundError, OSError) as e:
+                self.notify(f"Error accessing file: {e}", severity="error", timeout=3)
 
     async def action_convert(self):
         """Convert AVI/MPG/MPEG/WebM/MP4 file to MKV with metadata preservation."""
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node
 
-        if not (node and node.data and isinstance(node.data, Path) and node.data.is_file()):
+        if not (node and node.data and isinstance(node.data, Path)):
             self.notify("Please select a file first", severity="warning", timeout=3)
+            return
+
+        # Check if file exists
+        if not node.data.exists():
+            self.notify(f"File no longer exists: {node.data.name}", severity="error", timeout=3)
+            return
+
+        try:
+            if not node.data.is_file():
+                self.notify("Please select a file first", severity="warning", timeout=3)
+                return
+        except (FileNotFoundError, OSError) as e:
+            self.notify(f"Error accessing file: {e}", severity="error", timeout=3)
             return
 
         file_path = node.data
@@ -466,8 +535,21 @@ By Category:"""
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node
 
-        if not (node and node.data and isinstance(node.data, Path) and node.data.is_file()):
+        if not (node and node.data and isinstance(node.data, Path)):
             self.notify("Please select a file first", severity="warning", timeout=3)
+            return
+
+        # Check if file exists
+        if not node.data.exists():
+            self.notify(f"File no longer exists: {node.data.name}", severity="error", timeout=3)
+            return
+
+        try:
+            if not node.data.is_file():
+                self.notify("Please select a file first", severity="warning", timeout=3)
+                return
+        except (FileNotFoundError, OSError) as e:
+            self.notify(f"Error accessing file: {e}", severity="error", timeout=3)
             return
 
         file_path = node.data

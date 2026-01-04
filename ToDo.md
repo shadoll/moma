@@ -29,10 +29,13 @@ This file tracks future feature enhancements and improvements.
 
 ### Medium Priority
 
-- [ ] **Metadata Editing Capabilities**
-  - Edit embedded metadata tags
-  - Batch editing support
-  - Validation and preview
+- [ ] **MKV Metadata Editor with mkvpropedit**
+  - Fast metadata editing without re-encoding (using mkvpropedit)
+  - Edit container title from TMDB data
+  - Set audio/subtitle track languages from filename
+  - Set track names and flags
+  - Batch editing support with preview
+  - Validation before applying changes
 
 - [ ] **Batch Rename Operations**
   - Select multiple files
