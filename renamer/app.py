@@ -69,7 +69,7 @@ class AppCommandProvider(Provider):
             ("scan", "Scan Directory", "Scan current directory for media files (s)"),
             ("refresh", "Refresh File", "Refresh metadata for selected file (f)"),
             ("rename", "Rename File", "Rename the selected file (r)"),
-            ("convert", "Convert to MKV", "Convert AVI/MPG/MPEG file to MKV container with metadata (c)"),
+            ("convert", "Convert to MKV", "Convert AVI/MPG/MPEG/WebM file to MKV container with metadata (c)"),
             ("delete", "Delete File", "Delete the selected file (d)"),
             ("toggle_mode", "Toggle Display Mode", "Switch between technical and catalog view (m)"),
             ("expand", "Toggle Tree Expansion", "Expand or collapse all tree nodes (p)"),
@@ -390,7 +390,7 @@ By Category:"""
                 self.notify("Proposed name is the same as current name; no rename needed.", severity="information", timeout=3)
 
     async def action_convert(self):
-        """Convert AVI/MPG/MPEG file to MKV with metadata preservation."""
+        """Convert AVI/MPG/MPEG/WebM file to MKV with metadata preservation."""
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node
 
@@ -403,7 +403,7 @@ By Category:"""
 
         # Check if file can be converted
         if not conversion_service.can_convert(file_path):
-            self.notify("Only AVI, MPG, and MPEG files can be converted to MKV", severity="error", timeout=3)
+            self.notify("Only AVI, MPG, MPEG, and WebM files can be converted to MKV", severity="error", timeout=3)
             return
 
         # Create extractor for metadata
