@@ -122,7 +122,7 @@ class MediaPanelProperties:
     def tmdb_year(self) -> str:
         """Get TMDB year formatted with label."""
         return self._extractor.get("year", "TMDB")
-    
+
     @property
     @text_decorators.blue()
     @conditional_decorators.wrap("Countries: ")
@@ -131,7 +131,7 @@ class MediaPanelProperties:
     def tmdb_countries(self) -> str:
         """Get TMDB production countries formatted with label."""
         return self._extractor.get("production_countries", "TMDB")
-    
+
     @property
     @text_decorators.blue()
     @conditional_decorators.wrap("Genres: ")
@@ -369,7 +369,7 @@ class MediaPanelProperties:
 
     @property
     @text_decorators.blue()
-    @conditional_decorators.wrap("Title: ")
+    @conditional_decorators.wrap(left="󰿎 ")
     @text_decorators.yellow()
     @conditional_decorators.default("<None>")
     def media_title(self) -> str:
@@ -402,7 +402,7 @@ class MediaPanelProperties:
     def media_file_size(self) -> str:
         """Get media file size formatted with label."""
         return self._extractor.get("file_size")
-    
+
     @property
     @text_decorators.blue()
     @conditional_decorators.wrap("Extension: ")

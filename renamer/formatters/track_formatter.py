@@ -7,18 +7,19 @@ class TrackFormatter:
         codec = track.get('codec', 'unknown')
         width = track.get('width', '?')
         height = track.get('height', '?')
-        bitrate = track.get('bitrate')
+        bitrate = track.get('bitrate') # in bps
+        bitrate_kbps = bitrate / 1024 if bitrate else None
         fps = track.get('fps')
         profile = track.get('profile')
-        
+
         video_str = f"{codec} {width}x{height}"
-        if bitrate:
-            video_str += f" {bitrate}bps"
+        if bitrate_kbps:
+            video_str += f" {bitrate_kbps}kbps"
         if fps:
             video_str += f" {fps}fps"
         if profile:
             video_str += f" ({profile})"
-        
+
         return video_str
 
     @staticmethod
@@ -27,12 +28,12 @@ class TrackFormatter:
         codec = track.get('codec', 'unknown')
         channels = track.get('channels', '?')
         lang = track.get('language', 'und')
-        bitrate = track.get('bitrate')
-        
+        bitrate = track.get('bitrate') # in bps
+        bitrate_kbps = bitrate / 1024 if bitrate else None
+
         audio_str = f"{codec} {channels}ch {lang}"
-        if bitrate:
-            audio_str += f" {bitrate}bps"
-        
+        if bitrate_kbps:
+            audio_str += f" {bitrate_kbps}kbps"
         return audio_str
 
     @staticmethod
@@ -40,5 +41,5 @@ class TrackFormatter:
         """Format a subtitle track dict into a display string"""
         lang = track.get('language', 'und')
         format = track.get('format', 'unknown')
-        
+
         return f"{lang} ({format})"

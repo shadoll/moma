@@ -1,4 +1,6 @@
 from .text_formatter import TextFormatter
+from renamer.views.posters import AsciiPosterRenderer, ViuPosterRenderer, RichPixelsPosterRenderer
+from typing import Union
 import os
 
 
@@ -9,10 +11,14 @@ class CatalogFormatter:
         self.extractor = extractor
         self.settings = settings
 
-    def format_catalog_info(self) -> str:
-        """Format catalog information for display"""
+    def format_catalog_info(self) -> tuple[str, Union[str, object]]:
+        """Format catalog information for display.
+
+        Returns:
+            Tuple of (info_text, poster_content)
+            poster_content can be a string or Rich Renderable object
+        """
         lines = []
-        poster_output = None
 
         # Title
         title = self.extractor.get("title", "TMDB")
@@ -56,23 +62,6 @@ class CatalogFormatter:
         if countries:
             lines.append(f"{TextFormatter.bold('Countries:')} {countries}")
 
-        # Poster - check settings for display mode
-        poster_mode = self.settings.get("poster", "no") if self.settings else "no"
-        poster_image_path = self.extractor.tmdb_extractor.extract_poster_image_path()
-
-        if poster_mode != "no" and poster_image_path:
-            lines.append(f"{TextFormatter.bold('Poster:')}")
-            poster_output = self._display_poster(poster_image_path, poster_mode)
-        elif poster_mode == "no":
-            # Don't show poster at all
-            poster_output = None
-        else:
-            # Poster path not cached yet
-            poster_path = self.extractor.get("poster_path", "TMDB")
-            if poster_path:
-                lines.append(f"{TextFormatter.bold('Poster:')} {poster_path} (not cached yet)")
-            poster_output = None
-
         # Render text content with Rich markup
         text_content = "\n\n".join(lines) if lines else "No catalog information available"
 
@@ -83,103 +72,55 @@ class CatalogFormatter:
         console.print(text_content, markup=True)
         rendered_text = console.file.getvalue()
 
-        # Append poster output if available
-        # Don't process ASCII art through console - just append it directly
-        if poster_output:
-            return rendered_text + "\n" + poster_output
-        else:
-            return rendered_text
+        # Get poster separately
+        poster_content = self.get_poster()
 
-    def _display_poster(self, image_path: str, mode: str) -> str:
+        return rendered_text, poster_content
+
+    def get_poster(self) -> Union[str, object]:
+        """Get poster content for separate display.
+
+        Returns:
+            Poster content (string or Rich Renderable) or empty string if no poster
+        """
+        poster_mode = self.settings.get("poster", "no") if self.settings else "no"
+
+        if poster_mode == "no":
+            return ""
+
+        poster_image_path = self.extractor.tmdb_extractor.extract_poster_image_path()
+
+        if poster_image_path:
+            return self._display_poster(poster_image_path, poster_mode)
+        else:
+            # Poster path not cached yet
+            poster_path = self.extractor.get("poster_path", "TMDB")
+            if poster_path:
+                return f"{TextFormatter.bold('Poster:')} {poster_path} (not cached yet)"
+            return ""
+
+    def _display_poster(self, image_path: str, mode: str) -> Union[str, object]:
         """Display poster image based on mode setting.
 
         Args:
             image_path: Path to the poster image
-            mode: Display mode - "pseudo" for ASCII art, "viu" for viu rendering
+            mode: Display mode - "pseudo" for ASCII art, "viu", "richpixels"
 
         Returns:
-            Rendered poster as string
+            Rendered poster (string or Rich Renderable object)
         """
         if not os.path.exists(image_path):
             return f"Image file not found: {image_path}"
 
+        # Select renderer based on mode
         if mode == "viu":
-            return self._display_poster_viu(image_path)
+            renderer = ViuPosterRenderer()
         elif mode == "pseudo":
-            return self._display_poster_pseudo(image_path)
+            renderer = AsciiPosterRenderer()
+        elif mode == "richpixels":
+            renderer = RichPixelsPosterRenderer()
         else:
             return f"Unknown poster mode: {mode}"
 
-    def _display_poster_viu(self, image_path: str) -> str:
-        """Display poster using viu (not working in Textual, only in terminal)"""
-        import subprocess
-        import shutil
-
-        # Check if viu is available
-        if not shutil.which('viu'):
-            return f"viu not installed. Install with: cargo install viu\nPoster at: {image_path}"
-
-        try:
-            # Run viu to render the image
-            # -w 40: width in characters
-            # -t: transparent background
-            result = subprocess.run(
-                ['viu', '-w', '40', '-t', image_path],
-                capture_output=True,
-                check=True
-            )
-            # Decode bytes output, preserving ANSI escape sequences
-            return result.stdout.decode('utf-8', errors='replace')
-
-        except subprocess.CalledProcessError as e:
-            stderr_msg = e.stderr.decode('utf-8', errors='replace') if e.stderr else 'Unknown error'
-            return f"Failed to render image with viu: {stderr_msg}\nPoster at: {image_path}"
-        except Exception as e:
-            return f"Failed to display image: {e}\nPoster at: {image_path}"
-
-    def _display_poster_pseudo(self, image_path: str) -> str:
-        """Display poster image using ASCII art (pseudo graphics)"""
-        try:
-            from PIL import Image, ImageEnhance
-
-            # Open image
-            img = Image.open(image_path)
-
-            # Enhance contrast for better detail
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.3)
-
-            # Convert to grayscale and resize
-            # Compact size for ASCII art (35x35 -> 35x17 after row averaging)
-            img = img.convert('L').resize((35, 35), Image.Resampling.LANCZOS)
-
-            # Extended ASCII characters from darkest to lightest (more gradient levels)
-            # Using characters with different visual density for better detail
-            ascii_chars = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,"^`\'. '
-
-            # Convert to ASCII
-            pixels = img.getdata()
-            width, height = img.size
-
-            ascii_art = []
-            for y in range(0, height, 2):  # Skip every other row for aspect ratio correction
-                row = []
-                for x in range(width):
-                    # Average of two rows for better aspect ratio
-                    pixel1 = pixels[y * width + x] if y < height else 255
-                    pixel2 = pixels[(y + 1) * width + x] if y + 1 < height else 255
-                    avg = (pixel1 + pixel2) // 2
-
-                    # Map pixel brightness to character
-                    # Invert: 0 (black) -> dark char, 255 (white) -> light char
-                    char_index = (255 - avg) * (len(ascii_chars) - 1) // 255
-                    char = ascii_chars[char_index]
-                    row.append(char)
-                ascii_art.append(''.join(row))
-
-            return '\n'.join(ascii_art)
-
-        except ImportError:
-            return f"PIL not available for pseudo graphics\nPoster at: {image_path}"
-        except Exception as e:
-            return f"Failed to display image: {e}\nPoster at: {image_path}"
+        # Render the poster
+        return renderer.render(image_path, width=40)

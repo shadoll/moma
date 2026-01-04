@@ -90,13 +90,39 @@ class AppCommandProvider(Provider):
 
 class RenamerApp(App):
     CSS = """
+    /* Default technical mode: 2 columns */
     #left {
         width: 50%;
         padding: 1;
     }
-    #right {
+    #middle {
         width: 50%;
         padding: 1;
+    }
+    #right {
+        display: none;  /* Hidden in technical mode */
+    }
+
+    /* Catalog mode: 3 columns */
+    .catalog-mode #left {
+        width: 33%;
+    }
+    .catalog-mode #middle {
+        width: 34%;
+    }
+    .catalog-mode #right {
+        display: block;
+        width: 33%;
+        padding: 1;
+    }
+
+    #poster_container {
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    #poster_display {
+        height: auto;
     }
     """
 
@@ -128,10 +154,11 @@ class RenamerApp(App):
         self.cache_manager = CacheManager(self.cache)
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
+        with Horizontal(id="main_container"):
             with Container(id="left"):
                 yield Tree("Files", id="file_tree")
-            with Container(id="right"):
+            # Middle container (for catalog mode info)
+            with Container(id="middle"):
                 with Vertical():
                     yield LoadingIndicator(id="loading")
                     with ScrollableContainer(id="details_container"):
@@ -142,12 +169,28 @@ class RenamerApp(App):
                             "", id="details_catalog", markup=False
                         )
                     yield Static("", id="proposed", markup=True)
+            # Right container (for poster in catalog mode, hidden in technical mode)
+            with Container(id="right"):
+                with ScrollableContainer(id="poster_container"):
+                    yield Static("", id="poster_display", markup=False)
         yield Footer()
 
     def on_mount(self):
         loading = self.query_one("#loading", LoadingIndicator)
         loading.display = False
+        # Apply initial layout based on mode setting
+        self._update_layout()
         self.scan_files()
+
+    def _update_layout(self):
+        """Update layout based on current mode setting."""
+        mode = self.settings.get("mode")
+        main_container = self.query_one("#main_container")
+
+        if mode == "catalog":
+            main_container.add_class("catalog-mode")
+        else:
+            main_container.remove_class("catalog-mode")
 
     def scan_files(self):
         logging.info("scan_files called")
@@ -274,42 +317,51 @@ class RenamerApp(App):
         try:
             # Initialize extractors and formatters
             extractor = MediaExtractor(file_path)
-            
+
             mode = self.settings.get("mode")
+            poster_content = ""
+
             if mode == "technical":
                 formatter = MediaPanelView(extractor)
                 full_info = formatter.file_info_panel()
             else:  # catalog
                 formatter = CatalogFormatter(extractor, self.settings)
-                full_info = formatter.format_catalog_info()
-            
+                full_info, poster_content = formatter.format_catalog_info()
+
             # Update UI
             self.call_later(
                 self._update_details,
                 full_info,
                 ProposedFilenameView(extractor).rename_line_formatted(file_path),
+                poster_content,
             )
         except Exception as e:
             self.call_later(
                 self._update_details,
                 TextFormatter.red(f"Error extracting details: {str(e)}"),
                 "",
+                "",
             )
 
-    def _update_details(self, full_info: str, display_string: str):
+    def _update_details(self, full_info: str, display_string: str, poster_content: str = ""):
         self._stop_loading_animation()
         details_technical = self.query_one("#details_technical", Static)
         details_catalog = self.query_one("#details_catalog", Static)
+        poster_display = self.query_one("#poster_display", Static)
+
         mode = self.settings.get("mode")
         if mode == "technical":
             details_technical.display = True
             details_catalog.display = False
             details_technical.update(full_info)
+            poster_display.update("")  # Clear poster in technical mode
         else:
             details_technical.display = False
             details_catalog.display = True
             details_catalog.update(full_info)
-        
+            # Update poster panel
+            poster_display.update(poster_content)
+
         proposed = self.query_one("#proposed", Static)
         proposed.update(display_string)
 
@@ -444,6 +496,8 @@ By Category:"""
         current_mode = self.settings.get("mode")
         new_mode = "catalog" if current_mode == "technical" else "technical"
         self.settings.set("mode", new_mode)
+        # Update layout to show/hide poster panel
+        self._update_layout()
         self.notify(f"Switched to {new_mode} mode", severity="information", timeout=2)
         # Refresh current file display if any
         tree = self.query_one("#file_tree", Tree)
