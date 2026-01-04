@@ -92,14 +92,14 @@ class ProposedFilenameView:
 
     @property
     @conditional_decorators.wrap(">> ", " <<")
-    @text_decorators.green()
+    @text_decorators.colour(name="green")
     def rename_line_similar(self) -> str:
         """Generate a simplified proposed filename for similarity checks."""
         return escape(str(self))
 
     @property
-    @conditional_decorators.wrap(">> ", " <<")
-    @text_decorators.orange()
+    @conditional_decorators.wrap(left=">> ", right=" <<")
+    @text_decorators.colour(name="orange")
     def rename_line_different(self) -> str:
         """Generate a detailed proposed filename for difference checks."""
         return escape(str(self))

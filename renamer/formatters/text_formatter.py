@@ -27,84 +27,45 @@ class TextFormatter:
         return ''.join(word.capitalize() for word in text.split())
 
     @staticmethod
-    def bold_green(text: str) -> str:
-        """Deprecated: Use [TextFormatter.bold, TextFormatter.green] instead"""
-        import warnings
-        warnings.warn(
-            "TextFormatter.bold_green is deprecated. Use [TextFormatter.bold, TextFormatter.green] instead.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        return f"[bold green]{text}[/bold green]"
-
-    @staticmethod
-    def bold_cyan(text: str) -> str:
-        """Deprecated: Use [TextFormatter.bold, TextFormatter.cyan] instead"""
-        import warnings
-        warnings.warn(
-            "TextFormatter.bold_cyan is deprecated. Use [TextFormatter.bold, TextFormatter.cyan] instead.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        return f"[bold cyan]{text}[/bold cyan]"
-
-    @staticmethod
-    def bold_magenta(text: str) -> str:
-        """Deprecated: Use [TextFormatter.bold, TextFormatter.magenta] instead"""
-        import warnings
-        warnings.warn(
-            "TextFormatter.bold_magenta is deprecated. Use [TextFormatter.bold, TextFormatter.magenta] instead.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        return f"[bold magenta]{text}[/bold magenta]"
-
-    @staticmethod
-    def bold_yellow(text: str) -> str:
-        """Deprecated: Use [TextFormatter.bold, TextFormatter.yellow] instead"""
-        import warnings
-        warnings.warn(
-            "TextFormatter.bold_yellow is deprecated. Use [TextFormatter.bold, TextFormatter.yellow] instead.",
-            DeprecationWarning,
-            stacklevel=2
-        )
-        return f"[bold yellow]{text}[/bold yellow]"
+    def colour(colour_name: str, text: str) -> str:
+        """Generic method to color text with given colour name."""
+        return f"[{colour_name}]{text}[/{colour_name}]"
 
     @staticmethod
     def green(text: str) -> str:
-        return f"[green]{text}[/green]"
+        return TextFormatter.colour("green", text)
 
     @staticmethod
     def yellow(text: str) -> str:
-        return f"[yellow]{text}[/yellow]"
+        return TextFormatter.colour("yellow", text)
 
     @staticmethod
     def orange(text: str) -> str:
-        return f"[orange]{text}[/orange]"
+        return TextFormatter.colour("orange", text)
 
     @staticmethod
     def magenta(text: str) -> str:
-        return f"[magenta]{text}[/magenta]"
+        return TextFormatter.colour("magenta", text)
 
     @staticmethod
     def cyan(text: str) -> str:
-        return f"[cyan]{text}[/cyan]"
+        return TextFormatter.colour("cyan", text)
 
     @staticmethod
     def red(text: str) -> str:
-        return f"[red]{text}[/red]"
-    
+        return TextFormatter.colour("red", text)
+
     @staticmethod
     def blue(text: str) -> str:
-        return f"[blue]{text}[/blue]"
+        return TextFormatter.colour("blue", text)
 
     @staticmethod
     def grey(text: str) -> str:
-        return f"[grey]{text}[/grey]"
+        return TextFormatter.colour("grey", text)
 
     @staticmethod
     def dim(text: str) -> str:
-        return f"[dim]{text}[/dim]"
+        return TextFormatter.colour("dimgray", text)
 
     @staticmethod
     def link(url: str, text: str | None = None) -> str:

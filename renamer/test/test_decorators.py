@@ -78,9 +78,9 @@ class TestTextDecorators:
         assert obj.get_text() == "[bold]Hello[/bold]"
 
     def test_green_decorator(self):
-        """Test @text_decorators.green() decorator."""
+        """Test @text_decorators.colour(name="green") decorator."""
         class TestClass:
-            @text_decorators.green()
+            @text_decorators.colour(name="green")
             def get_text(self):
                 return "Success"
 

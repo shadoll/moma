@@ -42,106 +42,15 @@ class TextDecorators:
         return decorator
 
     @staticmethod
-    def green() -> Callable:
-        """Decorator to color text green."""
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
-                result = func(*args, **kwargs)
-                if result == "":
-                    return ""
-                return TextFormatter.green(str(result))
-            return wrapper
-        return decorator
-
-    @staticmethod
-    def yellow() -> Callable:
-        """Decorator to color text yellow."""
+    def colour(name) -> Callable:
+        """Decorator to colour text."""
         def decorator(func: Callable) -> Callable:
             @wraps(func)
             def wrapper(*args, **kwargs) -> str:
                 result = func(*args, **kwargs)
                 if not result:
                     return ""
-                return TextFormatter.yellow(str(result))
-            return wrapper
-        return decorator
-
-    @staticmethod
-    def cyan() -> Callable:
-        """Decorator to color text cyan."""
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
-                result = func(*args, **kwargs)
-                if not result:
-                    return ""
-                return TextFormatter.cyan(str(result))
-            return wrapper
-        return decorator
-
-    @staticmethod
-    def magenta() -> Callable:
-        """Decorator to color text magenta."""
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
-                result = func(*args, **kwargs)
-                if not result:
-                    return ""
-                return TextFormatter.magenta(str(result))
-            return wrapper
-        return decorator
-
-    @staticmethod
-    def red() -> Callable:
-        """Decorator to color text red."""
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
-                result = func(*args, **kwargs)
-                if not result:
-                    return ""
-                return TextFormatter.red(str(result))
-            return wrapper
-        return decorator
-
-    @staticmethod
-    def orange() -> Callable:
-        """Decorator to color text orange."""
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
-                result = func(*args, **kwargs)
-                if not result:
-                    return ""
-                return TextFormatter.orange(str(result))
-            return wrapper
-        return decorator
-
-    @staticmethod
-    def blue() -> Callable:
-        """Decorator to color text blue."""
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
-                result = func(*args, **kwargs)
-                if not result:
-                    return ""
-                return TextFormatter.blue(str(result))
-            return wrapper
-        return decorator
-
-    @staticmethod
-    def grey() -> Callable:
-        """Decorator to color text grey."""
-        def decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
-                result = func(*args, **kwargs)
-                if not result:
-                    return ""
-                return TextFormatter.grey(str(result))
+                return TextFormatter.colour(name, str(result))
             return wrapper
         return decorator
 

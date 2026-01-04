@@ -32,17 +32,16 @@ class MediaPanelView:
         """Return formatted selected data"""
         return "\n".join(
             [
-                self._props.title("Media Info Summary"),
                 self._props.media_title,
                 self._props.media_year,
-                self._props.media_genres,
+                self._props.tmdb_genres,
                 self._props.media_duration,
                 self._props.media_file_size,
                 self._props.media_file_extension,
                 self._props.selected_frame_class,
                 self._props.selected_source,
                 self._props.selected_audio_langs,
-                self._props.selected_database_info,
+                self._props.tmdb_database_info,
                 self._props.selected_order,
             ]
         )
@@ -52,7 +51,7 @@ class MediaPanelView:
         """Return formatted file info"""
         return "\n".join(
             [
-                self._props.title("File Info"),
+                self._props.file_info_title,
                 self._props.file_path,
                 self._props.file_size,
                 self._props.file_name,
@@ -66,7 +65,6 @@ class MediaPanelView:
         """Return formatted TMDB data"""
         return "\n".join(
             [
-                self._props.title("TMDB Data"),
                 self._props.tmdb_id,
                 self._props.tmdb_title,
                 self._props.tmdb_original_title,

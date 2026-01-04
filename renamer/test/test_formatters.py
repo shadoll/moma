@@ -78,12 +78,6 @@ class TestTextFormatter:
         result = TextFormatter.red("test")
         assert result == "[red]test[/red]"
 
-    def test_bold_green_deprecated(self):
-        """Test deprecated bold_green method."""
-        with pytest.warns(DeprecationWarning):
-            result = TextFormatter.bold_green("test")
-            assert "[bold green]" in result
-
 
 class TestDurationFormatter:
     """Test DurationFormatter functionality."""
