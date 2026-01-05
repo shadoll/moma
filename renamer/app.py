@@ -185,7 +185,6 @@ class RenamerApp(App):
             main_container.remove_class("catalog-mode")
 
     def scan_files(self):
-        logging.info("scan_files called")
         if not self.scan_dir or not self.scan_dir.exists() or not self.scan_dir.is_dir():
             details = self.query_one("#details_technical", Static)
             details.update("Error: Directory does not exist or is not a directory")
@@ -238,7 +237,6 @@ class RenamerApp(App):
                     elif item.is_file() and item.suffix.lower() in {
                         f".{ext}" for ext in MEDIA_TYPES
                     }:
-                        logging.info(f"Adding file to tree: {item.name!r} (full path: {item})")
                         # Add file type icon before filename
                         icon = self._get_file_icon(item)
                         label = f"{icon} {escape(item.name)}"
