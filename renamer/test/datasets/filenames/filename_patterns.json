@@ -3,6 +3,24 @@
   "version": "2.0",
   "test_cases": [
     {
+      "filename": "Le Jaguar.(1996).[1080i,3ukr,fra].mkv",
+      "expected": {
+        "order": null,
+        "title": "Le Jaguar",
+        "year": "1996",
+        "source": null,
+        "frame_class": "1080i",
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "3ukr,fra",
+        "extension": "mkv"
+      },
+      "testname": "edge-frameclass-001",
+      "category": "edge_cases",
+      "description": "Interlaced 1080i frame class"
+    },
+    {
       "filename": "Dumbo.1941.BluRay.1080p.DD5.1.AVC.REMUX.mkv",
       "expected": {
         "order": null,

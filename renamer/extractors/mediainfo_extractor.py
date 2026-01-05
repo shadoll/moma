@@ -78,9 +78,21 @@ class MediaInfoExtractor:
         if not height or not width:
             return None
         
-        # Check if interlaced
+        # Check if interlaced - try multiple attributes
+        # PyMediaInfo may use different attribute names depending on version
+        scan_type_attr = getattr(self.video_tracks[0], 'scan_type', None)
         interlaced = getattr(self.video_tracks[0], 'interlaced', None)
-        scan_type = 'i' if interlaced == 'Yes' else 'p'
+
+        # Determine scan type from available attributes
+        # Check scan_type first (e.g., "Interlaced", "Progressive", "MBAFF")
+        if scan_type_attr and isinstance(scan_type_attr, str):
+            scan_type = 'i' if 'interlaced' in scan_type_attr.lower() else 'p'
+        # Then check interlaced flag (e.g., "Yes", "No")
+        elif interlaced and isinstance(interlaced, str):
+            scan_type = 'i' if interlaced.lower() in ['yes', 'true', '1'] else 'p'
+        else:
+            # Default to progressive if no information available
+            scan_type = 'p'
         
         # Calculate effective height for frame class determination
         aspect_ratio = 16 / 9
