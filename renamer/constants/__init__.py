@@ -12,7 +12,11 @@ This package contains constants split into logical modules:
 """
 
 # Import from all constant modules
-from .media_constants import MEDIA_TYPES, META_TYPE_TO_EXTENSIONS
+from .media_constants import (
+    MEDIA_TYPES,
+    META_TYPE_TO_EXTENSIONS,
+    get_extension_from_format
+)
 from .source_constants import SOURCE_DICT
 from .frame_constants import FRAME_CLASSES, NON_STANDARD_QUALITY_INDICATORS
 from .moviedb_constants import MOVIE_DB_DICT
@@ -25,6 +29,7 @@ __all__ = [
     # Media types
     'MEDIA_TYPES',
     'META_TYPE_TO_EXTENSIONS',
+    'get_extension_from_format',
     # Source types
     'SOURCE_DICT',
     # Frame classes

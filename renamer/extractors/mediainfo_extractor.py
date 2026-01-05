@@ -1,7 +1,7 @@
 from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
-from ..constants import FRAME_CLASSES, META_TYPE_TO_EXTENSIONS
+from ..constants import FRAME_CLASSES, get_extension_from_format
 from ..cache import cached_method, Cache
 import langcodes
 import logging
@@ -265,23 +265,31 @@ class MediaInfoExtractor:
 
     @cached_method()
     def extract_extension(self) -> str | None:
-        """Extract file extension based on container format"""
+        """Extract file extension based on container format.
+
+        Uses MediaInfo's format field to determine the appropriate file extension.
+        Handles special cases like Matroska 3D (mk3d vs mkv).
+
+        Returns:
+            File extension (e.g., "mp4", "mkv") or None if format is unknown
+        """
         if not self.media_info:
             return None
         general_track = next((t for t in self.media_info.tracks if t.track_type == 'General'), None)
         if not general_track:
             return None
         format_ = getattr(general_track, 'format', None)
-        if format_ in META_TYPE_TO_EXTENSIONS:
-            exts = META_TYPE_TO_EXTENSIONS[format_]
-            if format_ == 'Matroska':
-                if self.is_3d() and 'mk3d' in exts:
-                    return 'mk3d'
-                else:
-                    return 'mkv'
-            else:
-                return exts[0] if exts else None
-        return None
+        if not format_:
+            return None
+
+        # Use the constants function to get extension from format
+        ext = get_extension_from_format(format_)
+
+        # Special case: Matroska 3D uses mk3d extension
+        if ext == 'mkv' and self.is_3d():
+            return 'mk3d'
+
+        return ext
 
     @cached_method()
     def extract_3d_layout(self) -> str | None:

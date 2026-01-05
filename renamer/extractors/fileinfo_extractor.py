@@ -83,10 +83,12 @@ class FileInfoExtractor:
         return str(self._file_path)
 
     @cached_method()
-    def extract_extension(self) -> str:
+    def extract_extension(self) -> str | None:
         """Extract file extension without the dot.
 
         Returns:
-            File extension in lowercase without leading dot (e.g., "mkv", "mp4")
+            File extension in lowercase without leading dot (e.g., "mkv", "mp4"),
+            or None if no extension exists
         """
-        return self._file_path.suffix.lower().lstrip('.')
+        ext = self._file_path.suffix.lower().lstrip('.')
+        return ext if ext else None
