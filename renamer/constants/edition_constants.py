@@ -24,6 +24,7 @@ SPECIAL_EDITIONS = {
         "Restoration",
     ],
     "Remastered": ["Remastered", "Remaster", "HD Remaster"],
+    "Colorized": ["Colorized Edition", "Colourized Edition", "Colorized", "Colourized"],
     "Unrated": ["Unrated"],
     "Uncensored": ["Uncensored"],
     "Definitive Edition": ["Definitive Edition"],
