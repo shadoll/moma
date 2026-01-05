@@ -45,14 +45,15 @@ class MediaExtractor:
         >>> tracks = extractor.get("video_tracks")
     """
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, use_cache: bool = True):
         self.file_path = file_path
-        
-        self.filename_extractor = FilenameExtractor(file_path)
-        self.metadata_extractor = MetadataExtractor(file_path)
-        self.mediainfo_extractor = MediaInfoExtractor(file_path)
-        self.fileinfo_extractor = FileInfoExtractor(file_path)
-        self.tmdb_extractor = TMDBExtractor(file_path)
+
+        # Initialize all extractors - they use singleton Cache internally
+        self.filename_extractor = FilenameExtractor(file_path, use_cache)
+        self.metadata_extractor = MetadataExtractor(file_path, use_cache)
+        self.mediainfo_extractor = MediaInfoExtractor(file_path, use_cache)
+        self.fileinfo_extractor = FileInfoExtractor(file_path, use_cache)
+        self.tmdb_extractor = TMDBExtractor(file_path, use_cache)
         self.default_extractor = DefaultExtractor()
         
         # Extractor mapping

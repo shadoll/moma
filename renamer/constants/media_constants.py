@@ -54,3 +54,13 @@ MEDIA_TYPES = {
         "mime": "video/mpeg",
     },
 }
+
+# Reverse mapping: meta_type -> list of extensions
+# Built once at module load instead of rebuilding in every extractor instance
+META_TYPE_TO_EXTENSIONS = {}
+for ext, info in MEDIA_TYPES.items():
+    meta_type = info.get('meta_type')
+    if meta_type:
+        if meta_type not in META_TYPE_TO_EXTENSIONS:
+            META_TYPE_TO_EXTENSIONS[meta_type] = []
+        META_TYPE_TO_EXTENSIONS[meta_type].append(ext)

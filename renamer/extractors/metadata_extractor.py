@@ -8,7 +8,7 @@ import mutagen
 import logging
 from pathlib import Path
 from ..constants import MEDIA_TYPES
-from ..cache import cached_method
+from ..cache import cached_method, Cache
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +32,16 @@ class MetadataExtractor:
         >>> duration = extractor.extract_duration()
     """
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, use_cache: bool = True):
         """Initialize the MetadataExtractor.
 
         Args:
             file_path: Path object pointing to the media file
+            use_cache: Whether to use caching (default: True)
         """
         self.file_path = file_path
+        self.cache = Cache() if use_cache else None  # Singleton cache for @cached_method decorator
+        self.settings = None  # Will be set by Settings singleton if needed
         self._cache: dict[str, any] = {}  # Internal cache for method results
         try:
             self.info = mutagen.File(file_path) # type: ignore

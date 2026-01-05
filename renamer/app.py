@@ -9,8 +9,8 @@ from functools import partial
 import threading
 import time
 import logging
-import os
 
+from .logging_config import LoggerConfig  # Initialize logging singleton
 from .constants import MEDIA_TYPES
 from .screens import OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen, ConvertConfirmScreen
 from .extractors.extractor import MediaExtractor
@@ -20,14 +20,6 @@ from .formatters.catalog_formatter import CatalogFormatter
 from .settings import Settings
 from .cache import Cache, CacheManager
 from .services.conversion_service import ConversionService
-
-
-# Set up logging conditionally
-if os.getenv('FORMATTER_LOG', '0') == '1':
-    logging.basicConfig(filename='formatter.log', level=logging.INFO,
-                        format='%(asctime)s - %(levelname)s - %(message)s')
-else:
-    logging.basicConfig(level=logging.INFO)  # Enable logging for debugging
 
 
 class CacheCommandProvider(Provider):
@@ -431,6 +423,11 @@ class RenamerApp(App):
 
             try:
                 if node.data.is_file():
+                    # Invalidate cache for this file before re-extracting
+                    cache = Cache()
+                    invalidated = cache.invalidate_file(node.data)
+                    logging.info(f"Refresh: invalidated {invalidated} cache entries for {node.data.name}")
+
                     self._start_loading_animation()
                     threading.Thread(
                         target=self._extract_and_show_details, args=(node.data,)

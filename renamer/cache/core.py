@@ -12,14 +12,30 @@ logger = logging.getLogger(__name__)
 
 
 class Cache:
-    """Thread-safe file-based cache with TTL support."""
+    """Thread-safe file-based cache with TTL support (Singleton)."""
+
+    _instance: Optional['Cache'] = None
+    _lock_init = threading.Lock()
+
+    def __new__(cls, cache_dir: Optional[Path] = None):
+        """Create or return singleton instance."""
+        if cls._instance is None:
+            with cls._lock_init:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._initialized = False
+        return cls._instance
 
     def __init__(self, cache_dir: Optional[Path] = None):
-        """Initialize cache with optional custom directory.
+        """Initialize cache with optional custom directory (only once).
 
         Args:
             cache_dir: Optional cache directory path. Defaults to ~/.cache/renamer/
         """
+        # Only initialize once
+        if self._initialized:
+            return
+
         # Always use the default cache dir to avoid creating cache in scan dir
         if cache_dir is None:
             cache_dir = Path.home() / ".cache" / "renamer"
@@ -27,6 +43,7 @@ class Cache:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._memory_cache: Dict[str, Dict[str, Any]] = {}  # In-memory cache for faster access
         self._lock = threading.RLock()  # Reentrant lock for thread safety
+        self._initialized = True
 
     def _sanitize_key_component(self, component: str) -> str:
         """Sanitize a key component to prevent filesystem escaping.
@@ -85,14 +102,15 @@ class Cache:
         # Use .json extension for all cache files (simplifies logic)
         return cache_subdir / f"{key_hash}.json"
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str, default: Any = None) -> Any:
         """Get cached value if not expired (thread-safe).
 
         Args:
             key: Cache key
+            default: Value to return if key not found or expired
 
         Returns:
-            Cached value or None if not found/expired
+            Cached value or default if not found/expired
         """
         with self._lock:
             # Check memory cache first
@@ -108,7 +126,7 @@ class Cache:
             # Check file cache
             cache_file = self._get_cache_file(key)
             if not cache_file.exists():
-                return None
+                return default
 
             try:
                 with open(cache_file, 'r') as f:
@@ -118,7 +136,7 @@ class Cache:
                     # Expired, remove file
                     cache_file.unlink(missing_ok=True)
                     logger.debug(f"File cache expired for key: {key}, removed {cache_file}")
-                    return None
+                    return default
 
                 # Store in memory cache for faster future access
                 self._memory_cache[key] = data
@@ -128,11 +146,11 @@ class Cache:
                 # Corrupted JSON, remove file
                 logger.warning(f"Corrupted cache file {cache_file}: {e}")
                 cache_file.unlink(missing_ok=True)
-                return None
+                return default
             except IOError as e:
                 # File read error
                 logger.error(f"Failed to read cache file {cache_file}: {e}")
-                return None
+                return default
 
     def set(self, key: str, value: Any, ttl_seconds: int) -> None:
         """Set cached value with TTL (thread-safe).
@@ -176,6 +194,56 @@ class Cache:
             if cache_file.exists():
                 cache_file.unlink(missing_ok=True)
                 logger.debug(f"Invalidated cache for key: {key}")
+
+    def invalidate_file(self, file_path: Path) -> int:
+        """Invalidate all cache entries for a specific file path.
+
+        This invalidates all extractor method caches for the given file by:
+        1. Clearing matching keys from memory cache
+        2. Removing matching keys from file cache
+
+        Args:
+            file_path: File path to invalidate cache for
+
+        Returns:
+            Number of cache entries invalidated
+        """
+        with self._lock:
+            # Generate the path hash used in cache keys
+            path_hash = hashlib.md5(str(file_path).encode()).hexdigest()[:12]
+            prefix = f"extractor_{path_hash}_"
+
+            invalidated_count = 0
+
+            # Remove from memory cache (easy - just check prefix)
+            keys_to_remove = [k for k in self._memory_cache.keys() if k.startswith(prefix)]
+            for key in keys_to_remove:
+                del self._memory_cache[key]
+                invalidated_count += 1
+                logger.debug(f"Invalidated memory cache for key: {key}")
+
+            # For file cache, we need to invalidate all known extractor methods
+            # List of all cached extractor methods
+            extractor_methods = [
+                'extract_title', 'extract_year', 'extract_source', 'extract_video_codec',
+                'extract_audio_codec', 'extract_frame_class', 'extract_hdr', 'extract_order',
+                'extract_special_info', 'extract_movie_db', 'extract_extension',
+                'extract_video_tracks', 'extract_audio_tracks', 'extract_subtitle_tracks',
+                'extract_interlaced', 'extract_size', 'extract_duration', 'extract_bitrate',
+                'extract_created', 'extract_modified'
+            ]
+
+            # Invalidate each possible cache key
+            for method in extractor_methods:
+                cache_key = f"extractor_{path_hash}_{method}"
+                cache_file = self._get_cache_file(cache_key)
+                if cache_file.exists():
+                    cache_file.unlink(missing_ok=True)
+                    invalidated_count += 1
+                    logger.debug(f"Invalidated file cache for key: {cache_key}")
+
+            logger.info(f"Invalidated {invalidated_count} cache entries for file: {file_path.name}")
+            return invalidated_count
 
     def get_image(self, key: str) -> Optional[Path]:
         """Get cached image path if not expired (thread-safe).

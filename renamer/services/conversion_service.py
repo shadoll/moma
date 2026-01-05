@@ -11,6 +11,7 @@ This service manages the process of converting AVI/MPG/MPEG/WebM/MP4 files to MK
 import logging
 import subprocess
 import platform
+import re
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 
@@ -216,6 +217,34 @@ class ConversionService:
         logger.debug(f"Found {len(subtitle_files)} subtitle files for {video_path.name}")
         return subtitle_files
 
+    def _expand_lang_counts(self, lang_str: str) -> List[str]:
+        """Expand language string with counts to individual languages.
+
+        Handles formats like:
+        - "2ukr" -> ['ukr', 'ukr']
+        - "ukr" -> ['ukr']
+        - "3eng" -> ['eng', 'eng', 'eng']
+
+        Args:
+            lang_str: Language string possibly with numeric prefix
+
+        Returns:
+            List of expanded language codes
+
+        Example:
+            >>> service._expand_lang_counts("2ukr")
+            ['ukr', 'ukr']
+        """
+        # Match pattern: optional number + language code
+        match = re.match(r'^(\d+)?([a-z]{2,3})$', lang_str.lower())
+        if match:
+            count = int(match.group(1)) if match.group(1) else 1
+            lang = match.group(2)
+            return [lang] * count
+        else:
+            # No numeric prefix, return as-is
+            return [lang_str.lower()]
+
     def map_audio_languages(
         self,
         extractor: MediaExtractor,
@@ -227,6 +256,8 @@ class ConversionService:
         in order. If filename has fewer languages than tracks, remaining
         tracks get None.
 
+        Handles numeric prefixes like "2ukr,eng" -> ['ukr', 'ukr', 'eng']
+
         Args:
             extractor: MediaExtractor with filename data
             audio_track_count: Number of audio tracks in the file
@@ -235,9 +266,10 @@ class ConversionService:
             List of language codes (or None) for each audio track
 
         Example:
-            >>> langs = service.map_audio_languages(extractor, 2)
+            >>> langs = service.map_audio_languages(extractor, 3)
+            >>> # For filename with [2ukr,eng]
             >>> print(langs)
-            ['ukr', 'eng']
+            ['ukr', 'ukr', 'eng']
         """
         # Get audio_langs from filename extractor
         audio_langs_str = extractor.get('audio_langs', 'Filename')
@@ -246,8 +278,13 @@ class ConversionService:
             logger.debug("No audio languages found in filename")
             return [None] * audio_track_count
 
-        # Split by comma and clean
-        langs = [lang.strip().lower() for lang in audio_langs_str.split(',')]
+        # Split by comma and expand numeric prefixes
+        lang_parts = [lang.strip() for lang in audio_langs_str.split(',')]
+        langs = []
+        for part in lang_parts:
+            langs.extend(self._expand_lang_counts(part))
+
+        logger.debug(f"Expanded languages from '{audio_langs_str}' to: {langs}")
 
         # Map to tracks (pad with None if needed)
         result = []

@@ -6,15 +6,8 @@ file system metadata such as size, timestamps, paths, and extensions.
 
 from pathlib import Path
 import logging
-import os
-from ..cache import cached_method
-
-# Set up logging conditionally
-if os.getenv('FORMATTER_LOG', '0') == '1':
-    logging.basicConfig(filename='formatter.log', level=logging.INFO,
-                        format='%(asctime)s - %(levelname)s - %(message)s')
-else:
-    logging.basicConfig(level=logging.CRITICAL)  # Disable logging
+from ..cache import cached_method, Cache
+from ..logging_config import LoggerConfig  # Initialize logging singleton
 
 
 class FileInfoExtractor:
@@ -39,13 +32,17 @@ class FileInfoExtractor:
         >>> name = extractor.extract_file_name()  # Returns "movie.mkv"
     """
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, use_cache: bool = True):
         """Initialize the FileInfoExtractor.
 
         Args:
             file_path: Path object pointing to the file to extract info from
+            use_cache: Whether to use caching (default: True)
         """
         self._file_path = file_path
+        self.file_path = file_path  # Expose for cache key generation
+        self.cache = Cache() if use_cache else None  # Singleton cache for @cached_method decorator
+        self.settings = None  # Will be set by Settings singleton if needed
         self._stat = file_path.stat()
         self._cache: dict[str, any] = {}  # Internal cache for method results
 

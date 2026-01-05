@@ -1,11 +1,12 @@
 import json
 import os
+import threading
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 class Settings:
-    """Manages application settings stored in a JSON file."""
+    """Manages application settings stored in a JSON file (Singleton)."""
 
     DEFAULTS = {
         "mode": "technical",  # "technical" or "catalog"
@@ -17,12 +18,30 @@ class Settings:
         "cache_ttl_posters": 2592000,  # 30 days in seconds
     }
 
+    _instance: Optional['Settings'] = None
+    _lock = threading.Lock()
+
+    def __new__(cls, config_dir: Path | None = None):
+        """Create or return singleton instance."""
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self, config_dir: Path | None = None):
+        """Initialize settings (only once)."""
+        # Only initialize once
+        if self._initialized:
+            return
+
         if config_dir is None:
             config_dir = Path.home() / ".config" / "renamer"
         self.config_dir = config_dir
         self.config_file = self.config_dir / "config.json"
         self._settings = self.DEFAULTS.copy()
+        self._initialized = True
         self.load()
 
     def load(self) -> None:

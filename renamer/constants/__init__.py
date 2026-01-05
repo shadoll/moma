@@ -12,7 +12,7 @@ This package contains constants split into logical modules:
 """
 
 # Import from all constant modules
-from .media_constants import MEDIA_TYPES
+from .media_constants import MEDIA_TYPES, META_TYPE_TO_EXTENSIONS
 from .source_constants import SOURCE_DICT
 from .frame_constants import FRAME_CLASSES, NON_STANDARD_QUALITY_INDICATORS
 from .moviedb_constants import MOVIE_DB_DICT
@@ -24,6 +24,7 @@ from .cyrillic_constants import CYRILLIC_TO_ENGLISH
 __all__ = [
     # Media types
     'MEDIA_TYPES',
+    'META_TYPE_TO_EXTENSIONS',
     # Source types
     'SOURCE_DICT',
     # Frame classes

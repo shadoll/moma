@@ -224,6 +224,14 @@ class MediaPanelProperties:
         return self._extractor.get("frame_class", "MediaInfo")
 
     @property
+    @conditional_decorators.wrap("Interlaced: ")
+    @text_decorators.colour(name="grey")
+    @conditional_decorators.default("Not extracted")
+    def mediainfo_interlace(self) -> str:
+        """Get MediaInfo interlace formatted with label."""
+        return self._extractor.get("interlaced", "MediaInfo")
+
+    @property
     @conditional_decorators.wrap("Resolution: ")
     @text_decorators.colour(name="grey")
     @conditional_decorators.default("Not extracted")

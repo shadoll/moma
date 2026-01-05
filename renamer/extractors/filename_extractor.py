@@ -8,7 +8,7 @@ from ..constants import (
     is_valid_year,
     CYRILLIC_TO_ENGLISH
 )
-from ..cache import cached_method
+from ..cache import cached_method, Cache
 from ..utils.pattern_utils import PatternExtractor
 import langcodes
 
@@ -18,13 +18,16 @@ logger = logging.getLogger(__name__)
 class FilenameExtractor:
     """Class to extract information from filename"""
 
-    def __init__(self, file_path: Path | str):
+    def __init__(self, file_path: Path | str, use_cache: bool = True):
         if isinstance(file_path, str):
             self.file_path = Path(file_path)
             self.file_name = file_path
         else:
             self.file_path = file_path
             self.file_name = file_path.name
+
+        self.cache = Cache() if use_cache else None  # Singleton cache for @cached_method decorator
+        self.settings = None  # Will be set by Settings singleton if needed
 
         # Initialize utility helper
         self._pattern_extractor = PatternExtractor()

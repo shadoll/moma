@@ -13,10 +13,11 @@ from ..settings import Settings
 class TMDBExtractor:
     """Class to extract TMDB movie information"""
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, use_cache: bool = True):
         self.file_path = file_path
-        self.cache = Cache()
-        self.ttl_seconds = Settings().get("cache_ttl_extractors", 21600)
+        self.cache = Cache() if use_cache else None  # Singleton cache
+        self.settings = Settings()  # Singleton settings
+        self.ttl_seconds = self.settings.get("cache_ttl_extractors", 21600)
         self._movie_db_info = None
 
     def _get_cached_data(self, cache_key: str) -> Optional[Dict[str, Any]]:

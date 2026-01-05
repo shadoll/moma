@@ -1,8 +1,8 @@
 from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
-from ..constants import FRAME_CLASSES, MEDIA_TYPES
-from ..cache import cached_method
+from ..constants import FRAME_CLASSES, META_TYPE_TO_EXTENSIONS
+from ..cache import cached_method, Cache
 import langcodes
 import logging
 
@@ -12,40 +12,35 @@ logger = logging.getLogger(__name__)
 class MediaInfoExtractor:
     """Class to extract information from MediaInfo"""
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, use_cache: bool = True):
         self.file_path = file_path
+        self.cache = Cache() if use_cache else None  # Singleton cache for @cached_method decorator
+        self.settings = None  # Will be set by Settings singleton if needed
         self._cache = {}  # Internal cache for method results
-        try:
-            self.media_info = MediaInfo.parse(file_path)
+
+        # Parse media info - set to None on failure
+        self.media_info = MediaInfo.parse(file_path) if file_path.exists() else None
+
+        # Extract tracks
+        if self.media_info:
             self.video_tracks = [t for t in self.media_info.tracks if t.track_type == 'Video']
             self.audio_tracks = [t for t in self.media_info.tracks if t.track_type == 'Audio']
             self.sub_tracks = [t for t in self.media_info.tracks if t.track_type == 'Text']
-        except Exception as e:
-            logger.warning(f"Failed to parse media info for {file_path}: {e}")
-            self.media_info = None
+        else:
             self.video_tracks = []
             self.audio_tracks = []
             self.sub_tracks = []
-
-        # Build mapping from meta_type to extensions
-        self._format_to_extensions = {}
-        for ext, info in MEDIA_TYPES.items():
-            meta_type = info.get('meta_type')
-            if meta_type:
-                if meta_type not in self._format_to_extensions:
-                    self._format_to_extensions[meta_type] = []
-                self._format_to_extensions[meta_type].append(ext)
 
     def _get_frame_class_from_height(self, height: int) -> str | None:
         """Get frame class from video height, finding closest match if exact not found"""
         if not height:
             return None
-        
+
         # First try exact match
         for frame_class, info in FRAME_CLASSES.items():
             if height == info['nominal_height']:
                 return frame_class
-        
+
         # If no exact match, find closest
         closest = None
         min_diff = float('inf')
@@ -54,7 +49,7 @@ class MediaInfoExtractor:
             if diff < min_diff:
                 min_diff = diff
                 closest = frame_class
-        
+
         # Only return if difference is reasonable (within 50 pixels)
         if min_diff <= 50:
             return closest
@@ -77,30 +72,37 @@ class MediaInfoExtractor:
         width = getattr(self.video_tracks[0], 'width', None)
         if not height or not width:
             return None
-        
+
         # Check if interlaced - try multiple attributes
         # PyMediaInfo may use different attribute names depending on version
         scan_type_attr = getattr(self.video_tracks[0], 'scan_type', None)
         interlaced = getattr(self.video_tracks[0], 'interlaced', None)
 
+        logger.debug(f"[{self.file_path.name}] Frame class detection - Resolution: {width}x{height}")
+        logger.debug(f"[{self.file_path.name}]   scan_type attribute: {scan_type_attr!r} (type: {type(scan_type_attr).__name__})")
+        logger.debug(f"[{self.file_path.name}]   interlaced attribute: {interlaced!r} (type: {type(interlaced).__name__})")
+
         # Determine scan type from available attributes
         # Check scan_type first (e.g., "Interlaced", "Progressive", "MBAFF")
         if scan_type_attr and isinstance(scan_type_attr, str):
             scan_type = 'i' if 'interlaced' in scan_type_attr.lower() else 'p'
+            logger.debug(f"[{self.file_path.name}]   Using scan_type: {scan_type_attr!r} -> scan_type={scan_type!r}")
         # Then check interlaced flag (e.g., "Yes", "No")
         elif interlaced and isinstance(interlaced, str):
             scan_type = 'i' if interlaced.lower() in ['yes', 'true', '1'] else 'p'
+            logger.debug(f"[{self.file_path.name}]   Using interlaced: {interlaced!r} -> scan_type={scan_type!r}")
         else:
             # Default to progressive if no information available
             scan_type = 'p'
-        
+            logger.debug(f"[{self.file_path.name}]   No scan type info, defaulting to progressive")
+
         # Calculate effective height for frame class determination
         aspect_ratio = 16 / 9
         if height > width:
             effective_height = height / aspect_ratio
         else:
             effective_height = height
-        
+
         # First, try to match width to typical widths
         # Use a larger tolerance (10 pixels) to handle cinema/ultrawide aspect ratios
         width_matches = []
@@ -109,18 +111,21 @@ class MediaInfoExtractor:
                 if abs(width - tw) <= 10 and frame_class.endswith(scan_type):
                     diff = abs(height - info['nominal_height'])
                     width_matches.append((frame_class, diff))
-        
+
         if width_matches:
             # Choose the frame class with the smallest height difference
             width_matches.sort(key=lambda x: x[1])
-            return width_matches[0][0]
-        
+            result = width_matches[0][0]
+            logger.debug(f"[{self.file_path.name}]   Result (width match): {result!r}")
+            return result
+
         # If no width match, fall back to height-based matching
         # First try exact match with standard frame classes
         frame_class = f"{int(round(effective_height))}{scan_type}"
         if frame_class in FRAME_CLASSES:
+            logger.debug(f"[{self.file_path.name}]   Result (exact height match): {frame_class!r}")
             return frame_class
-        
+
         # Find closest standard height match
         closest_class = None
         min_diff = float('inf')
@@ -130,12 +135,14 @@ class MediaInfoExtractor:
                 if diff < min_diff:
                     min_diff = diff
                     closest_class = fc
-        
+
         # Return closest standard match if within reasonable distance (20 pixels)
         if closest_class and min_diff <= 20:
+            logger.debug(f"[{self.file_path.name}]   Result (closest match, diff={min_diff}): {closest_class!r}")
             return closest_class
-        
+
         # For non-standard resolutions, create a custom frame class
+        logger.debug(f"[{self.file_path.name}]   Result (custom/non-standard): {frame_class!r}")
         return frame_class
 
     @cached_method()
@@ -148,7 +155,7 @@ class MediaInfoExtractor:
         if width and height:
             return width, height
         return None
-    
+
     @cached_method()
     def extract_aspect_ratio(self) -> str | None:
         """Extract video aspect ratio from media info"""
@@ -186,7 +193,7 @@ class MediaInfoExtractor:
                 # If conversion fails, use the original code
                 logger.debug(f"Invalid language code '{lang_code}': {e}")
                 langs.append(lang_code.lower()[:3])
-        
+
         lang_counts = Counter(langs)
         audio_langs = [f"{count}{lang}" if count > 1 else lang for lang, count in lang_counts.items()]
         return ','.join(audio_langs)
@@ -265,8 +272,8 @@ class MediaInfoExtractor:
         if not general_track:
             return None
         format_ = getattr(general_track, 'format', None)
-        if format_ in self._format_to_extensions:
-            exts = self._format_to_extensions[format_]
+        if format_ in META_TYPE_TO_EXTENSIONS:
+            exts = META_TYPE_TO_EXTENSIONS[format_]
             if format_ == 'Matroska':
                 if self.is_3d() and 'mk3d' in exts:
                     return 'mk3d'
@@ -283,3 +290,49 @@ class MediaInfoExtractor:
             return None
         stereoscopic = getattr(self.video_tracks[0], 'stereoscopic', None)
         return stereoscopic if stereoscopic else None
+
+    @cached_method()
+    def extract_interlaced(self) -> bool | None:
+        """Determine if the video is interlaced.
+
+        Returns:
+            True: Video is interlaced
+            False: Video is progressive (explicitly set)
+            None: Information not available in MediaInfo
+        """
+        if not self.video_tracks:
+            logger.debug(f"[{self.file_path.name}] Interlaced detection: No video tracks")
+            return None
+
+        scan_type_attr = getattr(self.video_tracks[0], 'scan_type', None)
+        interlaced = getattr(self.video_tracks[0], 'interlaced', None)
+
+        logger.debug(f"[{self.file_path.name}] Interlaced detection:")
+        logger.debug(f"[{self.file_path.name}]   scan_type: {scan_type_attr!r} (type: {type(scan_type_attr).__name__})")
+        logger.debug(f"[{self.file_path.name}]   interlaced: {interlaced!r} (type: {type(interlaced).__name__})")
+
+        # Check scan_type attribute first (e.g., "Interlaced", "Progressive", "MBAFF")
+        if scan_type_attr and isinstance(scan_type_attr, str):
+            scan_lower = scan_type_attr.lower()
+            if 'interlaced' in scan_lower or 'mbaff' in scan_lower:
+                logger.debug(f"[{self.file_path.name}]   Result: True (from scan_type={scan_type_attr!r})")
+                return True
+            elif 'progressive' in scan_lower:
+                logger.debug(f"[{self.file_path.name}]   Result: False (from scan_type={scan_type_attr!r})")
+                return False
+            # If scan_type has some other value, fall through to check interlaced
+            logger.debug(f"[{self.file_path.name}]   scan_type unrecognized, checking interlaced attribute")
+
+        # Check interlaced attribute (e.g., "Yes", "No")
+        if interlaced and isinstance(interlaced, str):
+            interlaced_lower = interlaced.lower()
+            if interlaced_lower in ['yes', 'true', '1']:
+                logger.debug(f"[{self.file_path.name}]   Result: True (from interlaced={interlaced!r})")
+                return True
+            elif interlaced_lower in ['no', 'false', '0']:
+                logger.debug(f"[{self.file_path.name}]   Result: False (from interlaced={interlaced!r})")
+                return False
+
+        # No information available
+        logger.debug(f"[{self.file_path.name}]   Result: None (no information available)")
+        return None

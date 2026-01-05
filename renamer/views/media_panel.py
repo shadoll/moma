@@ -126,6 +126,7 @@ class MediaPanelView:
                 self._props.title("Media Info Extraction"),
                 self._props.mediainfo_duration,
                 self._props.mediainfo_frame_class,
+                self._props.mediainfo_interlace,
                 self._props.mediainfo_resolution,
                 self._props.mediainfo_aspect_ratio,
                 self._props.mediainfo_hdr,

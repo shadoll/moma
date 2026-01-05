@@ -19,6 +19,9 @@ from .strategies import (
 
 logger = logging.getLogger(__name__)
 
+# Sentinel object to distinguish "not in cache" from "cached value is None"
+_CACHE_MISS = object()
+
 
 def cached(
     strategy: Optional[CacheKeyStrategy] = None,
@@ -78,10 +81,10 @@ def cached(
                 logger.warning(f"Failed to generate cache key: {e}, executing uncached")
                 return func(self, *args, **kwargs)
 
-            # Check cache
-            cached_value = cache.get(cache_key)
-            if cached_value is not None:
-                logger.debug(f"Cache hit for {func.__name__}: {cache_key}")
+            # Check cache (use sentinel to distinguish "not in cache" from "cached None")
+            cached_value = cache.get(cache_key, _CACHE_MISS)
+            if cached_value is not _CACHE_MISS:
+                logger.debug(f"Cache hit for {func.__name__}: {cache_key} (value={cached_value!r})")
                 return cached_value
 
             # Execute function
@@ -91,10 +94,9 @@ def cached(
             # Determine TTL
             actual_ttl = _determine_ttl(self, ttl)
 
-            # Cache result (only if not None)
-            if result is not None:
-                cache.set(cache_key, result, actual_ttl)
-                logger.debug(f"Cached {func.__name__}: {cache_key} (TTL: {actual_ttl}s)")
+            # Cache result (including None - None is valid data meaning "not found")
+            cache.set(cache_key, result, actual_ttl)
+            logger.debug(f"Cached {func.__name__}: {cache_key} (TTL: {actual_ttl}s, value={result!r})")
 
             return result
 
@@ -129,8 +131,9 @@ def _generate_cache_key(
         if not file_path:
             raise ValueError(f"{instance.__class__.__name__} missing file_path attribute")
 
-        instance_id = str(id(instance))
-        return strategy.generate_key(file_path, func.__name__, instance_id)
+        # Cache by file_path + method_name only (no instance_id)
+        # This allows cache hits across different extractor instances for the same file
+        return strategy.generate_key(file_path, func.__name__)
 
     elif isinstance(strategy, APIRequestStrategy):
         # API pattern: expects service name in args or uses function name
@@ -246,10 +249,10 @@ def cached_api(service: str, ttl: Optional[int] = None):
             strategy = APIRequestStrategy()
             cache_key = strategy.generate_key(service, func.__name__, {'params': args_repr})
 
-            # Check cache
-            cached_value = cache.get(cache_key)
-            if cached_value is not None:
-                logger.debug(f"API cache hit for {service}.{func.__name__}")
+            # Check cache (use sentinel to distinguish "not in cache" from "cached None")
+            cached_value = cache.get(cache_key, _CACHE_MISS)
+            if cached_value is not _CACHE_MISS:
+                logger.debug(f"API cache hit for {service}.{func.__name__} (value={cached_value!r})")
                 return cached_value
 
             # Execute function
@@ -267,10 +270,9 @@ def cached_api(service: str, ttl: Optional[int] = None):
                 else:
                     actual_ttl = 21600  # Default 6 hours
 
-            # Cache result (only if not None)
-            if result is not None:
-                cache.set(cache_key, result, actual_ttl)
-                logger.debug(f"API cached {service}.{func.__name__} (TTL: {actual_ttl}s)")
+            # Cache result (including None - None is valid data)
+            cache.set(cache_key, result, actual_ttl)
+            logger.debug(f"API cached {service}.{func.__name__} (TTL: {actual_ttl}s, value={result!r})")
 
             return result
 
