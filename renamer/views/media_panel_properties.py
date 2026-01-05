@@ -44,6 +44,7 @@ class MediaPanelProperties:
     # ============================================================
 
     @property
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="󰷊 ", right="")
     @text_decorators.uppercase()
     @text_decorators.bold()
@@ -52,14 +53,16 @@ class MediaPanelProperties:
         return "File Info"
 
     @property
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap("├ 󰙅 : ")
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @text_decorators.escape()
     def file_path(self) -> str:
         """Get file path formatted with label."""
         return self._extractor.get("file_path")
 
     @property
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├  : ")
     @text_decorators.colour(name="bisque")
     @size_decorators.size_full()
@@ -68,6 +71,7 @@ class MediaPanelProperties:
         return self._extractor.get("file_size")
 
     @property
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰈙 : ")
     @text_decorators.colour(name="bisque")
     @text_decorators.escape()
@@ -76,6 +80,7 @@ class MediaPanelProperties:
         return self._extractor.get("file_name")
 
     @property
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󱋡 : ")
     @text_decorators.colour("bisque")
     @date_decorators.modification_date()
@@ -84,6 +89,7 @@ class MediaPanelProperties:
         return self._extractor.get("modification_time")
 
     @property
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="└  : ")
     @text_decorators.colour(name="bisque")
     @extension_decorators.extension_info()
@@ -104,7 +110,7 @@ class MediaPanelProperties:
         return self._extractor.get("tmdb_id", "TMDB")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰗴 : ")
     @text_decorators.colour(name="yellow")
     @conditional_decorators.default("<None>")
@@ -113,7 +119,7 @@ class MediaPanelProperties:
         return self._extractor.get("title", "TMDB")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰗴 : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -122,7 +128,7 @@ class MediaPanelProperties:
         return self._extractor.get("original_title", "TMDB")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├  : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -131,7 +137,7 @@ class MediaPanelProperties:
         return self._extractor.get("year", "TMDB")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├  : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -140,16 +146,16 @@ class MediaPanelProperties:
         return self._extractor.get("production_countries", "TMDB")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰴂 : ")
-    @text_decorators.colour(name="cyan")
+    @text_decorators.colour(name="purple")
     @conditional_decorators.default("<None>")
     def tmdb_genres(self) -> str:
         """Get TMDB genres formatted with label."""
         return self._extractor.get("genres", "TMDB")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰻾 : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -159,7 +165,7 @@ class MediaPanelProperties:
         return self._extractor.get("movie_db", "TMDB")
 
     @property
-    # @text_decorators.colour(name="blue")
+    # @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="└ ")
     @conditional_decorators.default(default_value="")
     @text_decorators.url()
@@ -339,7 +345,7 @@ class MediaPanelProperties:
     @conditional_decorators.wrap("Special info: ")
     @text_decorators.colour(name="grey")
     @conditional_decorators.default("Not extracted")
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @special_info_decorators.special_info()
     def filename_special_info(self) -> str:
         """Get filename special info formatted with label."""
@@ -358,7 +364,7 @@ class MediaPanelProperties:
     # ============================================================
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰔚 : ")
     @text_decorators.colour(name="bisque")
     @duration_decorators.duration_full()
@@ -367,7 +373,7 @@ class MediaPanelProperties:
         return self._extractor.get("duration")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="└ 󰒾 : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -376,7 +382,7 @@ class MediaPanelProperties:
         return self._extractor.get("order")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="green")
     @conditional_decorators.wrap(left="󰿎 MOVIE : ")
     @text_decorators.colour(name="yellow")
     @conditional_decorators.default("<None>")
@@ -385,7 +391,7 @@ class MediaPanelProperties:
         return self._extractor.get("title")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├  : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -394,7 +400,7 @@ class MediaPanelProperties:
         return self._extractor.get("year")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├  : ")
     @text_decorators.colour(name="green")
     @size_decorators.size_short()
@@ -403,7 +409,7 @@ class MediaPanelProperties:
         return self._extractor.get("file_size")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├  : ")
     @text_decorators.colour(name="bisque")
     @extension_decorators.extension_info()
@@ -412,7 +418,7 @@ class MediaPanelProperties:
         return self._extractor.get("extension")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap("Special info: ")
     @text_decorators.colour(name="yellow")
     @conditional_decorators.default("<None>")
@@ -422,7 +428,7 @@ class MediaPanelProperties:
         return self._extractor.get("special_info")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├  : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -431,7 +437,7 @@ class MediaPanelProperties:
         return self._extractor.get("source")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󱣴 : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -440,7 +446,7 @@ class MediaPanelProperties:
         return self._extractor.get("frame_class")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰵽 : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
@@ -449,7 +455,7 @@ class MediaPanelProperties:
         return self._extractor.get("hdr")
 
     @property
-    @text_decorators.colour(name="blue")
+    @text_decorators.colour(name="olive")
     @conditional_decorators.wrap(left="├ 󰗊 : ")
     @text_decorators.colour(name="bisque")
     @conditional_decorators.default("<None>")
