@@ -205,6 +205,37 @@ class MediaPanelProperties:
     # ============================================================
     # MediaInfo Extraction Properties
     # ============================================================
+    @property
+    @conditional_decorators.wrap("RAW General Info: ")
+    @text_decorators.colour(name="gray")
+    @conditional_decorators.default("Not extracted")
+    def mediainfo_general_tracks(self) -> str:
+        """Get MediaInfo raw general track info formatted with label."""
+        return self._extractor.get("general_track", "MediaInfo")
+
+    @property
+    @conditional_decorators.wrap("RAW Video Tracks: ")
+    @text_decorators.colour(name="gray")
+    @conditional_decorators.default("Not extracted")
+    def mediainfo_video_tracks(self) -> str:
+        """Get MediaInfo raw video tracks formatted with label."""
+        return self._extractor.get("video_tracks", "MediaInfo")
+
+    @property
+    @conditional_decorators.wrap("RAW Audio Tracks: ")
+    @text_decorators.colour(name="gray")
+    @conditional_decorators.default("Not extracted")
+    def mediainfo_audio_tracks(self) -> str:
+        """Get MediaInfo raw audio tracks formatted with label."""
+        return self._extractor.get("audio_tracks", "MediaInfo")
+
+    @property
+    @conditional_decorators.wrap("RAW Subtitle Tracks: ")
+    @text_decorators.colour(name="gray")
+    @conditional_decorators.default("Not extracted")
+    def mediainfo_subtitle_tracks(self) -> str:
+        """Get MediaInfo raw subtitle tracks formatted with label."""
+        return self._extractor.get("subtitle_tracks", "MediaInfo")
 
     @property
     @conditional_decorators.wrap("Duration: ")
@@ -263,14 +294,6 @@ class MediaPanelProperties:
     def mediainfo_audio_langs(self) -> str:
         """Get MediaInfo audio languages formatted with label."""
         return self._extractor.get("audio_langs", "MediaInfo")
-
-    @property
-    @conditional_decorators.wrap("Anamorphic: ")
-    @text_decorators.colour(name="grey")
-    @conditional_decorators.default("Not extracted")
-    def mediainfo_anamorphic(self) -> str:
-        """Get MediaInfo anamorphic formatted with label."""
-        return self._extractor.get("anamorphic", "MediaInfo")
 
     @property
     @conditional_decorators.wrap("Extension: ")
@@ -472,6 +495,13 @@ class MediaPanelProperties:
         return self._extractor.get("audio_langs")
 
     @property
+    @text_decorators.colour(name="green")
+    @conditional_decorators.wrap("General Info: ")
+    def general_info(self) -> list[str]:
+        """Get general track info formatted with label."""
+        return self._extractor.get("general_tracks", "MediaInfo") or []
+
+    @property
     def video_tracks(self) -> list[str]:
         """Return formatted video track data"""
         tracks = self._extractor.get("video_tracks", "MediaInfo") or []
@@ -510,4 +540,3 @@ class MediaPanelProperties:
     @track_decorators.subtitle_track()
     def subtitle_track(self, track, index) -> str:
         """Get subtitle track info formatted with label."""
-        return track

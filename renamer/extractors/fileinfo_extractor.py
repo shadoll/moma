@@ -44,7 +44,7 @@ class FileInfoExtractor:
         self.cache = Cache() if use_cache else None  # Singleton cache for @cached_method decorator
         self.settings = None  # Will be set by Settings singleton if needed
         self._stat = file_path.stat()
-        self._cache: dict[str, any] = {}  # Internal cache for method results
+        self._cache: dict = {}  # Internal cache for method results
 
     @cached_method()
     def extract_size(self) -> int:

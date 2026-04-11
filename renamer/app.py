@@ -7,12 +7,11 @@ from rich.markup import escape
 from pathlib import Path
 from functools import partial
 import threading
-import time
 import logging
 
 from .logging_config import LoggerConfig  # Initialize logging singleton
 from .constants import MEDIA_TYPES
-from .screens import OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen, ConvertConfirmScreen
+from .views import OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen, ConvertConfirmScreen, DeleteConfirmScreen
 from .extractors.extractor import MediaExtractor
 from .views import MediaPanelView, ProposedFilenameView
 from .formatters.text_formatter import TextFormatter
@@ -579,7 +578,6 @@ By Category:"""
 
     async def action_delete(self):
         """Delete a file with confirmation."""
-        from .screens import DeleteConfirmScreen
 
         tree = self.query_one("#file_tree", Tree)
         node = tree.cursor_node

@@ -22,8 +22,8 @@ class MediaPanelView:
                 self.tmdb_section(),
                 self.tracksinfo_section(),
                 self.filename_section(),
-                self.metadata_section(),
                 self.mediainfo_section(),
+                self.metadata_section(),
             ]
         )
 
@@ -124,6 +124,7 @@ class MediaPanelView:
         return "\n".join(
             [
                 self._props.title("Media Info Extraction"),
+                self._props.mediainfo_general_tracks,
                 self._props.mediainfo_duration,
                 self._props.mediainfo_frame_class,
                 self._props.mediainfo_interlace,
@@ -131,8 +132,10 @@ class MediaPanelView:
                 self._props.mediainfo_aspect_ratio,
                 self._props.mediainfo_hdr,
                 self._props.mediainfo_audio_langs,
-                self._props.mediainfo_anamorphic,
                 self._props.mediainfo_extension,
                 self._props.mediainfo_3d_layout,
+                self._props.mediainfo_video_tracks,
+                self._props.mediainfo_audio_tracks,
+                self._props.mediainfo_subtitle_tracks,
             ]
         )

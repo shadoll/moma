@@ -36,8 +36,7 @@ class LoggerConfig:
                 level=logging.DEBUG,
                 format='%(asctime)s - %(levelname)s - %(message)s'
             )
-        else:
-            logging.basicConfig(level=logging.INFO)
+        # When FORMATTER_LOG is not '1', do not configure logging at all
 
         LoggerConfig._initialized = True
 

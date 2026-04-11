@@ -1,4 +1,4 @@
-# Renamer - Media File Renamer and Metadata Viewer
+# moma - Media Manager, File Renamer and Metadata Viewer
 
 **Version**: 0.7.0-dev
 

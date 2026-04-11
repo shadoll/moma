@@ -11,7 +11,7 @@ class SpecialInfoFormatter:
         return special_info or ""
 
     @staticmethod
-    def format_database_info(database_info):
+    def format_database_info(database_info) -> str | None:
         """Format database info dictionary or tuple/list into a string"""
         import logging
         import os

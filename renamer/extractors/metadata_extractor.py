@@ -42,7 +42,7 @@ class MetadataExtractor:
         self.file_path = file_path
         self.cache = Cache() if use_cache else None  # Singleton cache for @cached_method decorator
         self.settings = None  # Will be set by Settings singleton if needed
-        self._cache: dict[str, any] = {}  # Internal cache for method results
+        self._cache: dict = {}  # Internal cache for method results
         try:
             self.info = mutagen.File(file_path) # type: ignore
         except Exception as e:

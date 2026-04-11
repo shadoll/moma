@@ -43,7 +43,7 @@ class SpecialInfoDecorators:
         """
         def decorator(func: Callable) -> Callable:
             @wraps(func)
-            def wrapper(*args, **kwargs) -> str:
+            def wrapper(*args, **kwargs) -> str | None:
                 result = func(*args, **kwargs)
                 return SpecialInfoFormatter.format_database_info(result)
             return wrapper
