@@ -1,6 +1,6 @@
-# Installation Guide for Renamer
+# Installation Guide for moma
 
-Renamer is a terminal-based media file renamer and metadata viewer built with Python and Textual.
+moma is a terminal-based media file renamer and metadata viewer built with Python and Textual.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ Renamer is a terminal-based media file renamer and metadata viewer built with Py
 
 ### Method 1: UV Tool Install (Recommended)
 
-This is the easiest way to install and use Renamer globally on your system.
+This is the easiest way to install and use moma globally on your system.
 
 #### Install UV (if not already installed)
 ```bash
@@ -22,22 +22,22 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -c "irm https://astral.sh/uv/install.sh | iex"
 ```
 
-#### Install Renamer
+#### Install moma
 ```bash
 # One-command install from remote wheel
-uv tool install https://git.shadoll.dev/sha/renamer/raw/branch/main/dist/renamer-0.2.4-py3-none-any.whl
+uv tool install https://github.com/shadoll/moma/raw/branch/main/dist/moma-0.2.4-py3-none-any.whl
 
 # Or from local wheel (if downloaded)
-uv tool install dist/renamer-0.2.4-py3-none-any.whl
+uv tool install dist/moma-0.2.4-py3-none-any.whl
 
 # Or from PyPI (when published)
-uv tool install renamer
+uv tool install moma
 ```
 
 #### Usage
 ```bash
-renamer                    # Scan current directory
-renamer /path/to/directory # Scan specific directory
+moma                    # Scan current directory
+moma /path/to/directory # Scan specific directory
 ```
 
 ### Method 2: pip Install from Wheel
@@ -46,10 +46,10 @@ If you have the wheel file, you can install it with pip.
 
 ```bash
 # Install the wheel
-pip install dist/renamer-0.2.0-py3-none-any.whl
+pip install dist/moma-0.2.0-py3-none-any.whl
 
 # Or install globally (may require sudo)
-sudo pip install dist/renamer-0.2.0-py3-none-any.whl
+sudo pip install dist/moma-0.2.0-py3-none-any.whl
 ```
 
 ### Method 3: Development Installation
@@ -59,7 +59,7 @@ For development or if you want to run from source:
 #### Clone and Setup
 ```bash
 git clone <repository-url>
-cd renamer
+cd moma
 
 # Install dependencies
 uv sync
@@ -120,12 +120,12 @@ python3 main.py /path/to/directory
 After installation, verify it works:
 
 ```bash
-renamer --help
+moma --help
 # or
 python3 main.py --help
 ```
 
-You should see the help text for the Renamer application.
+You should see the help text for the moma application.
 
 ## Troubleshooting
 
@@ -158,17 +158,17 @@ If you encounter issues:
 
 ### UV Tool Uninstall
 ```bash
-uv tool uninstall renamer
+uv tool uninstall moma
 ```
 
 ### pip Uninstall
 ```bash
-pip uninstall renamer
+pip uninstall moma
 ```
 
 ### Development Uninstall
 ```bash
-uv tool uninstall renamer
+uv tool uninstall moma
 # Remove the cloned directory if desired
 ```</content>
-<parameter name="filePath">/home/sha/bin/renamer/INSTALL.md
+<parameter name="filePath">/Users/sha/Developer/sha.dev/moma/INSTALL.md

@@ -5,7 +5,7 @@
 
 > **📘 For complete development documentation, see [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)**
 
-Quick reference for developers working on the Renamer project.
+Quick reference for developers working on the moma project.
 
 ---
 
@@ -16,7 +16,7 @@ Quick reference for developers working on the Renamer project.
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and setup
-cd /home/sha/bin/renamer
+cd /Users/sha/Developer/sha.dev/moma
 uv sync --extra dev
 ```
 
@@ -26,16 +26,16 @@ uv sync --extra dev
 
 ```bash
 # Run from source
-uv run renamer [directory]
+uv run moma [directory]
 
 # Run tests
 uv run pytest
 
 # Run with coverage
-uv run pytest --cov=renamer
+uv run pytest --cov=src
 
 # Type check
-uv run mypy renamer/
+uv run mypy src/
 
 # Version bump
 uv run bump-version
@@ -53,13 +53,13 @@ uv build
 
 ```bash
 # Enable detailed logging
-FORMATTER_LOG=1 uv run renamer /path/to/directory
+FORMATTER_LOG=1 uv run moma /path/to/directory
 
 # Check logs
 cat formatter.log
 
 # Clear cache
-rm -rf ~/.cache/renamer/
+rm -rf ~/.cache/moma/
 ```
 
 ---
@@ -71,13 +71,13 @@ rm -rf ~/.cache/renamer/
 uv run pytest
 
 # Specific file
-uv run pytest renamer/test/test_services.py
+uv run pytest src/test/test_services.py
 
 # Verbose
 uv run pytest -xvs
 
 # Generate sample files
-uv run python renamer/test/fill_sample_mediafiles.py
+uv run python src/test/fill_sample_mediafiles.py
 ```
 
 See [ENGINEERING_GUIDE.md - Testing Strategy](ENGINEERING_GUIDE.md#testing-strategy)
@@ -97,7 +97,7 @@ uv run release
 uv tool install .
 
 # 4. Manual testing
-uv run renamer /path/to/test/media
+uv run moma /path/to/test/media
 ```
 
 See [ENGINEERING_GUIDE.md - Release Process](ENGINEERING_GUIDE.md#release-process)

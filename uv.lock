@@ -234,6 +234,40 @@ wheels = [
 ]
 
 [[package]]
+name = "moma"
+version = "0.8.11"
+source = { editable = "." }
+dependencies = [
+    { name = "langcodes" },
+    { name = "mutagen" },
+    { name = "pymediainfo" },
+    { name = "pytest" },
+    { name = "python-magic" },
+    { name = "requests" },
+    { name = "rich-pixels" },
+    { name = "textual" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "mypy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "langcodes", specifier = ">=3.5.1" },
+    { name = "mutagen", specifier = ">=1.47.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
+    { name = "pymediainfo", specifier = ">=6.0.0" },
+    { name = "pytest", specifier = ">=7.0.0" },
+    { name = "python-magic", specifier = ">=0.4.27" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "rich-pixels", specifier = ">=1.0.0" },
+    { name = "textual", specifier = ">=6.11.0" },
+]
+provides-extras = ["dev"]
+
+[[package]]
 name = "mutagen"
 version = "1.47.0"
 source = { registry = "https://pypi.org/simple" }
@@ -459,40 +493,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/da/db/0b3e28ac047452d07
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/73/9f872cb81fc5c3bb48f7227872c28975f998f3e7c2b1c16e95e6432bbb90/python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3", size = 13840, upload-time = "2022-06-07T20:16:57.763Z" },
 ]
-
-[[package]]
-name = "renamer"
-version = "0.8.11"
-source = { editable = "." }
-dependencies = [
-    { name = "langcodes" },
-    { name = "mutagen" },
-    { name = "pymediainfo" },
-    { name = "pytest" },
-    { name = "python-magic" },
-    { name = "requests" },
-    { name = "rich-pixels" },
-    { name = "textual" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "mypy" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "langcodes", specifier = ">=3.5.1" },
-    { name = "mutagen", specifier = ">=1.47.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0.0" },
-    { name = "pymediainfo", specifier = ">=6.0.0" },
-    { name = "pytest", specifier = ">=7.0.0" },
-    { name = "python-magic", specifier = ">=0.4.27" },
-    { name = "requests", specifier = ">=2.31.0" },
-    { name = "rich-pixels", specifier = ">=1.0.0" },
-    { name = "textual", specifier = ">=6.11.0" },
-]
-provides-extras = ["dev"]
 
 [[package]]
 name = "requests"

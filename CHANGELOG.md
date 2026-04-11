@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Renamer project are documented in this file.
+All notable changes to the moma project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -114,7 +114,7 @@ This development version represents a significant refactoring effort focused on 
   - Dataset loaders in `conftest.py`
 
 #### Changed
-- **Test Organization**: Consolidated test data into `renamer/test/datasets/`
+- **Test Organization**: Consolidated test data into `src/test/datasets/`
 - **Total Tests**: 560 tests (1 skipped), all passing
 
 ---
@@ -141,7 +141,7 @@ This development version represents a significant refactoring effort focused on 
 
 #### Cache System
 - **Cache key format changed**: Old cache files are invalid
-- **Migration**: Users should clear cache: `rm -rf ~/.cache/renamer/`
+- **Migration**: Users should clear cache: `rm -rf ~/.cache/moma/`
 - **Impact**: No data loss, just cache miss on first run after upgrade
 
 #### Dependencies

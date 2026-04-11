@@ -27,8 +27,8 @@ A powerful Terminal User Interface (TUI) for managing media collections. View de
 # Install UV
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install Renamer
-cd /path/to/renamer
+# Install moma
+cd /Users/sha/Developer/sha.dev/moma
 uv sync
 uv tool install .
 ```
@@ -39,10 +39,9 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 
 ```bash
 # Scan current directory
-renamer
-
+moma
 # Scan specific directory
-renamer /path/to/media
+moma /path/to/media
 ```
 
 ---
@@ -97,7 +96,7 @@ Toggle with `m` key.
 
 ## Configuration
 
-**Location**: `~/.config/renamer/config.json`
+**Location**: `~/.config/moma/config.json`
 
 ```json
 {
@@ -124,7 +123,7 @@ Access via `Ctrl+S` or edit file directly.
 ## Project Structure
 
 ```
-renamer/
+src/
 ├── app.py                  # Main TUI application
 ├── services/               # Business logic
 ├── extractors/             # Metadata extraction
@@ -148,7 +147,7 @@ uv sync --extra dev
 uv run pytest
 
 # Run from source
-uv run renamer [directory]
+uv run moma [directory]
 ```
 
 See [DEVELOP.md](DEVELOP.md) for development documentation.

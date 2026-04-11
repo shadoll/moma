@@ -22,7 +22,7 @@ Please read **[ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)** for complete projec
 ```bash
 uv sync --extra dev    # Setup
 uv run pytest          # Test
-uv run renamer [dir]   # Run
+uv run moma [dir]   # Run
 ```
 
 ## Essential Principles

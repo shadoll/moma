@@ -8,4 +8,4 @@ wheels/
 # Virtual environments
 .venv
 # Test-generated files
-renamer/test/datasets/sample_mediafiles/
+src/test/datasets/sample_mediafiles/

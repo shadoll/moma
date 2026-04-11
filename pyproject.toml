@@ -1,5 +1,5 @@
 [project]
-name = "renamer"
+name = "moma"
 version = "0.8.11"
 description = "Terminal-based media file renamer and metadata viewer"
 readme = "README.md"
@@ -21,16 +21,16 @@ dev = [
 ]
 
 [project.scripts]
-renamer = "renamer.main:main"
-bump-version = "renamer.bump:main"
-release = "renamer.release:main"
+moma = "src.main:main"
+bump-version = "src.bump:main"
+release = "src.release:main"
 
 [tool.uv]
 package = true
 
 [tool.pytest.ini_options]
 addopts = "--strict-markers"
-testpaths = ["renamer/test"]
+testpaths = ["src/test"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
