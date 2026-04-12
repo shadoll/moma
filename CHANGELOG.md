@@ -117,7 +117,7 @@ Significant refactoring focused on code quality, architecture, and maintainabili
   - `LanguageCodeExtractor`: Language code processing
   - `FrameClassMatcher`: Resolution/frame class matching
 - **Command Palette Integration**:
-  - `AppCommandProvider`: 8 main app commands
+  - `AppCommandProvider`: 11 main app commands (open, scan_local, scan, refresh, rename, convert, delete, toggle_mode, expand, settings, help)
   - `CacheCommandProvider`: 7 cache management commands
   - Access via Ctrl+P
 

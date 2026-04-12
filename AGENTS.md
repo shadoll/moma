@@ -68,7 +68,7 @@ moma is a sophisticated Terminal User Interface (TUI) application for managing, 
 ```
 ┌─────────────────────────────────────────┐
 │         TUI Layer (Textual)             │
-│  app.py, screens.py                     │
+│  app.py, views/                         │
 └─────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────┐
@@ -241,8 +241,8 @@ year = extractor.get("year", source="Filename")  # Force specific source
 - `MarkupFormatter`: For visual styling (colors, bold, links)
 - `CompositeFormatter`: For chaining multiple formatters
 
-#### FormatterApplier (`formatter.py`)
-**Coordinator** ensuring correct formatter order:
+#### FormatterApplier
+Formatters are applied via decorator modules (`*_decorators.py`) using the base classes in `base.py`.
 
 **Order**: Data → Text → Markup
 
@@ -251,25 +251,17 @@ year = extractor.get("year", source="Filename")  # Force specific source
 2. Text formatters (uppercase, lowercase, camelcase)
 3. Markup formatters (bold, colors, dim, underline)
 
-**Usage**:
-```python
-formatters = [SizeFormatter.format_size, TextFormatter.bold]
-result = FormatterApplier.apply_formatters(1024, formatters)
-# Result: bold("1.00 KB")
-```
-
 #### Specialized Formatters
-- **MediaFormatter**: Main coordinator, mode-aware (technical/catalog)
-- **CatalogFormatter**: TMDB data, ratings, genres, poster display
-- **TrackFormatter**: Video/audio/subtitle track formatting with colors
-- **ProposedNameFormatter**: Intelligent rename suggestions
-- **SizeFormatter**: Human-readable file sizes
-- **DurationFormatter**: Duration in HH:MM:SS
-- **DateFormatter**: Timestamp formatting
-- **ResolutionFormatter**: Resolution display
-- **ExtensionFormatter**: File extension handling
-- **SpecialInfoFormatter**: Edition/source formatting
-- **TextFormatter**: Text styling utilities
+- **CatalogFormatter** (`catalog_formatter.py`): TMDB data, ratings, genres, poster display
+- **TrackFormatter** (`track_formatter.py`): Video/audio/subtitle track formatting with colors
+- **SizeFormatter** (`size_formatter.py`): Human-readable file sizes
+- **DurationFormatter** (`duration_formatter.py`): Duration in HH:MM:SS
+- **DateFormatter** (`date_formatter.py`): Timestamp formatting
+- **ResolutionFormatter** (`resolution_formatter.py`): Resolution display
+- **ExtensionFormatter** (`extension_formatter.py`): File extension handling
+- **SpecialInfoFormatter** (`special_info_formatter.py`): Edition/source formatting
+- **TextFormatter** (`text_formatter.py`): Text styling utilities
+- **Decorator modules** (`*_decorators.py`): Reusable display decorators per formatter type
 
 ### 5. Utility Modules (`src/utils/`)
 
@@ -391,7 +383,7 @@ Access via Ctrl+P:
 1. **OpenScreen** (`open_screen.py`): Directory selection dialog with validation
 2. **HelpScreen** (`help_screen.py`): Comprehensive help with key bindings
 3. **RenameConfirmScreen** (`rename_confirm_screen.py`): File rename confirmation with error handling
-4. **ConvertConfirmScreen** (`convert_confirm_screen.py`): AVI/MP4/WebM → MKV conversion confirmation
+4. **ConvertConfirmScreen** (`convert_confirm_screen.py`): AVI/MPG/MPEG/MP4/WebM → MKV conversion confirmation
 5. **DeleteConfirmScreen** (`delete_confirm_screen.py`): File deletion confirmation
 6. **SettingsScreen** (`settings_screen.py`): Settings configuration interface
 
@@ -402,10 +394,13 @@ Access via Ctrl+P:
 **Options**:
 ```json
 {
-  "mode": "technical",  // or "catalog"
-  "cache_ttl_extractors": 21600,  // 6 hours
-  "cache_ttl_tmdb": 21600,         // 6 hours
-  "cache_ttl_posters": 2592000     // 30 days
+  "mode": "technical",        // "technical" or "catalog"
+  "poster": "no",            // "no", "pseudo" (ASCII art), "viu", "richpixels"
+  "hevc_crf": 23,            // HEVC quality: 18=lossless, 23=high, 28=balanced
+  "hevc_preset": "fast",    // HEVC speed: ultrafast, veryfast, faster, fast, medium, slow
+  "cache_ttl_extractors": 21600,   // 6 hours in seconds
+  "cache_ttl_tmdb": 21600,         // 6 hours in seconds
+  "cache_ttl_posters": 2592000     // 30 days in seconds
 }
 ```
 
@@ -779,8 +774,8 @@ uv run release  # Bump + sync + build
 
 ```
 dist/
-├── moma-0.7.0-py3-none-any.whl    # Wheel distribution
-└── moma-0.7.0.tar.gz              # Source distribution
+├── moma-0.8.11-py3-none-any.whl    # Wheel distribution
+└── moma-0.8.11.tar.gz              # Source distribution
 ```
 
 ---
@@ -852,13 +847,16 @@ Title (Year) [Resolution Source Edition].ext
 |-----|--------|
 | `q` | Quit application |
 | `o` | Open directory |
-| `s` | Scan/rescan directory |
+| `s` | Scan current node's directory |
+| `Ctrl+S` | Scan entire directory tree |
 | `f` | Refresh metadata for selected file |
 | `r` | Rename file with proposed name |
-| `p` | Toggle tree expansion |
+| `c` | Convert to MKV |
+| `d` | Delete selected file |
+| `t` | Toggle tree expansion |
 | `m` | Toggle mode (technical/catalog) |
+| `p` | Settings |
 | `h` | Show help screen |
-| `Ctrl+S` | Open settings |
 | `Ctrl+P` | Open command palette |
 
 ---
@@ -884,7 +882,7 @@ Title (Year) [Resolution Source Edition].ext
 
 ## Security Considerations
 
-- Input sanitization for filenames (see `ProposedNameFormatter`)
+- Input sanitization for filenames (see `ProposedFilenameView`)
 - No shell command injection risks
 - Safe file operations (pathlib, proper error handling)
 - TMDB API key should not be committed (stored in `secrets.py`)

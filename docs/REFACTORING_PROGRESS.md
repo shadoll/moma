@@ -19,94 +19,17 @@ This document tracks the future refactoring plan for moma v0.8.x+.
 
 ## Pending Phases
 
-### Phase 3.6: Cleanup and Preparation (0/2)
-
-**Goal**: Clean up remaining issues before major refactoring.
-
-**Status**: NOT STARTED
-**Priority**: HIGH (Must complete before Phase 4)
+### Phase 3.6: Cleanup and Preparation (2/2 COMPLETED)
 
 #### 3.6.1 Refactor ProposedNameFormatter to Use Decorator Pattern
-**Status**: NOT STARTED
+**Status**: ✅ COMPLETED
 
-**Current Issue**: `ProposedNameFormatter` stores extracted values in `__init__` as instance variables, creating unnecessary coupling.
-
-**Goal**: Convert to functional/decorator pattern similar to other formatters.
-
-**Current Code**:
-```python
-class ProposedNameFormatter:
-    def __init__(self, extractor):
-        self.__order = extractor.get('order')
-        self.__title = extractor.get('title')
-        # ... more instance variables
-
-    def rename_line(self) -> str:
-        return f"{self.__order}{self.__title}..."
-```
-
-**Target Design**:
-```python
-class ProposedNameFormatter:
-    @staticmethod
-    def format_proposed_name(extractor) -> str:
-        """Generate proposed filename from extractor data"""
-        # Direct formatting without storing state
-        order = format_order(extractor.get('order'))
-        title = format_title(extractor.get('title'))
-        return f"{order}{title}..."
-
-    @staticmethod
-    def format_proposed_name_with_color(file_path, extractor) -> str:
-        """Format proposed name with color highlighting"""
-        proposed = ProposedNameFormatter.format_proposed_name(extractor)
-        # Color logic here
-```
-
-**Benefits**:
-- Stateless, pure functions
-- Easier to test
-- Consistent with other formatters
-- Can use `@cached()` decorator if needed
-- No coupling to extractor instance
-
-**Files to Modify**:
-- `src/formatters/proposed_name_formatter.py`
-- Update all usages in `app.py`, `screens.py`, etc.
-
----
+The class was renamed `ProposedFilenameView` and moved to `src/views/proposed_filename.py`. It now uses the decorator pattern with `@conditional_decorators`, `@text_decorators`, etc. — consistent with the rest of the formatter system.
 
 #### 3.6.2 Clean Up Decorators Directory
-**Status**: NOT STARTED
+**Status**: ✅ COMPLETED
 
-**Current Issue**: `src/decorators/` directory contains legacy `caching.py` file that's no longer used. All cache decorators were moved to `src/cache/decorators.py` in Phase 1.
-
-**Current Structure**:
-```
-src/decorators/
-├── caching.py          # ⚠️ LEGACY - Remove
-└── __init__.py         # Import from src.cache
-```
-
-**Actions**:
-1. **Verify no direct imports** of `src.decorators.caching`
-2. **Remove `caching.py`** - All functionality now in `src/cache/decorators.py`
-3. **Keep `__init__.py`** for backward compatibility (imports from `src.cache`)
-4. **Update any direct imports** to use `from src.cache import cached_method`
-
-**Verification**:
-```bash
-# Check for direct imports of old caching module
-grep -r "from src.decorators.caching" src/
-grep -r "import src.decorators.caching" src/
-
-# Should only find imports from __init__.py that re-export from src.cache
-```
-
-**Benefits**:
-- Removes dead code
-- Clarifies that all caching is in `src/cache/`
-- Maintains backward compatibility via `__init__.py`
+`src/decorators/` directory no longer exists. All cache decorators live in `src/cache/decorators.py`.
 
 ---
 

@@ -52,13 +52,16 @@ moma /path/to/media
 |-----|--------|
 | `q` | Quit |
 | `o` | Open directory |
-| `s` | Scan/rescan |
+| `s` | Scan current node |
+| `Ctrl+S` | Scan entire tree |
 | `f` | Refresh metadata |
 | `r` | Rename file |
+| `c` | Convert to MKV |
+| `d` | Delete file |
+| `t` | Toggle tree expansion |
 | `m` | Toggle mode (technical/catalog) |
-| `p` | Toggle tree expansion |
+| `p` | Settings |
 | `h` | Show help |
-| `Ctrl+S` | Settings |
 | `Ctrl+P` | Command palette |
 
 ---
@@ -101,13 +104,16 @@ Toggle with `m` key.
 ```json
 {
   "mode": "technical",
+  "poster": "no",
+  "hevc_crf": 23,
+  "hevc_preset": "fast",
   "cache_ttl_extractors": 21600,
   "cache_ttl_tmdb": 21600,
   "cache_ttl_posters": 2592000
 }
 ```
 
-Access via `Ctrl+S` or edit file directly.
+Access via `p` (Settings screen) or edit file directly.
 
 ---
 
