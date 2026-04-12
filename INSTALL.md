@@ -24,14 +24,11 @@ powershell -c "irm https://astral.sh/uv/install.sh | iex"
 
 #### Install moma
 ```bash
-# Always-latest stable URL (recommended)
-uv tool install https://github.com/shadoll/moma/releases/latest/download/moma-latest.whl
+# Always-latest (recommended, no version to update)
+uv tool install https://github.com/shadoll/moma/releases/latest/download/moma-latest.tar.gz
 
 # Specific version
-uv tool install https://github.com/shadoll/moma/releases/download/v0.8.11/moma-0.8.11.whl
-
-# From a locally downloaded wheel
-uv tool install moma-latest.whl
+uv tool install https://github.com/shadoll/moma/releases/download/v0.9.0/moma-0.9.0-py3-none-any.whl
 
 # From PyPI (when published)
 uv tool install moma
@@ -46,11 +43,11 @@ moma /path/to/directory # Scan specific directory
 ### Method 2: pip Install from Wheel
 
 ```bash
-# Always-latest stable URL
-pip install https://github.com/shadoll/moma/releases/latest/download/moma-latest.whl
+# Always-latest (recommended, no version to update)
+pip install https://github.com/shadoll/moma/releases/latest/download/moma-latest.tar.gz
 
-# From a locally downloaded wheel
-pip install moma-latest.whl
+# Specific version
+pip install https://github.com/shadoll/moma/releases/download/v0.9.0/moma-0.9.0-py3-none-any.whl
 ```
 
 ### Method 3: Development Installation
