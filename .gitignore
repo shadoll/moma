@@ -8,6 +8,8 @@ wheels/
 # Virtual environments
 .venv
 venv/
+# Secrets
+src/secrets.py
 # Test-generated files
 src/test/datasets/sample_mediafiles/
 .pytest_cache/

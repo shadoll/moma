@@ -78,6 +78,12 @@ Configure application settings.
                 yield Static("Cache TTL - Posters (days):", classes="label")
                 yield Input(value=str(settings.get("cache_ttl_posters") // 86400), id="ttl_posters", classes="input_field")
 
+                yield Static("TMDB API Key:", classes="label")
+                yield Input(value=settings.get("tmdb_api_key", ""), id="tmdb_api_key", password=False, classes="input_field")
+
+                yield Static("TMDB Access Token (Bearer):", classes="label")
+                yield Input(value=settings.get("tmdb_access_token", ""), id="tmdb_access_token", password=True, classes="input_field")
+
                 with Horizontal(id="buttons"):
                     yield Button("Save", id="save")
                     yield Button("Cancel", id="cancel")
@@ -145,6 +151,11 @@ Configure application settings.
             self.app.settings.set("cache_ttl_extractors", ttl_extractors)  # type: ignore
             self.app.settings.set("cache_ttl_tmdb", ttl_tmdb)  # type: ignore
             self.app.settings.set("cache_ttl_posters", ttl_posters)  # type: ignore
+
+            tmdb_api_key = self.query_one("#tmdb_api_key", Input).value.strip()
+            tmdb_access_token = self.query_one("#tmdb_access_token", Input).value.strip()
+            self.app.settings.set("tmdb_api_key", tmdb_api_key)  # type: ignore
+            self.app.settings.set("tmdb_access_token", tmdb_access_token)  # type: ignore
 
             self.app.notify("Settings saved!", severity="information", timeout=2)  # type: ignore
         except ValueError:

@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **GitHub Actions CI** (`ci.yml`): runs tests + mypy on Python 3.11 and 3.12 for every push to `main` and all PRs
-- **GitHub Actions Release** (`release.yml`): triggered by `v*.*.*` tags — runs tests, builds wheel + tarball, publishes packages as GitHub Release assets
+- **GitHub Actions Release** (`release.yml`): triggered by `v*.*.*` tags — runs tests, builds wheel + tarball, publishes packages as GitHub Release assets (`moma-X.Y.Z.whl`, `moma-latest.whl`, etc.)
+- **TMDB credentials in Settings**: `tmdb_api_key` and `tmdb_access_token` are now stored in `~/.config/moma/config.json` and editable via the Settings screen (`p`)
+
+### Changed
+- Removed hardcoded TMDB API keys from `src/secrets.py`; `secrets.py` is now gitignored
 
 ### Future Plans
 See [docs/REFACTORING_PROGRESS.md](docs/REFACTORING_PROGRESS.md) and [docs/ToDo.md](docs/ToDo.md) for upcoming features and improvements.

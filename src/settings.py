@@ -16,6 +16,8 @@ class Settings:
         "cache_ttl_extractors": 21600,  # 6 hours in seconds
         "cache_ttl_tmdb": 21600,  # 6 hours in seconds
         "cache_ttl_posters": 2592000,  # 30 days in seconds
+        "tmdb_api_key": "",  # TMDB API key
+        "tmdb_access_token": "",  # TMDB Bearer access token
     }
 
     _instance: Optional['Settings'] = None
@@ -80,12 +82,15 @@ class Settings:
     def set(self, key: str, value: Any) -> None:
         """Set a setting value and save."""
         if key in self.DEFAULTS:
-            # Basic type checking
-            if isinstance(value, type(self.DEFAULTS[key])):
-                self._settings[key] = value
-                self.save()
-            else:
+            # Basic type checking (both empty string and non-empty string are valid for str defaults)
+            default = self.DEFAULTS[key]
+            if isinstance(default, bool):
+                if not isinstance(value, bool):
+                    raise ValueError(f"Invalid type for setting {key}")
+            elif not isinstance(value, type(default)):
                 raise ValueError(f"Invalid type for setting {key}")
+            self._settings[key] = value
+            self.save()
         else:
             raise KeyError(f"Unknown setting: {key}")
 

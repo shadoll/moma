@@ -6,7 +6,6 @@ import requests
 import logging
 from pathlib import Path
 from typing import Dict, Optional, Tuple, Any
-from ..secrets import TMDB_API_KEY, TMDB_ACCESS_TOKEN
 from ..cache import Cache
 from ..settings import Settings
 
@@ -38,14 +37,23 @@ class TMDBExtractor:
         base_url = "https://api.themoviedb.org/3"
         url = f"{base_url}{endpoint}"
         
+        api_key = self.settings.get("tmdb_api_key", "")
+        access_token = self.settings.get("tmdb_access_token", "")
+
+        if not api_key and not access_token:
+            logging.warning("TMDB API key and access token are not configured")
+            return None
+
         headers = {
-            "Authorization": f"Bearer {TMDB_ACCESS_TOKEN}",
             "accept": "application/json"
         }
-        
+        if access_token:
+            headers["Authorization"] = f"Bearer {access_token}"
+
         if params is None:
             params = {}
-        params['api_key'] = TMDB_API_KEY
+        if api_key:
+            params['api_key'] = api_key
 
         try:
             response = requests.get(url, headers=headers, params=params, timeout=10)
