@@ -38,7 +38,7 @@ def test_frame_class_detection(test_case):
 
     extractor.video_tracks = [mock_track]
     extractor.extract_resolution.return_value = (height, width)
-    extractor._video_tracks.return_value = [mock_track]
+    # extractor._video_tracks.return_value = [mock_track]
     extractor.extract_interlaced.return_value = interlaced
 
     # Test the method
