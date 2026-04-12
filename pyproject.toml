@@ -23,8 +23,6 @@ dev = [
 
 [project.scripts]
 moma = "main:main"
-bump-version = "bump:main"
-release = "release:main"
 
 [tool.uv]
 package = true
