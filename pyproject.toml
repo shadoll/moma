@@ -1,6 +1,6 @@
 [project]
 name = "moma"
-version = "0.8.11"
+version = "0.8.12"
 description = "Terminal-based media file renamer and metadata viewer"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -22,9 +22,9 @@ dev = [
 ]
 
 [project.scripts]
-moma = "src.main:main"
-bump-version = "src.bump:main"
-release = "src.release:main"
+moma = "main:main"
+bump-version = "bump:main"
+release = "release:main"
 
 [tool.uv]
 package = true
