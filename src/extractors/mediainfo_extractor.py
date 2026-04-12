@@ -479,3 +479,20 @@ class MediaInfoExtractor:
             f"[{self.file_path.name}]   Result: None (no information available)"
         )
         return None
+
+    @requires_tracks_type("Video")
+    def extract_anamorphic(self) -> bool | None:
+        """Determine if the video uses anamorphic (pixel aspect ratio != 1) encoding.
+
+        Returns:
+            True: Video is anamorphic
+            False: Video is not anamorphic
+            None: Information not available in MediaInfo
+        """
+        tracks = self._get_tracks(track_type="Video")
+        assert isinstance(tracks, list)
+        track = tracks[0]
+        anamorphic = getattr(track, "anamorphic", None)
+        if anamorphic is None:
+            return None
+        return anamorphic == "Yes"
