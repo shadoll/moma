@@ -110,7 +110,7 @@ Two workflows live in `.github/workflows/`:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `ci.yml` | Push to `main`, PRs | Run tests + mypy on Python 3.11 and 3.12 |
+| `ci.yml` | Push to `main`, PRs | Run tests + mypy on Python 3.12 |
 | `release.yml` | Push of `v*.*.*` tag | Run tests, build wheel + tarball, publish as GitHub Release |
 
 **To publish a release**: bump version → commit → `git tag vX.Y.Z` → `git push --tags`. CI handles the rest.

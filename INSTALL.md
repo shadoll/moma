@@ -4,7 +4,7 @@ moma is a terminal-based media file renamer and metadata viewer built with Pytho
 
 ## Prerequisites
 
-- Python 3.11 or higher
+- Python 3.12 or higher
 - UV package manager (recommended) or pip
 
 ## Installation Methods
@@ -81,7 +81,7 @@ uv tool install --editable .
 If you prefer not to install globally:
 
 ```bash
-# Ensure you have Python 3.11+
+# Ensure you have Python 3.12+
 python3 --version
 
 # Install dependencies
@@ -95,7 +95,7 @@ python3 src/main.py /path/to/directory
 ## System Requirements
 
 ### Linux
-- Python 3.11+
+- Python 3.12+
 - MediaInfo library (for detailed media analysis)
   ```bash
   # Ubuntu/Debian
@@ -109,11 +109,11 @@ python3 src/main.py /path/to/directory
   ```
 
 ### macOS
-- Python 3.11+ (via Homebrew or official installer)
+- Python 3.12+ (via Homebrew or official installer)
 - MediaInfo (automatically handled by pymediainfo)
 
 ### Windows
-- Python 3.11+ (official installer)
+- Python 3.12+ (official installer)
 - MediaInfo (automatically handled by pymediainfo)
 
 ## Downloading Releases

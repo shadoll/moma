@@ -35,7 +35,7 @@ moma is a sophisticated Terminal User Interface (TUI) application for managing, 
 ### Current Version
 
 - **Version**: 0.8.11 (in development)
-- **Python**: 3.11+
+- **Python**: 3.12+
 - **License**: Not specified
 - **Repository**: `/Users/sha/Developer/sha.dev/moma`
 
@@ -55,7 +55,7 @@ moma is a sophisticated Terminal User Interface (TUI) application for managing, 
 - **mypy** (≥1.0.0): Type checking
 
 #### System Requirements
-- Python 3.11 or higher
+- Python 3.12 or higher
 - UV package manager (recommended)
 - MediaInfo library (system dependency)
 
@@ -536,7 +536,7 @@ uv run pytest --cov=src --cov-report=html
 
 ### Python Standards
 
-- **Version**: Python 3.11+
+- **Version**: Python 3.12+
 - **Style**: PEP 8 guidelines
 - **Type Hints**: Encouraged for all public APIs
 - **Docstrings**: Google-style format
@@ -782,7 +782,7 @@ Two workflows in `.github/workflows/`:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| `ci.yml` | Push to `main`, PRs | Tests + mypy on Python 3.11 and 3.12 |
+| `ci.yml` | Push to `main`, PRs | Tests + mypy on Python 3.12 |
 | `release.yml` | Push of `v*.*.*` tag | Tests → build → publish to GitHub Releases |
 
 **To publish a release**: commit bumped version → `git tag vX.Y.Z` → `git push --tags`.  

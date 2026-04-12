@@ -119,7 +119,7 @@ Access via `p` (Settings screen) or edit file directly.
 
 ## Requirements
 
-- **Python**: 3.11+
+- **Python**: 3.12+
 - **UV**: Package manager
 - **MediaInfo**: System library (for technical metadata)
 - **Internet**: For TMDB catalog mode

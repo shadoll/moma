@@ -3,7 +3,7 @@ name = "moma"
 version = "0.8.11"
 description = "Terminal-based media file renamer and metadata viewer"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "mutagen>=1.47.0",
     "textual>=6.11.0",
