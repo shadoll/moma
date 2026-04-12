@@ -1,6 +1,7 @@
 from pathlib import Path
 from pymediainfo import MediaInfo
 from collections import Counter
+from typing import Any
 from ..constants import FRAME_CLASSES, get_extension_from_format
 from ..cache import cached_method, Cache
 import langcodes
@@ -52,7 +53,7 @@ class MediaInfoExtractor:
             Cache() if use_cache else None
         )  # Singleton cache for @cached_method decorator
         self.settings = None  # Will be set by Settings singleton if needed
-        self._cache = {}  # Internal cache for method results
+        self._cache: dict[str, Any] = {}  # Internal cache for method results
 
     @cached_method()
     def _get_media_info(self) -> MediaInfo | None:

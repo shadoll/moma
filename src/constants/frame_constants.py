@@ -7,6 +7,15 @@ Also includes non-standard quality indicators that appear in filenames but don't
 represent specific resolutions.
 """
 
+from typing import TypedDict
+
+
+class FrameClassInfo(TypedDict):
+    """Information about a video frame class."""
+    nominal_height: int
+    typical_widths: list[int]
+    description: str
+
 # Non-standard quality indicators that don't have specific resolution values
 # These are used in filenames to indicate quality but aren't proper frame classes
 # When found, we return None instead of trying to classify them
@@ -15,7 +24,7 @@ represent specific resolutions.
 # the exact resolution, so we treat them as non-standard indicators
 NON_STANDARD_QUALITY_INDICATORS = ['SD', 'LQ', 'HD', 'QHD', 'FHD', 'FullHD', '4K', '8K']
 
-FRAME_CLASSES = {
+FRAME_CLASSES: dict[str, FrameClassInfo] = {
     "480p": {
         "nominal_height": 480,
         "typical_widths": [640, 704, 720],

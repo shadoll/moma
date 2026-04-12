@@ -287,7 +287,7 @@ class ConversionService:
         logger.debug(f"Expanded languages from '{audio_langs_str}' to: {langs}")
 
         # Map to tracks (pad with None if needed)
-        result = []
+        result: List[Optional[str]] = []
         for i in range(audio_track_count):
             if i < len(langs):
                 result.append(langs[i])

@@ -1,7 +1,3 @@
-import json
-import os
-import time
-import hashlib
 import requests
 import logging
 from pathlib import Path
@@ -17,7 +13,7 @@ class TMDBExtractor:
         self.cache = Cache() if use_cache else None  # Singleton cache
         self.settings = Settings()  # Singleton settings
         self.ttl_seconds = self.settings.get("cache_ttl_extractors", 21600)
-        self._movie_db_info = None
+        self._movie_db_info: Optional[Dict[str, Any]] = None
 
     def _get_cached_data(self, cache_key: str) -> Optional[Dict[str, Any]]:
         """Get data from cache if valid"""
@@ -301,5 +297,5 @@ class TMDBExtractor:
             local_path = self.cache.set_image(cache_key, image_data, self.ttl_seconds)
             return str(local_path) if local_path else None
         except requests.RequestException as e:
-            logging.warning(f"Failed to download poster from {poster_url}: {e}")
+            logging.warning(f"Failed to download poster from {url}: {e}")
             return None

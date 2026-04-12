@@ -9,7 +9,7 @@ This service manages the extraction of metadata from media files with:
 
 import logging
 from pathlib import Path
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 from concurrent.futures import ThreadPoolExecutor, Future
 from threading import Lock
 
@@ -169,12 +169,11 @@ class MetadataService:
             mode = self.settings.get("mode")
 
             # Format based on mode
+            formatted_info: Any
             if mode == "technical":
-                formatter = MediaPanelView(extractor)
-                formatted_info = formatter.file_info_panel()
+                formatted_info = MediaPanelView(extractor).file_info_panel()
             else:  # catalog
-                formatter = CatalogFormatter(extractor, self.settings)
-                formatted_info = formatter.format_catalog_info()
+                formatted_info = CatalogFormatter(extractor, self.settings).format_catalog_info()
 
             # Generate proposed name
             proposed_formatter = ProposedFilenameView(extractor)

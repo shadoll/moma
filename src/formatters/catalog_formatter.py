@@ -1,6 +1,7 @@
 from .text_formatter import TextFormatter
 from src.views.posters import AsciiPosterRenderer, ViuPosterRenderer, RichPixelsPosterRenderer
-from typing import Union
+from typing import Union, Any
+from io import StringIO
 import os
 
 
@@ -11,7 +12,7 @@ class CatalogFormatter:
         self.extractor = extractor
         self.settings = settings
 
-    def format_catalog_info(self) -> tuple[str, Union[str, object]]:
+    def format_catalog_info(self) -> tuple[str, Any]:
         """Format catalog information for display.
 
         Returns:
@@ -66,18 +67,18 @@ class CatalogFormatter:
         text_content = "\n\n".join(lines) if lines else "No catalog information available"
 
         from rich.console import Console
-        from io import StringIO
 
-        console = Console(file=StringIO(), width=120, legacy_windows=False)
+        sio = StringIO()
+        console = Console(file=sio, width=120, legacy_windows=False)
         console.print(text_content, markup=True)
-        rendered_text = console.file.getvalue()
+        rendered_text = sio.getvalue()
 
         # Get poster separately
         poster_content = self.get_poster()
 
         return rendered_text, poster_content
 
-    def get_poster(self) -> Union[str, object]:
+    def get_poster(self) -> Any:
         """Get poster content for separate display.
 
         Returns:
@@ -99,7 +100,7 @@ class CatalogFormatter:
                 return f"{TextFormatter.bold('Poster:')} {poster_path} (not cached yet)"
             return ""
 
-    def _display_poster(self, image_path: str, mode: str) -> Union[str, object]:
+    def _display_poster(self, image_path: str, mode: str) -> Any:
         """Display poster image based on mode setting.
 
         Args:
@@ -113,6 +114,7 @@ class CatalogFormatter:
             return f"Image file not found: {image_path}"
 
         # Select renderer based on mode
+        renderer: Union[ViuPosterRenderer, AsciiPosterRenderer, RichPixelsPosterRenderer]
         if mode == "viu":
             renderer = ViuPosterRenderer()
         elif mode == "pseudo":

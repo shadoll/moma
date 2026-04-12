@@ -5,7 +5,7 @@ should inherit from. This ensures a consistent interface and enables type checki
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 
 class Formatter(ABC):
@@ -106,7 +106,7 @@ class MarkupFormatter(Formatter):
     pass
 
 
-class CompositeFormatter(Formatter):
+class CompositeFormatter:
     """Formatter that applies multiple formatters in sequence.
 
     This class allows chaining multiple formatters together in a specific order.
@@ -122,7 +122,7 @@ class CompositeFormatter(Formatter):
         formatters: List of formatter functions to apply in order
     """
 
-    def __init__(self, formatters: list[callable]):
+    def __init__(self, formatters: list[Callable[..., Any]]):
         """Initialize the composite formatter.
 
         Args:

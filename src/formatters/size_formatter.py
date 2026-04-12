@@ -4,11 +4,12 @@ class SizeFormatter:
     @staticmethod
     def format_size(bytes_size: int) -> str:
         """Format bytes to human readable with unit"""
+        size: float = bytes_size
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-            if bytes_size < 1024:
-                return f"{bytes_size:.1f} {unit}"
-            bytes_size /= 1024
-        return f"{bytes_size:.1f} TB"
+            if size < 1024:
+                return f"{size:.1f} {unit}"
+            size /= 1024
+        return f"{size:.1f} TB"
 
     @staticmethod
     def format_size_full(bytes_size: int) -> str:

@@ -1,13 +1,13 @@
 """Rich-pixels renderer for high-quality terminal image display."""
 
 from .base import PosterRenderer
-from typing import Union
+from typing import Any
 
 
 class RichPixelsPosterRenderer(PosterRenderer):
     """Render posters using rich-pixels library for high-quality display."""
 
-    def render(self, image_path: str, width: int = 40) -> Union[str, object]:
+    def render(self, image_path: str, width: int = 40) -> Any:
         """Render poster using rich-pixels.
 
         Args:

@@ -6,6 +6,7 @@ from textual.command import Provider, Hit
 from rich.markup import escape
 from pathlib import Path
 from functools import partial
+from typing import TYPE_CHECKING, cast, Any
 import threading
 import logging
 
@@ -43,7 +44,7 @@ class CacheCommandProvider(Provider):
                 yield Hit(
                     score,
                     matcher.highlight(display_name),
-                    partial(self.app.action_cache_command, command_name),
+                    partial(cast('MomaApp', self.app).action_cache_command, command_name),
                     help=help_text
                 )
 
@@ -208,11 +209,11 @@ class MomaApp(App):
 
         # File type icons
         icons = {
-            'mkv': '󰈫',   # Video camera for MKV
-            'mk3d': '󰟽',  # Clapper board for 3D
-            'mp4': '󰎁',   # Video camera
-            'mov': '󰎁',   # Video camera
-            'webm': '',  # Video camera
+            'mkv': '🎥',   # Video camera for MKV
+            'mk3d': '🕹️',  # Clapper board for 3D
+            'mp4': '🎥',   # Video camera
+            'mov': '🎥',   # Video camera
+            'webm': '🎥',  # Video camera
             'avi': '💿',   # Film frames for AVI
             'wmv': '📀',   # Video camera
             'm4v': '📹',   # Video camera
@@ -308,14 +309,12 @@ class MomaApp(App):
             extractor = MediaExtractor(file_path)
 
             mode = self.settings.get("mode")
-            poster_content = ""
+            poster_content: Any = ""
 
             if mode == "technical":
-                formatter = MediaPanelView(extractor)
-                full_info = formatter.file_info_panel()
+                full_info = MediaPanelView(extractor).file_info_panel()
             else:  # catalog
-                formatter = CatalogFormatter(extractor, self.settings)
-                full_info, poster_content = formatter.format_catalog_info()
+                full_info, poster_content = CatalogFormatter(extractor, self.settings).format_catalog_info()
 
             # Update UI
             self.call_later(

@@ -1,6 +1,7 @@
 """Base class for poster renderers."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 import os
 
 
@@ -8,15 +9,15 @@ class PosterRenderer(ABC):
     """Abstract base class for poster rendering implementations."""
 
     @abstractmethod
-    def render(self, image_path: str, width: int = 40) -> str:
-        """Render a poster image to a string.
+    def render(self, image_path: str, width: int = 40) -> Any:
+        """Render a poster image.
 
         Args:
             image_path: Path to the poster image file
             width: Desired width in characters
 
         Returns:
-            Rendered poster as a string
+            Rendered poster as a string or Rich Renderable
         """
         pass
 

@@ -247,13 +247,13 @@ class RenameService:
         is_valid, error = self.validate_filename(sanitized_filename)
         if not is_valid:
             logger.error(f"Invalid filename: {error}")
-            return False, error
+            return False, error or "Invalid filename"
 
         # Check for conflicts
         has_conflict, conflict_msg = self.check_name_conflict(source_path, sanitized_filename)
         if has_conflict:
             logger.warning(f"Name conflict: {conflict_msg}")
-            return False, conflict_msg
+            return False, conflict_msg or "Name conflict"
 
         # Build the new path
         new_path = source_path.parent / sanitized_filename

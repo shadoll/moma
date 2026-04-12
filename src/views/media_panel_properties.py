@@ -540,3 +540,4 @@ class MediaPanelProperties:
     @track_decorators.subtitle_track()
     def subtitle_track(self, track, index) -> str:
         """Get subtitle track info formatted with label."""
+        return track

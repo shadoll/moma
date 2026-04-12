@@ -18,7 +18,7 @@ from .media_constants import (
     get_extension_from_format
 )
 from .source_constants import SOURCE_DICT
-from .frame_constants import FRAME_CLASSES, NON_STANDARD_QUALITY_INDICATORS
+from .frame_constants import FRAME_CLASSES, NON_STANDARD_QUALITY_INDICATORS, FrameClassInfo
 from .moviedb_constants import MOVIE_DB_DICT
 from .edition_constants import SPECIAL_EDITIONS
 from .lang_constants import SKIP_WORDS
@@ -35,6 +35,7 @@ __all__ = [
     # Frame classes
     'FRAME_CLASSES',
     'NON_STANDARD_QUALITY_INDICATORS',
+    'FrameClassInfo',
     # Movie databases
     'MOVIE_DB_DICT',
     # Special editions

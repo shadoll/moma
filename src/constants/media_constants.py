@@ -87,7 +87,7 @@ MEDIA_TYPES = {
 
 # Reverse mapping: meta_type -> list of extensions
 # Built once at module load instead of rebuilding in every extractor instance
-META_TYPE_TO_EXTENSIONS = {}
+META_TYPE_TO_EXTENSIONS: dict[str, list[str]] = {}
 for ext, info in MEDIA_TYPES.items():
     meta_type = info.get('meta_type')
     if meta_type:

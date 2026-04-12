@@ -16,6 +16,7 @@ class Cache:
 
     _instance: Optional['Cache'] = None
     _lock_init = threading.Lock()
+    _initialized: bool
 
     def __new__(cls, cache_dir: Optional[Path] = None):
         """Create or return singleton instance."""

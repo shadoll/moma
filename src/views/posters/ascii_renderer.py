@@ -1,12 +1,13 @@
 """ASCII art poster renderer."""
 
 from .base import PosterRenderer
+from typing import Any
 
 
 class AsciiPosterRenderer(PosterRenderer):
     """Render posters as ASCII art using PIL."""
 
-    def render(self, image_path: str, width: int = 35) -> str:
+    def render(self, image_path: str, width: int = 35) -> Any:
         """Render poster as ASCII art.
 
         Args:
@@ -28,7 +29,7 @@ class AsciiPosterRenderer(PosterRenderer):
             from PIL import Image, ImageEnhance
 
             # Open image
-            img = Image.open(image_path)
+            img: Any = Image.open(image_path)
 
             # Enhance contrast for better detail
             enhancer = ImageEnhance.Contrast(img)
@@ -57,7 +58,7 @@ class AsciiPosterRenderer(PosterRenderer):
 
                     # Map pixel brightness to character
                     # Invert: 0 (black) -> dark char, 255 (white) -> light char
-                    char_index = (255 - avg) * (len(ascii_chars) - 1) // 255
+                    char_index = int((255 - avg) * (len(ascii_chars) - 1) // 255)
                     char = ascii_chars[char_index]
                     row.append(char)
                 ascii_art.append(''.join(row))

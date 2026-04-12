@@ -22,6 +22,7 @@ class Settings:
 
     _instance: Optional['Settings'] = None
     _lock = threading.Lock()
+    _initialized: bool
 
     def __new__(cls, config_dir: Path | None = None):
         """Create or return singleton instance."""
