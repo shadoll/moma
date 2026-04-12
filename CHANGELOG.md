@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **GitHub Actions CI** (`ci.yml`): runs tests + mypy on Python 3.11 and 3.12 for every push to `main` and all PRs
+- **GitHub Actions Release** (`release.yml`): triggered by `v*.*.*` tags — runs tests, builds wheel + tarball, publishes packages as GitHub Release assets
+
 ### Future Plans
 See [docs/REFACTORING_PROGRESS.md](docs/REFACTORING_PROGRESS.md) and [docs/ToDo.md](docs/ToDo.md) for upcoming features and improvements.
 

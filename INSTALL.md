@@ -24,13 +24,16 @@ powershell -c "irm https://astral.sh/uv/install.sh | iex"
 
 #### Install moma
 ```bash
-# One-command install from remote wheel
-uv tool install https://github.com/shadoll/moma/raw/branch/main/dist/moma-0.8.11-py3-none-any.whl
+# Always-latest stable URL (recommended)
+uv tool install https://github.com/shadoll/moma/releases/latest/download/moma-latest.whl
 
-# Or from local wheel (if downloaded)
-uv tool install dist/moma-0.8.11-py3-none-any.whl
+# Specific version
+uv tool install https://github.com/shadoll/moma/releases/download/v0.8.11/moma-0.8.11.whl
 
-# Or from PyPI (when published)
+# From a locally downloaded wheel
+uv tool install moma-latest.whl
+
+# From PyPI (when published)
 uv tool install moma
 ```
 
@@ -42,14 +45,12 @@ moma /path/to/directory # Scan specific directory
 
 ### Method 2: pip Install from Wheel
 
-If you have the wheel file, you can install it with pip.
-
 ```bash
-# Install the wheel
-pip install dist/moma-0.8.11-py3-none-any.whl
+# Always-latest stable URL
+pip install https://github.com/shadoll/moma/releases/latest/download/moma-latest.whl
 
-# Or install globally (may require sudo)
-sudo pip install dist/moma-0.8.11-py3-none-any.whl
+# From a locally downloaded wheel
+pip install moma-latest.whl
 ```
 
 ### Method 3: Development Installation
@@ -114,6 +115,12 @@ python3 src/main.py /path/to/directory
 ### Windows
 - Python 3.11+ (official installer)
 - MediaInfo (automatically handled by pymediainfo)
+
+## Downloading Releases
+
+All release packages (`.whl` and `.tar.gz`) are attached to each [GitHub Release](https://github.com/shadoll/moma/releases). Releases are built automatically by CI when a version tag (`v*.*.*`) is pushed.
+
+---
 
 ## Verification
 

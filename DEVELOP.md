@@ -87,18 +87,33 @@ See [AGENTS.md - Testing Strategy](AGENTS.md#testing-strategy)
 ## Release Process
 
 ```bash
-# 1. Bump version
+# 1. Bump version (increments patch in pyproject.toml)
 uv run bump-version
 
-# 2. Run full release
+# 2. Run full release (bump + sync + build)
 uv run release
 
-# 3. Test installation
+# 3. Test installation locally
 uv tool install .
 
 # 4. Manual testing
 uv run moma /path/to/test/media
+
+# 5. Tag and push — CI builds and publishes to GitHub Releases automatically
+git tag v$(grep '^version' pyproject.toml | grep -o '[0-9.]*')
+git push origin main --tags
 ```
+
+### CI / GitHub Actions
+
+Two workflows live in `.github/workflows/`:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push to `main`, PRs | Run tests + mypy on Python 3.11 and 3.12 |
+| `release.yml` | Push of `v*.*.*` tag | Run tests, build wheel + tarball, publish as GitHub Release |
+
+**To publish a release**: bump version → commit → `git tag vX.Y.Z` → `git push --tags`. CI handles the rest.
 
 See [AGENTS.md - Release Process](AGENTS.md#release-process)
 

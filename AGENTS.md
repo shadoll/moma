@@ -776,24 +776,40 @@ uv run bump-version
 uv run release  # Bump + sync + build
 ```
 
+### CI / GitHub Actions
+
+Two workflows in `.github/workflows/`:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push to `main`, PRs | Tests + mypy on Python 3.11 and 3.12 |
+| `release.yml` | Push of `v*.*.*` tag | Tests → build → publish to GitHub Releases |
+
+**To publish a release**: commit bumped version → `git tag vX.Y.Z` → `git push --tags`.  
+CI runs tests, builds wheel + tarball, creates a GitHub Release with packages attached.
+
 ### Release Checklist
 
 - [ ] All tests passing: `uv run pytest`
 - [ ] Type checking passes: `uv run mypy src/`
-- [ ] Documentation updated (CHANGELOG.md, README.md)
-- [ ] Version bumped in `pyproject.toml`
+- [ ] Documentation updated (CHANGELOG.md, README.md, AGENTS.md)
+- [ ] Version bumped in `pyproject.toml`: `uv run bump-version`
 - [ ] Dependencies synced: `uv sync`
-- [ ] Build successful: `uv build`
-- [ ] Install test: `uv tool install .`
+- [ ] Tag pushed: `git tag vX.Y.Z && git push --tags`
+- [ ] CI release workflow passes (GitHub Actions)
 - [ ] Manual testing with real media files
 
 ### Build Artifacts
+
+Built locally with `uv build` or automatically by CI on tag push:
 
 ```
 dist/
 ├── moma-0.8.11-py3-none-any.whl    # Wheel distribution
 └── moma-0.8.11.tar.gz              # Source distribution
 ```
+
+Released packages are attached to each [GitHub Release](https://github.com/shadoll/moma/releases).
 
 ---
 
