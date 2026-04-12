@@ -45,8 +45,9 @@ jobs:
 
       - name: Create short-name and latest aliases
         run: |
-          cp dist/moma-${{ steps.version.outputs.version }}-py3-none-any.whl dist/moma-${{ steps.version.outputs.version }}.whl
-          cp dist/moma-${{ steps.version.outputs.version }}-py3-none-any.whl dist/moma-latest.whl
+          WHL=$(ls dist/moma-${{ steps.version.outputs.version }}-*.whl)
+          cp "$WHL" dist/moma-${{ steps.version.outputs.version }}.whl
+          cp "$WHL" dist/moma-latest.whl
           cp dist/moma-${{ steps.version.outputs.version }}.tar.gz dist/moma-latest.tar.gz
 
       - name: Create GitHub Release
