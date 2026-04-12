@@ -37,8 +37,9 @@ def test_frame_class_detection(test_case):
     mock_track.interlaced = 'Yes' if interlaced else 'No'
 
     extractor.video_tracks = [mock_track]
+    extractor._get_tracks.return_value = [mock_track]   # satisfies @requires_tracks_type decorator
+    extractor._get_track.return_value = mock_track
     extractor.extract_resolution.return_value = (height, width)
-    extractor._video_tracks.return_value = [mock_track]
     extractor.extract_interlaced.return_value = interlaced
 
     # Test the method
