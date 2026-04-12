@@ -1,10 +1,10 @@
 # moma - Media Manager, File Renamer and Metadata Viewer
 
-**Version**: 0.7.0-dev
+**Version**: 0.8.11
 
 A powerful Terminal User Interface (TUI) for managing media collections. View detailed metadata, browse TMDB catalog with posters, and intelligently rename files.
 
-> **📘 For complete documentation, see [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)**
+> **📘 For complete documentation, see [AGENTS.md](AGENTS.md)**
 
 ---
 
@@ -133,7 +133,7 @@ src/
 └── constants/              # Configuration constants
 ```
 
-See [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md) for complete architecture documentation.
+See [AGENTS.md](AGENTS.md) for complete architecture documentation.
 
 ---
 
@@ -156,7 +156,7 @@ See [DEVELOP.md](DEVELOP.md) for development documentation.
 
 ## Documentation
 
-- **[ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)** - Complete technical reference
+- **[AGENTS.md](AGENTS.md)** - Complete technical reference
 - **[INSTALL.md](INSTALL.md)** - Installation instructions
 - **[DEVELOP.md](DEVELOP.md)** - Development guide
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
@@ -178,4 +178,4 @@ Not specified
 
 ---
 
-**For complete documentation, see [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)**
+**For complete documentation, see [AGENTS.md](AGENTS.md)**

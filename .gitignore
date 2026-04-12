@@ -9,3 +9,5 @@ wheels/
 .venv
 # Test-generated files
 src/test/datasets/sample_mediafiles/
+.pytest_cache/
+.mypy_cache/

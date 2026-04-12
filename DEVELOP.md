@@ -1,9 +1,9 @@
 # Developer Guide
 
-**Version**: 0.7.0-dev
-**Last Updated**: 2026-01-01
+**Version**: 0.8.11
+**Last Updated**: 2026-04-11
 
-> **📘 For complete development documentation, see [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)**
+> **📘 For complete development documentation, see [AGENTS.md](AGENTS.md)**
 
 Quick reference for developers working on the moma project.
 
@@ -80,7 +80,7 @@ uv run pytest -xvs
 uv run python src/test/fill_sample_mediafiles.py
 ```
 
-See [ENGINEERING_GUIDE.md - Testing Strategy](ENGINEERING_GUIDE.md#testing-strategy)
+See [AGENTS.md - Testing Strategy](AGENTS.md#testing-strategy)
 
 ---
 
@@ -100,19 +100,19 @@ uv tool install .
 uv run moma /path/to/test/media
 ```
 
-See [ENGINEERING_GUIDE.md - Release Process](ENGINEERING_GUIDE.md#release-process)
+See [AGENTS.md - Release Process](AGENTS.md#release-process)
 
 ---
 
 ## Documentation
 
-- **[ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)** - Complete technical reference
+- **[AGENTS.md](AGENTS.md)** - Complete technical reference
 - **[README.md](README.md)** - User guide
 - **[INSTALL.md](INSTALL.md)** - Installation instructions
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
-- **[REFACTORING_PROGRESS.md](REFACTORING_PROGRESS.md)** - Future plans
-- **[ToDo.md](ToDo.md)** - Current tasks
+- **[docs/REFACTORING_PROGRESS.md](docs/REFACTORING_PROGRESS.md)** - Future plans
+- **[docs/ToDo.md](docs/ToDo.md)** - Current tasks
 
 ---
 
-**For complete documentation, see [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md)**
+**For complete documentation, see [AGENTS.md](AGENTS.md)**

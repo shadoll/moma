@@ -1,7 +1,7 @@
 # moma Engineering Guide
 
-**Version**: 0.7.0-dev
-**Last Updated**: 2026-01-01
+**Version**: 0.8.11
+**Last Updated**: 2026-04-11
 **Python**: 3.11+
 **Status**: Active Development
 
@@ -34,7 +34,7 @@ moma is a sophisticated Terminal User Interface (TUI) application for managing, 
 
 ### Current Version
 
-- **Version**: 0.7.0-dev (in development)
+- **Version**: 0.8.11 (in development)
 - **Python**: 3.11+
 - **License**: Not specified
 - **Repository**: `/Users/sha/Developer/sha.dev/moma`
@@ -386,12 +386,14 @@ Access via Ctrl+P:
 - Safe for concurrent extractor access
 - Memory cache synchronized with file cache
 
-### 8. UI Screens (`src/screens.py`)
+### 8. UI Screens (`src/views/`)
 
-1. **OpenScreen**: Directory selection dialog with validation
-2. **HelpScreen**: Comprehensive help with key bindings
-3. **RenameConfirmScreen**: File rename confirmation with error handling
-4. **SettingsScreen**: Settings configuration interface
+1. **OpenScreen** (`open_screen.py`): Directory selection dialog with validation
+2. **HelpScreen** (`help_screen.py`): Comprehensive help with key bindings
+3. **RenameConfirmScreen** (`rename_confirm_screen.py`): File rename confirmation with error handling
+4. **ConvertConfirmScreen** (`convert_confirm_screen.py`): AVI/MP4/WebM → MKV conversion confirmation
+5. **DeleteConfirmScreen** (`delete_confirm_screen.py`): File deletion confirmation
+6. **SettingsScreen** (`settings_screen.py`): Settings configuration interface
 
 ### 9. Settings System (`src/settings.py`)
 
@@ -933,12 +935,12 @@ Title (Year) [Resolution Source Edition].ext
 - **INSTALL.md**: Installation methods
 - **DEVELOP.md**: Developer setup and debugging
 - **CHANGELOG.md**: Version history and changes
-- **REFACTORING_PROGRESS.md**: Future refactoring plans
-- **ToDo.md**: Current task list
+- **docs/REFACTORING_PROGRESS.md**: Future refactoring plans
+- **docs/ToDo.md**: Current task list
 
 ---
 
-**Last Updated**: 2026-01-01
+**Last Updated**: 2026-04-11
 **Maintainer**: sha
 **For**: AI Assistants and Developers
 **Repository**: `/Users/sha/Developer/sha.dev/moma`

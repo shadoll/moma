@@ -1,11 +1,11 @@
 # moma - Refactoring Roadmap
 
-**Version**: 0.7.0-dev
-**Last Updated**: 2026-01-01
+**Version**: 0.8.11
+**Last Updated**: 2026-04-11
 
 > **📋 For completed work, see [CHANGELOG.md](CHANGELOG.md)**
 
-This document tracks the future refactoring plan for moma v0.7.0+.
+This document tracks the future refactoring plan for moma v0.8.x+.
 
 ---
 
@@ -220,7 +220,7 @@ grep -r "import src.decorators.caching" src/
 **Status**: NOT STARTED
 
 #### 6.1 Update Technical Documentation
-- ✅ ENGINEERING_GUIDE.md created
+- ✅ AGENTS.md created
 - [ ] API documentation generation
 - [ ] Architecture diagrams
 - [ ] Component interaction flows
@@ -403,6 +403,6 @@ grep -r "import src.decorators.caching" src/
 **See Also**:
 - [CHANGELOG.md](CHANGELOG.md) - Completed work
 - [ToDo.md](ToDo.md) - Future feature requests
-- [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md) - Technical documentation
+- [AGENTS.md](AGENTS.md) - Technical documentation
 
-**Last Updated**: 2026-01-01
+**Last Updated**: 2026-04-11

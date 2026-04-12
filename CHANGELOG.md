@@ -10,15 +10,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Future Plans
-See [REFACTORING_PROGRESS.md](REFACTORING_PROGRESS.md) and [ToDo.md](ToDo.md) for upcoming features and improvements.
+See [docs/REFACTORING_PROGRESS.md](docs/REFACTORING_PROGRESS.md) and [docs/ToDo.md](docs/ToDo.md) for upcoming features and improvements.
 
 ---
 
-## [0.7.0-dev] - 2026-01-01
+## [0.8.11] - 2026-04-11
+
+### Changed
+- Renamed project package from `renamer` to `moma`, CLI command is now `moma`
+- Main app class renamed `RenamerApp` → `MomaApp`
+- Package source directory renamed `renamer/` → `src/`
+- Config path `~/.config/renamer/` → `~/.config/moma/`
+- Cache path `~/.cache/renamer/` → `~/.cache/moma/`
+- Migrated repository to GitHub: `git@github.com:shadoll/moma.git`
+
+---
+
+## [0.8.10] - 2026-04-10
+
+### Added
+- **OpenScreen**: Dedicated screen for directory input with validation
+- **ConvertConfirmScreen**: Conversion confirmation for AVI/MP4/WebM → MKV
+- **DeleteConfirmScreen**: File deletion confirmation screen
+- **Singleton logging configuration** (`logging_config.py`)
+
+### Fixed
+- Improved scan commands and key bindings usability
+- MP4 and WebM support in conversion service
+
+---
+
+## [0.7.10] - 2026-02-01
+
+### Added
+- **Poster rendering**: ASCII art, Viu, and RichPixels poster display options
+- **HEVC encoding options**: configurable CRF and preset in settings
+- **MPG/MPEG format support** in conversion service
+- **Genre extraction** added to media properties panel
+- **File icons** in directory tree
+- **Delete file functionality** with confirmation
+
+### Changed
+- Refactored `FormatterApplier` class (removed, inlined)
+- Consolidated text color decorators
+- Improved scan type detection for interlaced content
+- Updated bitrate calculation in `TrackFormatter`
+- Replaced dots with spaces in title normalization
+
+### Fixed
+- Poster handling and rendering in catalog mode
+- TMDB data retrieval improvements
+
+---
+
+## [0.7.0] - 2026-01-01
 
 ### Major Refactoring (Phases 1-3)
 
-This development version represents a significant refactoring effort focused on code quality, architecture, and maintainability.
+Significant refactoring focused on code quality, architecture, and maintainability.
 
 ---
 
@@ -122,18 +171,18 @@ This development version represents a significant refactoring effort focused on 
 ### Documentation Improvements
 
 #### Added
-- **ENGINEERING_GUIDE.md**: Comprehensive 900+ line technical reference
+- **AGENTS.md**: Comprehensive 900+ line technical reference
 - **CHANGELOG.md**: This file
 
 #### Changed
-- **CLAUDE.md**: Streamlined to pointer to ENGINEERING_GUIDE.md
-- **AI_AGENT.md**: Marked as deprecated, points to ENGINEERING_GUIDE.md
-- **DEVELOP.md**: Streamlined with references to ENGINEERING_GUIDE.md
+- **CLAUDE.md**: Streamlined to pointer to AGENTS.md
+- **AI_AGENT.md**: Marked as deprecated, points to AGENTS.md
+- **DEVELOP.md**: Streamlined with references to AGENTS.md
 - **README.md**: Streamlined user guide with references
 
 #### Removed
 - Outdated version information from documentation files
-- Duplicated content now in ENGINEERING_GUIDE.md
+- Duplicated content now in AGENTS.md
 
 ---
 
@@ -216,10 +265,10 @@ This development version represents a significant refactoring effort focused on 
 
 ## Links
 
-- [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md) - Complete technical documentation
-- [REFACTORING_PROGRESS.md](REFACTORING_PROGRESS.md) - Future refactoring plans
-- [ToDo.md](ToDo.md) - Current task list
+- [AGENTS.md](AGENTS.md) - Complete technical documentation
+- [docs/REFACTORING_PROGRESS.md](docs/REFACTORING_PROGRESS.md) - Future refactoring plans
+- [docs/ToDo.md](docs/ToDo.md) - Current task list
 
 ---
 
-**Last Updated**: 2026-01-01
+**Last Updated**: 2026-04-11

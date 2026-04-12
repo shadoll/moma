@@ -25,10 +25,10 @@ powershell -c "irm https://astral.sh/uv/install.sh | iex"
 #### Install moma
 ```bash
 # One-command install from remote wheel
-uv tool install https://github.com/shadoll/moma/raw/branch/main/dist/moma-0.2.4-py3-none-any.whl
+uv tool install https://github.com/shadoll/moma/raw/branch/main/dist/moma-0.8.11-py3-none-any.whl
 
 # Or from local wheel (if downloaded)
-uv tool install dist/moma-0.2.4-py3-none-any.whl
+uv tool install dist/moma-0.8.11-py3-none-any.whl
 
 # Or from PyPI (when published)
 uv tool install moma
@@ -46,10 +46,10 @@ If you have the wheel file, you can install it with pip.
 
 ```bash
 # Install the wheel
-pip install dist/moma-0.2.0-py3-none-any.whl
+pip install dist/moma-0.8.11-py3-none-any.whl
 
 # Or install globally (may require sudo)
-sudo pip install dist/moma-0.2.0-py3-none-any.whl
+sudo pip install dist/moma-0.8.11-py3-none-any.whl
 ```
 
 ### Method 3: Development Installation
@@ -58,15 +58,15 @@ For development or if you want to run from source:
 
 #### Clone and Setup
 ```bash
-git clone <repository-url>
+git clone git@github.com:shadoll/moma.git
 cd moma
 
 # Install dependencies
 uv sync
 
 # Run directly
-uv run python main.py
-uv run python main.py /path/to/directory
+uv run python src/main.py
+uv run python src/main.py /path/to/directory
 ```
 
 #### Install in Development Mode
@@ -87,8 +87,8 @@ python3 --version
 pip install textual mutagen pymediainfo python-magic langcodes
 
 # Run the application
-python3 main.py
-python3 main.py /path/to/directory
+python3 src/main.py
+python3 src/main.py /path/to/directory
 ```
 
 ## System Requirements
@@ -121,8 +121,6 @@ After installation, verify it works:
 
 ```bash
 moma --help
-# or
-python3 main.py --help
 ```
 
 You should see the help text for the moma application.

@@ -1,7 +1,7 @@
 # moma - Future Tasks
 
-**Version**: 0.7.0-dev
-**Last Updated**: 2026-01-01
+**Version**: 0.8.11
+**Last Updated**: 2026-04-11
 
 > **📋 For completed work, see [CHANGELOG.md](CHANGELOG.md)**
 >
@@ -165,12 +165,12 @@ See [REFACTORING_PROGRESS.md](REFACTORING_PROGRESS.md) for current limitations a
 
 Before working on any task:
 
-1. Check [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md) for architecture details
+1. Check [AGENTS.md](AGENTS.md) for architecture details
 2. Review [CHANGELOG.md](CHANGELOG.md) for recent changes
 3. Read [DEVELOP.md](DEVELOP.md) for development setup
 4. Run tests: `uv run pytest`
-5. Follow code standards in [ENGINEERING_GUIDE.md](ENGINEERING_GUIDE.md#code-standards)
+5. Follow code standards in [AGENTS.md](AGENTS.md#code-standards)
 
 ---
 
-**Last Updated**: 2026-01-01
+**Last Updated**: 2026-04-11
