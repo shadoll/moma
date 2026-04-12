@@ -1,8 +1,5 @@
 # CLAUDE.md - AI Assistant Reference
 
-**Version**: 0.8.11
-**Last Updated**: 2026-04-11
-
 > **📘 All technical documentation has been moved to [AGENTS.md](AGENTS.md)**
 
 ## For AI Assistants

@@ -651,14 +651,30 @@ except (LookupError, ValueError, AttributeError) as e:
 4. **Simplicity First**: Avoid over-engineering solutions
 5. **Document Changes**: Update relevant documentation
 
-### When Adding Features
+### Documentation Update Protocol
+
+**After every change to functionality, architecture, or deployment — always:**
+
+1. **Update CHANGELOG.md** — add an entry under `[Unreleased]` describing what changed and why
+2. **Update AGENTS.md** — if architecture, file structure, key bindings, settings, screens, or any documented component changed
+3. **Update README.md** — if user-facing behaviour, commands, or config changed
+4. **Check `docs/ToDo.md`** — if the completed work matches a task there, mark it ✅ done
+5. **Propose these updates to the user** before finishing — don't silently skip doc updates
+
+**When a feature request is deferred or postponed:**
+
+1. **Propose adding it to `docs/ToDo.md`** under the appropriate priority section
+2. **If it's large or complex** (multi-step, affects multiple components, or needs design decisions): propose creating a standalone spec file in `docs/` (e.g. `docs/feature-mkv-editor.md`) and add a reference link in `docs/ToDo.md`
+3. **Always confirm with the user** before creating new doc files
+
+**When adding a new feature:**
 
 1. Read existing code and understand architecture
-2. Check `REFACTORING_PROGRESS.md` for pending tasks
+2. Check `docs/ToDo.md` and `docs/REFACTORING_PROGRESS.md` for related pending tasks
 3. Implement features incrementally
 4. Test with real media files
 5. Ensure backward compatibility
-6. Update documentation
+6. Apply Documentation Update Protocol above
 7. Update tests as needed
 8. Run `uv run release` before committing
 
@@ -677,6 +693,7 @@ except (LookupError, ValueError, AttributeError) as e:
 3. Check all formatters (formatting is centralized)
 4. Verify extractor chain (ensure data flow intact)
 5. Run full test suite
+6. Apply Documentation Update Protocol above
 
 ### Common Pitfalls to Avoid
 
