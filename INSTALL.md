@@ -34,6 +34,15 @@ uv tool install https://github.com/shadoll/moma/releases/download/v0.9.1/moma-0.
 uv tool install moma
 ```
 
+#### Reinstall / Upgrade moma
+```bash
+# Reinstall (same URL — force overwrite)
+uv tool install --force https://github.com/shadoll/moma/releases/latest/download/moma-latest.tar.gz
+
+# Upgrade to a newer specific version
+uv tool install --force https://github.com/shadoll/moma/releases/download/v0.9.1/moma-0.9.1-py3-none-any.whl
+```
+
 #### Usage
 ```bash
 moma                    # Scan current directory
