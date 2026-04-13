@@ -3,6 +3,24 @@
   "version": "2.0",
   "test_cases": [
     {
+      "filename": "The.War.Wagon.1967_BDRip Ukr_Eng[Hurtom].mkv",
+      "expected": {
+        "order": null,
+        "title": "The War Wagon",
+        "year": "1967",
+        "source": "BDRip",
+        "frame_class": null,
+        "hdr": null,
+        "movie_db": null,
+        "special_info": null,
+        "audio_langs": "ukr,eng",
+        "extension": "mkv"
+      },
+      "testname": "edge-multi-lang-001",
+      "category": "edge_cases",
+      "description": "Multiple languages without brackets"
+    },
+    {
       "filename": "Le Jaguar.(1996).[1080i,3ukr,fra].mkv",
       "expected": {
         "order": null,
@@ -799,7 +817,7 @@
       "filename": "Movie.Title (2020) BDRip [1080p,ukr,eng].mkv",
       "expected": {
         "order": null,
-        "title": "Movie.Title",
+        "title": "Movie Title",
         "year": "2020",
         "source": "BDRip",
         "frame_class": "1080p",
@@ -810,7 +828,7 @@
         "extension": "mkv"
       },
       "category": "edge_cases",
-      "description": "Title with dots"
+      "description": "Title with dot separator (dot replaced with space by extractor)"
     },
     {
       "testname": "edge-no-brackets-001",

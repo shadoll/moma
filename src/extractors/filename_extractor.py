@@ -64,19 +64,26 @@ class FilenameExtractor:
             if dot_match:
                 year_pos = dot_match.start()
             else:
-                # Last resort: any 4-digit number
-                any_match = re.search(r'\b(\d{4})\b', self.file_name)
-                if any_match:
-                    year = int(any_match.group(1))
-                    # Basic sanity check using constants
-                    if is_valid_year(year):
-                        year_pos = any_match.start()  # Cut before the year for plain years
-        
+                # Try year between mixed separators (like .1967_ or _1967.)
+                sep_match = re.search(r'(?<=[.\-_\s])(\d{4})(?=[.\-_\s])', self.file_name)
+                if sep_match:
+                    year_val = int(sep_match.group(1))
+                    if is_valid_year(year_val):
+                        year_pos = sep_match.start(1)
+                else:
+                    # Last resort: any 4-digit number
+                    any_match = re.search(r'\b(\d{4})\b', self.file_name)
+                    if any_match:
+                        year = int(any_match.group(1))
+                        # Basic sanity check using constants
+                        if is_valid_year(year):
+                            year_pos = any_match.start()  # Cut before the year for plain years
+
         # Find source position
         source = self.extract_source()
         if source:
             for alias in SOURCE_DICT[source]:
-                match = re.search(r'\b' + re.escape(alias) + r'\b', self.file_name, re.IGNORECASE)
+                match = re.search(r'(?<![a-zA-Z])' + re.escape(alias) + r'(?![a-zA-Z])', self.file_name, re.IGNORECASE)
                 if match:
                     source_pos = match.start()
                     break
@@ -108,26 +115,23 @@ class FilenameExtractor:
         # Remove bracketed prefixes like [01.1], [1], etc.
         title = re.sub(r'^\s*\[[^\]]+\]\s*', '', title)
         
-        # Remove order number prefixes like 01., 1., 1.1 followed by space/underscore
-        # Only remove if the number is multi-digit or has decimal (to avoid removing single digit titles)
-        match = re.match(r'^\s*(\d+(?:\.\d+)?)\.(?=\s|_)', title)
-        if match:
-            order = match.group(1)
-            if len(order) > 1 or '.' in order:
-                title = re.sub(r'^\s*(\d+(?:\.\d+)?)\.(?=\s|_)', '', title)
-        
-        # Remove order like 1.9 where 1 is order, 9 is title
+        # Remove order prefix (order followed by dot or space)
         order = self.extract_order()
         if order:
-            match = re.match(r'^' + re.escape(order) + r'\.(.+)', title)
+            match = re.match(r'^' + re.escape(order) + r'[.\s]+(.+)', title)
             if match:
                 title = match.group(1)
         
         # Clean up any remaining leading separators
         title = title.lstrip('_ \t')
         
-        # Clean up title: remove leading/trailing brackets and dots
-        title = title.strip('[](). ')
+        # Clean up title: remove leading/trailing brackets and orphaned dots
+        title = title.strip('[]. ')
+        # Only strip unmatched leading/trailing parens
+        if title.endswith(')') and title.count('(') < title.count(')'):
+            title = title.rstrip(')')
+        if title.startswith('(') and title.count('(') > title.count(')'):
+            title = title.lstrip('(')
 
         # Replace dots with spaces if they appear to be word separators
         # Only replace dots that are surrounded by letters/digits (not at edges)
@@ -150,7 +154,14 @@ class FilenameExtractor:
         dot_match = re.search(r'\.(\d{4})\.', self.file_name)
         if dot_match:
             return dot_match.group(1)
-        
+
+        # Try year between mixed separators (like .1967_ or _1967.)
+        sep_match = re.search(r'(?<=[.\-_\s])(\d{4})(?=[.\-_\s])', self.file_name)
+        if sep_match:
+            year = int(sep_match.group(1))
+            if is_valid_year(year):
+                return str(year)
+
         # Last resort: any 4-digit number (but this is less reliable)
         any_match = re.search(r'\b(\d{4})\b', self.file_name)
         if any_match:
@@ -212,6 +223,14 @@ class FilenameExtractor:
                 return frame_class
             # Fallback to height-based if not in constants
             return self._get_frame_class_from_height(height)
+
+        # Check for bare resolution numbers inside brackets (e.g., [720,ukr,eng])
+        bare_match = re.search(r'[\[,](\d{3,4})(?=[,\]])', normalized_name, re.IGNORECASE)
+        if bare_match:
+            height = int(bare_match.group(1))
+            frame_class = self._get_frame_class_from_height(height)
+            if frame_class:
+                return frame_class
         
         # If no specific resolution found, check for non-standard quality indicators
         for indicator in NON_STANDARD_QUALITY_INDICATORS:
@@ -334,8 +353,17 @@ class FilenameExtractor:
         # Remove bracketed content first
         text_without_brackets = re.sub(r'\[([^\]]+)\]', '', self.file_name)
 
-        # Split on dots, spaces, and underscores
-        parts = re.split(r'[.\s_]+', text_without_brackets)
+        # Find start of metadata section (after title) to avoid title words being
+        # misdetected as language codes (e.g. "War" from "The.War.Wagon")
+        metadata_start = 0
+        year_m = (re.search(r'\(\d{4}\)', text_without_brackets) or
+                  re.search(r'\.\d{4}\.', text_without_brackets) or
+                  re.search(r'(?<=[.\-_\s])\d{4}(?=[.\-_\s])', text_without_brackets))
+        if year_m:
+            metadata_start = year_m.start()
+
+        # Split on dots, spaces, and underscores (only in the post-title portion)
+        parts = re.split(r'[.\s_]+', text_without_brackets[metadata_start:])
 
         for part in parts:
             part = part.strip()

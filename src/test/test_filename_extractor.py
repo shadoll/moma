@@ -15,6 +15,22 @@ def load_test_filenames():
     return []
 
 
+def load_test_cases():
+    """Load full test cases (testname, filename, expected) from dataset"""
+    dataset_file = Path(__file__).parent / "datasets" / "filenames" / "filename_patterns.json"
+    if dataset_file.exists():
+        with open(dataset_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return [
+                pytest.param(
+                    case['filename'],
+                    case['expected'],
+                    id=case.get('testname', case['filename'])
+                )
+                for case in data['test_cases']
+            ]
+    return []
+
 @pytest.mark.parametrize("filename", load_test_filenames())
 def test_extract_title(filename):
     """Test title extraction from filename"""
@@ -129,3 +145,49 @@ def test_extract_audio_tracks(filename):
     for track in audio_tracks:
         assert isinstance(track, dict)
         assert 'language' in track
+
+
+# ---------------------------------------------------------------------------
+# Dataset-based value-checking tests (check against filename_patterns.json)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("filename,expected", load_test_cases())
+def test_expected_title(filename, expected):
+    """Test that extracted title matches the expected value from dataset."""
+    extractor = FilenameExtractor(Path(filename), use_cache=False)
+    assert extractor.extract_title() == expected['title']
+
+
+@pytest.mark.parametrize("filename,expected", load_test_cases())
+def test_expected_year(filename, expected):
+    """Test that extracted year matches the expected value from dataset."""
+    extractor = FilenameExtractor(Path(filename), use_cache=False)
+    assert extractor.extract_year() == expected['year']
+
+
+@pytest.mark.parametrize("filename,expected", load_test_cases())
+def test_expected_source(filename, expected):
+    """Test that extracted source matches the expected value from dataset."""
+    extractor = FilenameExtractor(Path(filename), use_cache=False)
+    assert extractor.extract_source() == expected['source']
+
+
+@pytest.mark.parametrize("filename,expected", load_test_cases())
+def test_expected_frame_class(filename, expected):
+    """Test that extracted frame_class matches the expected value from dataset."""
+    extractor = FilenameExtractor(Path(filename), use_cache=False)
+    assert extractor.extract_frame_class() == expected['frame_class']
+
+
+@pytest.mark.parametrize("filename,expected", load_test_cases())
+def test_expected_audio_langs(filename, expected):
+    """Test that extracted audio_langs matches the expected value from dataset."""
+    extractor = FilenameExtractor(Path(filename), use_cache=False)
+    assert extractor.extract_audio_langs() == expected['audio_langs']
+
+
+@pytest.mark.parametrize("filename,expected", load_test_cases())
+def test_expected_movie_db(filename, expected):
+    """Test that extracted movie_db matches the expected value from dataset."""
+    extractor = FilenameExtractor(Path(filename), use_cache=False)
+    assert extractor.extract_movie_db() == expected['movie_db']
