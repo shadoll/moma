@@ -249,11 +249,14 @@ class MediaInfoExtractor:
             effective_height = height
 
         # First, try to match width to typical widths
-        # Use a larger tolerance (10 pixels) to handle cinema/ultrawide aspect ratios
+        # Use proportional tolerance (2% of typical width, min 10px) to handle
+        # cinema/ultrawide aspect ratios where encoded width may differ slightly
+        # (e.g. 3820×1592 scope 4K → 2160p, not a non-standard 1592p)
         width_matches = []
         for frame_class, info in FRAME_CLASSES.items():
             for tw in info["typical_widths"]:
-                if abs(width - tw) <= 10 and frame_class.endswith(scan_type):
+                width_tolerance = max(10, int(tw * 0.02))
+                if abs(width - tw) <= width_tolerance and frame_class.endswith(scan_type):
                     diff = abs(height - info["nominal_height"])
                     width_matches.append((frame_class, diff))
 

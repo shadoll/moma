@@ -154,5 +154,12 @@
     "interlaced": false,
     "expected_frame_class": "1080p",
     "testname": "test-mistakenly-high-height-2"
+  },
+  {
+    "testname": "test-2160p-scope-240",
+    "resolution": [3820, 1592],
+    "interlaced": false,
+    "expected_frame_class": "2160p",
+    "description": "4K cinema scope 2.40:1 - width slightly under 3840, height non-standard 1592"
   }
 ]
