@@ -50,6 +50,12 @@ class ProposedFilenameView:
 
     @property
     @conditional_decorators.wrap(",")
+    def _3d_layout(self) -> str:
+        """Get the 3D layout formatted with a leading comma if present"""
+        return self._extractor.get("3d_layout")
+
+    @property
+    @conditional_decorators.wrap(",")
     def _hdr(self) -> str:
         """Get the HDR info formatted with a trailing comma if present"""
         return self._extractor.get("hdr")
@@ -81,7 +87,7 @@ class ProposedFilenameView:
     @property
     def rename_line(self) -> str:
         """Generate the proposed filename."""
-        result = f"{self._order}{self._title}{self._year}{self._special_info}{self._source} [{self._frame_class}{self._hdr},{self._audio_langs}]{self._db_info}.{self._extension}"
+        result = f"{self._order}{self._title}{self._year}{self._special_info}{self._source} [{self._frame_class}{self._3d_layout}{self._hdr},{self._audio_langs}]{self._db_info}.{self._extension}"
         return result.replace("/", "-").replace("\\", "-")
 
     def rename_line_formatted(self, file_path) -> str:

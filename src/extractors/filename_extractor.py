@@ -252,6 +252,33 @@ class FilenameExtractor:
         return None
 
     @cached_method()
+    def extract_3d_layout(self) -> str | None:
+        """Extract 3D stereoscopic layout from filename or extension"""
+        # Ordered by specificity: most specific patterns first
+        patterns = [
+            (r'\b3D-SBS\b', '3D-SBS'),
+            (r'\b3D-OU\b', '3D-OU'),
+            (r'\b3D-HSBS\b', '3D-HSBS'),
+            (r'\b3D-HOU\b', '3D-HOU'),
+            (r'\bHalf[-.]?SBS\b', '3D-HSBS'),
+            (r'\bHalf[-.]?OU\b', '3D-HOU'),
+            (r'\bHSBS\b', '3D-HSBS'),
+            (r'\bHOU\b', '3D-HOU'),
+            (r'\bSBS\b', '3D-SBS'),
+            (r'\bOU\b', '3D-OU'),
+            (r'\b3D\b', '3D'),
+        ]
+        for pattern, result in patterns:
+            if re.search(pattern, self.file_name, re.IGNORECASE):
+                return result
+
+        # Fall back to mk3d extension as a 3D indicator
+        if self.file_path.suffix.lower() == '.mk3d':
+            return '3D'
+
+        return None
+
+    @cached_method()
     def extract_movie_db(self) -> list[str] | None:
         """Extract movie database identifier from filename"""
         # Use PatternExtractor utility to avoid code duplication

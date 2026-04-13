@@ -389,6 +389,11 @@ class MediaInfoExtractor:
         # Use the constants function to get extension from format
         ext = get_extension_from_format(format_)
 
+        # Preserve mk3d extension when the source file already has it,
+        # even if MediaInfo doesn't report stereoscopic metadata
+        if self.file_path.suffix.lower() == '.mk3d':
+            return 'mk3d'
+
         # Special case: Matroska 3D uses mk3d extension
         if ext == "mkv" and self.is_3d():
             return "mk3d"

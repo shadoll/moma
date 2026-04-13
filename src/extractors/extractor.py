@@ -123,6 +123,7 @@ class MediaExtractor:
             "3d_layout": {
                 "sources": [
                     ("MediaInfo", "extract_3d_layout"),
+                    ("Filename", "extract_3d_layout"),
                     ("Default", "extract_3d_layout"),
                 ],
             },
