@@ -256,11 +256,11 @@ class MomaApp(App):
             # Highlight the exact resolution token (e.g. "1080p") in the filename
             m = re.search(re.escape(frame_class), name, re.IGNORECASE)
             if m:
-                label.append(escape(name[:m.start()]))
-                label.append(escape(name[m.start():m.end()]), style=color)
-                label.append(escape(name[m.end():]))
+                label.append(name[:m.start()])
+                label.append(name[m.start():m.end()], style=color)
+                label.append(name[m.end():])
                 return label
-        label.append(escape(name))
+        label.append(name)
         return label
 
     def build_tree(self, path: Path, node):
