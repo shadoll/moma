@@ -213,7 +213,8 @@ class MediaInfoExtractor:
         # Determine scan type from available attributes
         # Check scan_type first (e.g., "Interlaced", "Progressive", "MBAFF")
         if scan_type_attr and isinstance(scan_type_attr, str):
-            scan_type = "i" if "interlaced" in scan_type_attr.lower() else "p"
+            scan_lower = scan_type_attr.lower()
+            scan_type = "i" if ("interlaced" in scan_lower or "mbaff" in scan_lower) else "p"
             logger.debug(
                 f"[{self.file_path.name}]   Using scan_type: {scan_type_attr!r} -> scan_type={scan_type!r}"
             )
