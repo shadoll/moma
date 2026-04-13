@@ -647,7 +647,12 @@ except (LookupError, ValueError, AttributeError) as e:
 
 1. **Read Before Modify**: Always read files before suggesting modifications
 2. **Follow Existing Patterns**: Understand established architecture before changes
-3. **Test Everything**: Run `uv run pytest` after all changes
+3. **Run CI Checks After Every Code Change**: After any code modification, run the same checks as GitHub CI:
+   ```bash
+   uv run pytest                                     # all tests must pass
+   uv run mypy src/ --ignore-missing-imports         # no type errors
+   ```
+   Do NOT consider work complete until both commands succeed.
 4. **Simplicity First**: Avoid over-engineering solutions
 5. **Document Changes**: Update relevant documentation
 

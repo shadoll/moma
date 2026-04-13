@@ -227,10 +227,9 @@ class FilenameExtractor:
         # Check for bare resolution numbers inside brackets (e.g., [720,ukr,eng])
         bare_match = re.search(r'[\[,](\d{3,4})(?=[,\]])', normalized_name, re.IGNORECASE)
         if bare_match:
-            height = int(bare_match.group(1))
-            frame_class = self._get_frame_class_from_height(height)
-            if frame_class:
-                return frame_class
+            bare_fc = self._get_frame_class_from_height(int(bare_match.group(1)))
+            if bare_fc:
+                return bare_fc
         
         # If no specific resolution found, check for non-standard quality indicators
         for indicator in NON_STANDARD_QUALITY_INDICATORS:

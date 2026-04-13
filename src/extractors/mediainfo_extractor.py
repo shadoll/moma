@@ -195,7 +195,7 @@ class MediaInfoExtractor:
         resolution = self.extract_resolution()
         if not resolution:
             return None
-        height, width = resolution
+        width, height = resolution
 
         logger.debug(
             f"[{self.file_path.name}] Frame class detection - Resolution: {width}x{height}"
@@ -329,7 +329,10 @@ class MediaInfoExtractor:
             return None
         langs = []
         for a in tracks:
-            lang_code = getattr(a, "language", "und") or "und"
+            lang_code = getattr(a, "language", None)
+            # Skip tracks with no language tag or 'und' (undetermined)
+            if not lang_code or lang_code.lower() in ("und", "undefined"):
+                continue
             try:
                 # Try to get the 3-letter code
                 lang_obj = langcodes.Language.get(lang_code.lower())
@@ -339,6 +342,9 @@ class MediaInfoExtractor:
                 # If conversion fails, use the original code
                 logger.debug(f"Invalid language code '{lang_code}': {e}")
                 langs.append(lang_code.lower()[:3])
+
+        if not langs:
+            return None  # No meaningful language info — let Filename extractor try
 
         lang_counts = Counter(langs)
         audio_langs = [
