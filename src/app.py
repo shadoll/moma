@@ -211,9 +211,9 @@ class MomaApp(App):
         icons = {
             'mkv': '🎥',   # Video camera for MKV
             'mk3d': '🕹️',  # Clapper board for 3D
-            'mp4': '🎥',   # Video camera
-            'mov': '🎥',   # Video camera
-            'webm': '🎥',  # Video camera
+            'mp4': '🌐',   # Web
+            'mov': '📽️',   # Video camera
+            'webm': '🌐',  # Web
             'avi': '💿',   # Film frames for AVI
             'wmv': '📀',   # Video camera
             'm4v': '📹',   # Video camera
