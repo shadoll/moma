@@ -11,14 +11,8 @@ class RenameConfirmScreen(Screen):
     #confirm_content {
         text-align: center;
     }
-    # Button {
-    #     background: $surface;
-    #     border: solid $surface;
-    }
     Button:focus {
-         background: $primary;
-    #     color: $text-primary;
-    #     border: solid $primary;
+        background: $primary;
     }
     #buttons {
         align: center middle;
