@@ -4,6 +4,7 @@ from textual.containers import Horizontal, Container, ScrollableContainer, Verti
 from textual.widget import Widget
 from textual.command import Provider, Hit
 from rich.markup import escape
+from rich.text import Text
 from pathlib import Path
 from functools import partial
 from typing import TYPE_CHECKING, cast, Any
@@ -14,6 +15,7 @@ from .logging_config import LoggerConfig  # Initialize logging singleton
 from .constants import MEDIA_TYPES
 from .views import OpenScreen, HelpScreen, RenameConfirmScreen, SettingsScreen, ConvertConfirmScreen, DeleteConfirmScreen
 from .extractors.extractor import MediaExtractor
+from .extractors.filename_extractor import FilenameExtractor
 from .views import MediaPanelView, ProposedFilenameView
 from .formatters.text_formatter import TextFormatter
 from .formatters.catalog_formatter import CatalogFormatter
@@ -214,14 +216,52 @@ class MomaApp(App):
             'mp4': '🌐',   # Web
             'mov': '📽️',   # Video camera
             'webm': '🌐',  # Web
-            'avi': '💿',   # Film frames for AVI
-            'wmv': '📀',   # Video camera
+            'avi': '💿',   # Silver compact disk
+            'wmv': '📀',   # Gold compact disk
             'm4v': '📹',   # Video camera
-            'mpg': '📼',   # Video camera
-            'mpeg': '📼',  # Video camera
+            'mpg': '📼',   # Video cassette
+            'mpeg': '📼',  # Video cassette
         }
 
         return icons.get(ext, '📄')  # Default to document icon
+
+    @staticmethod
+    def _frame_class_color(frame_class: str | None) -> str | None:
+        """Return a Rich colour name for a frame class, or None if no highlight needed."""
+        if not frame_class:
+            return None
+        fc = frame_class.lower()
+        if fc in ("4320p",):
+            return "bright_green"
+        if fc in ("2160p",):
+            return "green"
+        if fc in ("1440p", "1080p", "1080i"):
+            return "yellow1"
+        if fc in ("720p",):
+            return "orange1"
+        # 576p, 480p, 480i, 360p and anything lower
+        return "red"
+
+    def _make_file_label(self, file_path: Path) -> Text:
+        """Build a Rich Text label with resolution highlighted by quality tier."""
+        import re
+        icon = self._get_file_icon(file_path)
+        name = file_path.name
+
+        frame_class = FilenameExtractor(file_path, use_cache=False).extract_frame_class()
+        color = self._frame_class_color(frame_class)
+
+        label = Text(f"{icon} ")
+        if color and frame_class:
+            # Highlight the exact resolution token (e.g. "1080p") in the filename
+            m = re.search(re.escape(frame_class), name, re.IGNORECASE)
+            if m:
+                label.append(escape(name[:m.start()]))
+                label.append(escape(name[m.start():m.end()]), style=color)
+                label.append(escape(name[m.end():]))
+                return label
+        label.append(escape(name))
+        return label
 
     def build_tree(self, path: Path, node):
         try:
@@ -231,16 +271,14 @@ class MomaApp(App):
                         if item.name.startswith(".") or item.name == "lost+found":
                             continue
                         # Add folder icon before directory name
-                        label = f"󰉋 {escape(item.name)}"
-                        subnode = node.add(label, data=item)
+                        dir_label: str = f"󰉋 {escape(item.name)}"
+                        subnode = node.add(dir_label, data=item)
                         self.build_tree(item, subnode)
                     elif item.is_file() and item.suffix.lower() in {
                         f".{ext}" for ext in MEDIA_TYPES
                     }:
-                        # Add file type icon before filename
-                        icon = self._get_file_icon(item)
-                        label = f"{icon} {escape(item.name)}"
-                        node.add(label, data=item)
+                        # Add file type icon before filename with resolution colour
+                        node.add(self._make_file_label(item), data=item)
                 except PermissionError:
                     pass
         except PermissionError:
@@ -645,7 +683,7 @@ By Category:"""
             logging.info(f"Found node for {old_path}, updating to {new_path.name}")
             # Update label with icon
             icon = self._get_file_icon(new_path)
-            node.label = f"{icon} {escape(new_path.name)}"
+            node.label = self._make_file_label(new_path)  # type: ignore[assignment]
             node.data = new_path
             logging.info(f"After update: node.data = {node.data}, node.label = {node.label}")
             # Ensure cursor stays on the renamed file
@@ -708,7 +746,7 @@ By Category:"""
 
             # Get icon for the file
             icon = self._get_file_icon(file_path)
-            label = f"{icon} {escape(file_path.name)}"
+            label = self._make_file_label(file_path)
 
             # Add the new file node in alphabetically sorted position
             new_node = None
